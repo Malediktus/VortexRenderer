@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core.hpp"
+
 #include <memory>
 
 namespace Vortex {
@@ -24,12 +25,12 @@ namespace Vortex {
  * @copyright Copyright (c) 2023
  */
 class Context {
-public:
-  ~Context() = default;
+  public:
+    ~Context() = default;
 
-  VT_API virtual void Init() const = 0;
-  VT_API virtual void SwapBuffers() const = 0;
+    VT_API virtual void Init() const = 0;
+    VT_API virtual void SwapBuffers() const = 0;
 };
 
-VT_API std::shared_ptr<Context> ContextCreate(void *windowHandle);
+VT_API std::shared_ptr<Context> ContextCreate(void* windowHandle);
 } // namespace Vortex

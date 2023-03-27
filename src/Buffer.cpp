@@ -4,24 +4,22 @@
 
 using namespace Vortex;
 
-std::shared_ptr<VertexBuffer> Vortex::VertexBufferCreate(float *vertices,
-                                                         uint32_t size) {
-  switch (CurrentRenderingAPI) {
-  case RenderingAPI::OpenGL:
-    return std::make_shared<OpenGL::OpenGLVertexBuffer>(vertices, size);
-  default:
+std::shared_ptr<VertexBuffer> Vortex::VertexBufferCreate(float* vertices, uint32_t size) {
+    switch (CurrentRenderingAPI) {
+    case RenderingAPI::OpenGL:
+        return std::make_shared<OpenGL::OpenGLVertexBuffer>(vertices, size);
+    default:
+        assert(false);
+    }
     assert(false);
-  }
-  assert(false);
 }
 
-std::shared_ptr<IndexBuffer> Vortex::IndexBufferCreate(uint32_t *indices,
-                                                       uint32_t size) {
-  switch (CurrentRenderingAPI) {
-  case RenderingAPI::OpenGL:
-    return std::make_shared<OpenGL::OpenGLIndexBuffer>(indices, size);
-  default:
+std::shared_ptr<IndexBuffer> Vortex::IndexBufferCreate(uint32_t* indices, uint32_t size) {
+    switch (CurrentRenderingAPI) {
+    case RenderingAPI::OpenGL:
+        return std::make_shared<OpenGL::OpenGLIndexBuffer>(indices, size);
+    default:
+        assert(false);
+    }
     assert(false);
-  }
-  assert(false);
 }

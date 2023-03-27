@@ -5,11 +5,11 @@
 using namespace Vortex;
 
 std::shared_ptr<VertexArray> Vortex::VertexArrayCreate() {
-  switch (CurrentRenderingAPI) {
-  case RenderingAPI::OpenGL:
-    return std::make_shared<OpenGL::OpenGLVertexArray>();
-  default:
+    switch (CurrentRenderingAPI) {
+    case RenderingAPI::OpenGL:
+        return std::make_shared<OpenGL::OpenGLVertexArray>();
+    default:
+        assert(false);
+    }
     assert(false);
-  }
-  assert(false);
 }

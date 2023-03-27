@@ -45,4 +45,4 @@ cmake --open build
 
 Style guidelines:
 
-- Default clang-format style
+- See .clang-format file
