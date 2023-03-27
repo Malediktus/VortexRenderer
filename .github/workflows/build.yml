@@ -20,6 +20,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
 
       - name: Configure CMake
         run: cmake -B ${{github.workspace}}/build/${{ matrix.build-type }} -DCMAKE_BUILD_TYPE=${{ matrix.build-type }}
