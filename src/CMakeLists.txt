@@ -1,9 +1,18 @@
-set(HEADER_LIST "${VortexRenderer_SOURCE_DIR}/include/Vortex/Vortex.hpp" "${VortexRenderer_SOURCE_DIR}/include/Vortex/Core.hpp")
+set(HEADER_LIST
+    "${VortexRenderer_SOURCE_DIR}/include/Vortex/Vortex.hpp"
+    "${VortexRenderer_SOURCE_DIR}/include/Vortex/Core.hpp"
+    "${VortexRenderer_SOURCE_DIR}/include/Vortex/Context.hpp"
+    "${VortexRenderer_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLContext.hpp")
 
-add_library(Vortex Vortex.cpp ${HEADER_LIST})
+add_library(Vortex
+    Context.cpp
+    Platform/OpenGL/OpenGLContext.cpp
+    ${HEADER_LIST})
+
 target_include_directories(Vortex PUBLIC ../include)
 target_compile_definitions(Vortex PRIVATE VT_EXPORT_API)
 target_compile_features(Vortex PUBLIC cxx_std_17)
+target_link_libraries(Vortex PRIVATE glfw)
 
 source_group(
     TREE "${PROJECT_SOURCE_DIR}/include"
