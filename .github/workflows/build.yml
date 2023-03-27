@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install CMake
+      - name: Set up CMake
         uses: actions/setup-cmake@v2
         with:
           cmake-version: '3.26.0'
@@ -32,16 +32,14 @@ jobs:
       - name: Build
         run: cmake --build ${{github.workspace}}/build/${{ matrix.build-type }} --config ${{ matrix.build-type }}
 
-      # Only allow pull requests to be merged into main if all checks have passed
       - name: Check for passing status
         id: check_status
         run: echo "::set-output name=status::$(if [ -z \$(git log -1 --pretty=format:'%s' | grep '\[skip ci\]\|\[ci skip\]') ]; then echo 'success'; else echo 'skipped'; fi)"
 
-      - name: Pull request status
+      - name: Set pull request status
         if: github.event_name == 'pull_request'
         uses: peter-evans/create-pull-request-status@v3
         with:
           context: "CI - Build"
           state: ${{ steps.check_status.outputs.status }}
           token: ${{ secrets.GITHUB_TOKEN }}
-
