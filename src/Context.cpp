@@ -5,12 +5,13 @@
 
 using namespace Vortex;
 
-std::shared_ptr<Context> Vortex::ContextCreate(void *windowHandle) {
-  RenderingAPI CurrentRenderingAPI = RenderingAPI::OpenGL;
+RenderingAPI Vortex::CurrentRenderingAPI = RenderingAPI::OpenGL;
 
+std::shared_ptr<Context> Vortex::ContextCreate(void *windowHandle) {
   switch (CurrentRenderingAPI) {
   case RenderingAPI::OpenGL:
     return std::make_shared<OpenGL::OpenGLContext>(windowHandle);
+  default:
+    assert(false);
   }
-  assert(false);
 }

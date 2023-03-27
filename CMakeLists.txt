@@ -49,5 +49,14 @@ if(NOT glfw_POPULATED)
     add_subdirectory(${glfw_SOURCE_DIR} ${glfw_BINARY_DIR})
 endif()
 
+FetchContent_Declare(
+    glm
+    GIT_REPOSITORY https://github.com/g-truc/glm
+    GIT_TAG master
+)
+
+FetchContent_MakeAvailable(glm)
+
+add_subdirectory(extern/Glad)
 add_subdirectory(src)
 add_subdirectory(apps)
