@@ -1,5 +1,7 @@
 # Vortex Renderer is a cross platform renderer written in C++ and supporting multiple graphics API
 
+![Build Status](https://github.com/Malediktus/VortexRenderer/workflows/build/badge.svg)
+
 The requirements are:
 
 - CMake 3.11 or better; 3.14+ highly recommended.
