@@ -1,7 +1,7 @@
 #include <GLFW/glfw3.h>
 #include <Vortex/Context.hpp>
+#include <cstdlib>
 #include <iostream>
-#include <stdlib.h>
 
 static void GlfwErrorCallback(int error, const char *description) {
   std::cout << "GLFW Error (" << error << "): " << description << std::endl;

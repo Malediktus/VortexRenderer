@@ -2,6 +2,7 @@
 #include <Vortex/Context.hpp>
 #include <Vortex/Core.hpp>
 #include <Vortex/Platform/OpenGL/OpenGLContext.hpp>
+#include <cassert>
 
 using namespace Vortex;
 
@@ -14,4 +15,5 @@ std::shared_ptr<Context> Vortex::ContextCreate(void *windowHandle) {
   default:
     assert(false);
   }
+  assert(false);
 }

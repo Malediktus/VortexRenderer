@@ -12,6 +12,7 @@ std::shared_ptr<VertexBuffer> Vortex::VertexBufferCreate(float *vertices,
   default:
     assert(false);
   }
+  assert(false);
 }
 
 std::shared_ptr<IndexBuffer> Vortex::IndexBufferCreate(uint32_t *indices,
@@ -22,4 +23,5 @@ std::shared_ptr<IndexBuffer> Vortex::IndexBufferCreate(uint32_t *indices,
   default:
     assert(false);
   }
+  assert(false);
 }

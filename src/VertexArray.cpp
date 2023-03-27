@@ -11,4 +11,5 @@ std::shared_ptr<VertexArray> Vortex::VertexArrayCreate() {
   default:
     assert(false);
   }
+  assert(false);
 }
