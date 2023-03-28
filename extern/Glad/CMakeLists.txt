@@ -1,4 +1,4 @@
-project(Glad VERSION 0.1.0
+project(glad VERSION 0.1.0
     DESCRIPTION "The vortex Glad build"
     LANGUAGES C)
 

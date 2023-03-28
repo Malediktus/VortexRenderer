@@ -4,7 +4,7 @@
 
 namespace Vortex::OpenGL {
 class OpenGLVertexArray : public VertexArray {
-  public:
+public:
     OpenGLVertexArray();
     virtual ~OpenGLVertexArray();
 
@@ -21,7 +21,7 @@ class OpenGLVertexArray : public VertexArray {
         return m_IndexBuffer;
     }
 
-  private:
+private:
     uint32_t m_RendererID;
     std::vector<std::shared_ptr<VertexBuffer>> m_VertexBuffers;
     std::shared_ptr<IndexBuffer> m_IndexBuffer;

@@ -25,11 +25,11 @@ namespace Vortex {
  * @copyright Copyright (c) 2023
  */
 class Context {
-  public:
-    ~Context() = default;
+public:
+    VT_API ~Context() = default;
 
-    VT_API virtual void Init() const = 0;
-    VT_API virtual void SwapBuffers() const = 0;
+    virtual VT_API void Init() const = 0;
+    virtual VT_API void SwapBuffers() const = 0;
 };
 
 VT_API std::shared_ptr<Context> ContextCreate(void* windowHandle);

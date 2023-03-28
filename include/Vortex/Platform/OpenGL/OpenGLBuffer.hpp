@@ -4,7 +4,7 @@
 
 namespace Vortex::OpenGL {
 class OpenGLVertexBuffer : public VertexBuffer {
-  public:
+public:
     OpenGLVertexBuffer(float* vertices, uint32_t size);
     virtual ~OpenGLVertexBuffer();
 
@@ -18,13 +18,13 @@ class OpenGLVertexBuffer : public VertexBuffer {
         m_Layout = layout;
     }
 
-  private:
+private:
     uint32_t m_RendererID;
     BufferLayout m_Layout;
 };
 
 class OpenGLIndexBuffer : public IndexBuffer {
-  public:
+public:
     OpenGLIndexBuffer(uint32_t* indices, uint32_t count);
     virtual ~OpenGLIndexBuffer();
 
@@ -35,7 +35,7 @@ class OpenGLIndexBuffer : public IndexBuffer {
         return m_Count;
     }
 
-  private:
+private:
     uint32_t m_RendererID;
     uint32_t m_Count;
 };

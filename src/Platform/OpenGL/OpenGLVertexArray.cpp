@@ -4,6 +4,7 @@
 
 using namespace Vortex::OpenGL;
 
+namespace Vortex::Utils {
 static GLenum ShaderDataTypeToOpenGLBaseType(Vortex::ShaderDataType type) {
     switch (type) {
     case Vortex::ShaderDataType::Float:
@@ -31,9 +32,9 @@ static GLenum ShaderDataTypeToOpenGLBaseType(Vortex::ShaderDataType type) {
     default:
         assert(false);
     }
-
     return 0;
 }
+} // namespace Vortex::Utils
 
 OpenGLVertexArray::OpenGLVertexArray() {
     glGenVertexArrays(1, &m_RendererID);
@@ -61,7 +62,7 @@ void OpenGLVertexArray::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& ver
     const auto& layout = vertexBuffer->GetLayout();
     for (const auto& element : layout) {
         glEnableVertexAttribArray(index);
-        glVertexAttribPointer(index, element.GetComponentCount(), ShaderDataTypeToOpenGLBaseType(element.Type),
+        glVertexAttribPointer(index, element.GetComponentCount(), Vortex::Utils::ShaderDataTypeToOpenGLBaseType(element.Type),
                               element.Normalized ? GL_TRUE : GL_FALSE, layout.GetStride(), (const void*) element.Offset);
         index++;
     }

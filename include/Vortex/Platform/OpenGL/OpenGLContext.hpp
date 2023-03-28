@@ -6,15 +6,15 @@
 
 namespace Vortex::OpenGL {
 class OpenGLContext : public Context {
-  public:
+public:
     OpenGLContext(void* windowHandle) : m_WindowHandle(windowHandle) {
     }
     ~OpenGLContext() = default;
 
-    void Init() const override;
-    void SwapBuffers() const override;
+    virtual void Init() const override;
+    virtual void SwapBuffers() const override;
 
-  private:
+private:
     void* m_WindowHandle;
 };
 } // namespace Vortex::OpenGL
