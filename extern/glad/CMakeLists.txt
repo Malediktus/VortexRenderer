@@ -1,5 +1,5 @@
 project(glad VERSION 0.1.0
-    DESCRIPTION "The vortex Glad build"
+    DESCRIPTION "The vortex glad build"
     LANGUAGES C)
 
 add_library(glad STATIC src/glad.c include/KHR/khrplatform.h include/glad/glad.h)
