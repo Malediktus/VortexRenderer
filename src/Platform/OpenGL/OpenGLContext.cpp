@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <Vortex/Platform/OpenGL/OpenGLContext.hpp>
+#include <cassert>
 
 using namespace Vortex::OpenGL;
 
