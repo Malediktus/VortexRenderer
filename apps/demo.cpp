@@ -3,6 +3,7 @@
 #include <Vortex/Context.hpp>
 #include <Vortex/Shader.hpp>
 #include <Vortex/VertexArray.hpp>
+#include <Vortex/Renderer.hpp>
 #include <cstdlib>
 #include <iostream>
 
@@ -32,6 +33,9 @@ int main() {
     auto context = Vortex::ContextCreate(window);
     context->Init();
 
+    Vortex::RenderCommand::Init();
+    Vortex::RenderCommand::SetClearColor({0.0f, 0.0f, 0.0f, 1.0f});
+
     float vertices[] = {0.5f, 0.5f, 0.0f, 0.5f, -0.5f, 0.0f, -0.5f, -0.5f, 0.0f, -0.5f, 0.5f, 0.0f};
     unsigned int indices[] = {0, 1, 3, 1, 2, 3};
 
@@ -45,8 +49,11 @@ int main() {
     std::shared_ptr<Vortex::Shader> shader = Vortex::ShaderCreate("../../resources/Base.glsl");
 
     while (!glfwWindowShouldClose(window)) {
-        vertexArray->Bind();
+        Vortex::RenderCommand::Clear();
+        Vortex::Renderer::BeginScene();
         shader->Bind();
+        Vortex::Renderer::Submit(vertexArray);
+        Vortex::Renderer::EndScene();
 
         context->SwapBuffers();
         glfwPollEvents();

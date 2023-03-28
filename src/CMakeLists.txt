@@ -20,6 +20,8 @@ add_library(Vortex
     Buffer.cpp
     VertexArray.cpp
     Renderer.cpp
+    RenderCommand.cpp
+    RendererAPI.cpp
     Platform/OpenGL/OpenGLContext.cpp
     Platform/OpenGL/OpenGLShader.cpp
     Platform/OpenGL/OpenGLBuffer.cpp

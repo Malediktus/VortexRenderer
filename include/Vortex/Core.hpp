@@ -15,9 +15,3 @@
         #define VT_API
     #endif
 #endif
-
-namespace Vortex {
-enum class RenderingAPI { OpenGL };
-
-extern RenderingAPI CurrentRenderingAPI;
-} // namespace Vortex

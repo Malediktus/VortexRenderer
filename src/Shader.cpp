@@ -1,13 +1,14 @@
 #include <Vortex/Core.hpp>
 #include <Vortex/Platform/OpenGL/OpenGLShader.hpp>
 #include <Vortex/Shader.hpp>
+#include <Vortex/Renderer.hpp>
 #include <cassert>
 
 using namespace Vortex;
 
 std::shared_ptr<Shader> Vortex::ShaderCreate(const std::string& filepath) {
-    switch (CurrentRenderingAPI) {
-    case RenderingAPI::OpenGL:
+    switch (Renderer::GetAPI()) {
+    case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLShader>(filepath);
     default:
         assert(false);
@@ -17,8 +18,8 @@ std::shared_ptr<Shader> Vortex::ShaderCreate(const std::string& filepath) {
 
 std::shared_ptr<Shader> Vortex::ShaderCreate(const std::string& name, const std::string& vertexSrc,
                                              const std::string& fragmentSrc) {
-    switch (CurrentRenderingAPI) {
-    case RenderingAPI::OpenGL:
+    switch (Renderer::GetAPI()) {
+    case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLShader>(name, vertexSrc, fragmentSrc);
     default:
         assert(false);
