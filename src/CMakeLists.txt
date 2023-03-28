@@ -2,23 +2,29 @@ set(HEADER_LIST
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Vortex.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Core.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Context.hpp"
+    "${VortexRenderer_SOURCE_DIR}/include/Vortex/RenderCommand.hpp"
+    "${VortexRenderer_SOURCE_DIR}/include/Vortex/Renderer.hpp"
+    "${VortexRenderer_SOURCE_DIR}/include/Vortex/RendererAPI.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Shader.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Buffer.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/VertexArray.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLShader.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLContext.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLBuffer.hpp"
-    "${VortexRenderer_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLVertexArray.hpp")
+    "${VortexRenderer_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLVertexArray.hpp"
+    "${VortexRenderer_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLRendererAPI.hpp")
 
 add_library(Vortex
     Context.cpp
     Shader.cpp
     Buffer.cpp
     VertexArray.cpp
+    Renderer.cpp
     Platform/OpenGL/OpenGLContext.cpp
     Platform/OpenGL/OpenGLShader.cpp
     Platform/OpenGL/OpenGLBuffer.cpp
     Platform/OpenGL/OpenGLVertexArray.cpp
+    Platform/OpenGL/OpenGLRendererAPI.cpp
     ${HEADER_LIST})
 
 target_include_directories(Vortex PUBLIC ../include)
