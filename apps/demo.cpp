@@ -33,7 +33,7 @@ int main() {
     auto context = Vortex::ContextCreate(window);
     context->Init();
 
-    Vortex::RenderCommand::Init();
+    Vortex::Renderer::Init();
     Vortex::RenderCommand::SetClearColor({0.0f, 0.0f, 0.0f, 1.0f});
 
     float vertices[] = {0.5f, 0.5f, 0.0f, 0.5f, -0.5f, 0.0f, -0.5f, -0.5f, 0.0f, -0.5f, 0.5f, 0.0f};
@@ -46,13 +46,13 @@ int main() {
     vertexArray->AddVertexBuffer(vertexBuffer);
     std::shared_ptr<Vortex::IndexBuffer> indexBuffer = Vortex::IndexBufferCreate(indices, sizeof(indices));
     vertexArray->SetIndexBuffer(indexBuffer);
-    std::shared_ptr<Vortex::Shader> shader = Vortex::ShaderCreate("../resources/Base.glsl");
+    Vortex::Renderer::LoadShader("Base", "../resources/Base.glsl");
 
     while (!glfwWindowShouldClose(window)) {
         Vortex::RenderCommand::Clear();
+        
         Vortex::Renderer::BeginScene();
-        shader->Bind();
-        Vortex::Renderer::Submit(vertexArray);
+        Vortex::Renderer::Submit("Base", vertexArray);
         Vortex::Renderer::EndScene();
 
         context->SwapBuffers();
