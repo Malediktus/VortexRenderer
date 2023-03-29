@@ -46,7 +46,7 @@ int main() {
     vertexArray->AddVertexBuffer(vertexBuffer);
     std::shared_ptr<Vortex::IndexBuffer> indexBuffer = Vortex::IndexBufferCreate(indices, sizeof(indices));
     vertexArray->SetIndexBuffer(indexBuffer);
-    std::shared_ptr<Vortex::Shader> shader = Vortex::ShaderCreate("../../resources/Base.glsl");
+    std::shared_ptr<Vortex::Shader> shader = Vortex::ShaderCreate("../resources/Base.glsl");
 
     while (!glfwWindowShouldClose(window)) {
         Vortex::RenderCommand::Clear();
