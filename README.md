@@ -28,7 +28,7 @@ cmake --build build
 To build docs (requires Doxygen, output in `build/docs/html`):
 
 ```bash
-cmake --build build --target vortex_docs
+cmake --build build --target docs
 ```
 
 To use an IDE, such as Xcode or Visual Studio (where {IDE} is your desired IDE):
