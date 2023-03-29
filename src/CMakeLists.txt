@@ -9,6 +9,15 @@ set(HEADER_LIST
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Buffer.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/VertexArray.hpp")
 
+set(SOURCE_LIST
+    Context.cpp
+    Shader.cpp
+    Buffer.cpp
+    VertexArray.cpp
+    Renderer.cpp
+    RenderCommand.cpp
+    RendererAPI.cpp)
+
 set(OPENGL_HEADERS
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLShader.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLContext.hpp"
@@ -24,16 +33,10 @@ set(OPENGL_SOURCES
     Platform/OpenGL/OpenGLRendererAPI.cpp)
 
 add_library(Vortex
-    Context.cpp
-    Shader.cpp
-    Buffer.cpp
-    VertexArray.cpp
-    Renderer.cpp
-    RenderCommand.cpp
-    RendererAPI.cpp
+    ${HEADER_LIST}
+    ${SOURCE_LIST}
     ${OPENGL_SOURCES}
-    ${OPENGL_HEADERS}
-    ${HEADER_LIST})
+    ${OPENGL_HEADERS})
 
 target_include_directories(Vortex PUBLIC ../include)
 target_compile_definitions(Vortex PRIVATE VT_EXPORT_API)
@@ -47,11 +50,16 @@ source_group(
     FILES ${HEADER_LIST})
 
 source_group(
+    TREE "${PROJECT_SOURCE_DIR}/src"
+    PREFIX "Source Files"
+    FILES ${SOURCE_LIST})
+
+source_group(
     TREE "${PROJECT_SOURCE_DIR}/include/Vortex/Platform/OpenGL"
-    PREFIX "OpenGL Headers"
+    PREFIX "OpenGL Header Files"
     FILES ${OPENGL_HEADERS})
 
 source_group(
     TREE "${PROJECT_SOURCE_DIR}/src/Platform/OpenGL"
-    PREFIX "OpenGL"
+    PREFIX "OpenGL Source Files"
     FILES ${OPENGL_SOURCES})
