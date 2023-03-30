@@ -8,6 +8,7 @@ set(HEADER_LIST
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Shader.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Camera.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Buffer.hpp"
+    "${VortexRenderer_SOURCE_DIR}/include/Vortex/Texture.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/VertexArray.hpp")
 
 set(SOURCE_LIST
@@ -15,6 +16,7 @@ set(SOURCE_LIST
     Shader.cpp
     Buffer.cpp
     Camera.cpp
+    Texture.cpp
     VertexArray.cpp
     Renderer.cpp
     RenderCommand.cpp
@@ -24,6 +26,7 @@ set(OPENGL_HEADERS
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLShader.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLContext.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLBuffer.hpp"
+    "${VortexRenderer_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLTexture.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLVertexArray.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLRendererAPI.hpp")
 
@@ -31,6 +34,7 @@ set(OPENGL_SOURCES
     Platform/OpenGL/OpenGLContext.cpp
     Platform/OpenGL/OpenGLShader.cpp
     Platform/OpenGL/OpenGLBuffer.cpp
+    Platform/OpenGL/OpenGLTexture.cpp
     Platform/OpenGL/OpenGLVertexArray.cpp
     Platform/OpenGL/OpenGLRendererAPI.cpp)
 
@@ -43,7 +47,7 @@ add_library(Vortex
 target_include_directories(Vortex PUBLIC ../include)
 target_compile_definitions(Vortex PRIVATE VT_EXPORT_API)
 target_compile_features(Vortex PUBLIC cxx_std_17)
-target_link_libraries(Vortex PRIVATE glfw glad)
+target_link_libraries(Vortex PRIVATE glfw glad stb_image)
 target_link_libraries(Vortex PUBLIC glm)
 
 source_group(
