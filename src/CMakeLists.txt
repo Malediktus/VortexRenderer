@@ -6,6 +6,7 @@ set(HEADER_LIST
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Renderer.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/RendererAPI.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Shader.hpp"
+    "${VortexRenderer_SOURCE_DIR}/include/Vortex/Camera.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/Buffer.hpp"
     "${VortexRenderer_SOURCE_DIR}/include/Vortex/VertexArray.hpp")
 
@@ -13,6 +14,7 @@ set(SOURCE_LIST
     Context.cpp
     Shader.cpp
     Buffer.cpp
+    Camera.cpp
     VertexArray.cpp
     Renderer.cpp
     RenderCommand.cpp

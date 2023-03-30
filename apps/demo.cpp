@@ -4,6 +4,7 @@
 #include <Vortex/Shader.hpp>
 #include <Vortex/VertexArray.hpp>
 #include <Vortex/Renderer.hpp>
+#include <Vortex/Camera.hpp>
 #include <cstdlib>
 #include <iostream>
 
@@ -46,13 +47,16 @@ int main() {
     vertexArray->AddVertexBuffer(vertexBuffer);
     std::shared_ptr<Vortex::IndexBuffer> indexBuffer = Vortex::IndexBufferCreate(indices, sizeof(indices));
     vertexArray->SetIndexBuffer(indexBuffer);
-    Vortex::Renderer::LoadShader("Base", "../resources/Base.glsl");
+    Vortex::Renderer::LoadShader("Base", "../../../resources/Base.glsl");
+
+    std::shared_ptr<Vortex::PerspectiveCamera> camera = std::make_shared<Vortex::PerspectiveCamera>(90.0f, 1080.0f / 720.0f);
+    camera->SetPosition({0.0f, 0.0f, 1.5f});
 
     while (!glfwWindowShouldClose(window)) {
         Vortex::RenderCommand::Clear();
-        
-        Vortex::Renderer::BeginScene();
-        Vortex::Renderer::Submit("Base", vertexArray);
+
+        Vortex::Renderer::BeginScene(camera, "Base");
+        Vortex::Renderer::Submit(vertexArray);
         Vortex::Renderer::EndScene();
 
         context->SwapBuffers();
