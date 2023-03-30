@@ -5,6 +5,7 @@
 #include <Vortex/VertexArray.hpp>
 #include <Vortex/Renderer.hpp>
 #include <Vortex/Camera.hpp>
+#include <Vortex/Texture.hpp>
 #include <cstdlib>
 #include <iostream>
 
