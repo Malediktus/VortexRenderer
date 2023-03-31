@@ -4,6 +4,15 @@
 #include "Core.hpp"
 
 namespace Vortex {
+/**
+ * @brief This is an abstraction layer for rendering. The relevant functions are SetClearColor() and Clear(). Init() is handled
+ * automaticly by Renderer::Init().
+ *
+ * @version 0.1
+ * @author Nico Grundei (malediktusrgb@gmail.com)
+ * @date 2023-03-31
+ * @copyright Copyright (c) 2023
+ */
 class RenderCommand {
 public:
     static VT_API void Init() {

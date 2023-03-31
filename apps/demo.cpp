@@ -1,11 +1,6 @@
 #include <GLFW/glfw3.h>
-#include <Vortex/Buffer.hpp>
-#include <Vortex/Context.hpp>
-#include <Vortex/Shader.hpp>
-#include <Vortex/VertexArray.hpp>
-#include <Vortex/Renderer.hpp>
-#include <Vortex/Camera.hpp>
-#include <Vortex/Texture.hpp>
+#include <Vortex/Vortex.hpp>
+
 #include <cstdlib>
 #include <iostream>
 

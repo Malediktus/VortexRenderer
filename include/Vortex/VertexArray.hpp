@@ -6,6 +6,14 @@
 #include <memory>
 
 namespace Vortex {
+/**
+ * @brief The VertexArray hold VertexBuffers and IndexBuffers and can be rendered.
+ *
+ * @version 0.1
+ * @author Nico Grundei (malediktusrgb@gmail.com)
+ * @date 2023-03-31
+ * @copyright Copyright (c) 2023
+ */
 class VertexArray {
 public:
     virtual ~VertexArray() {

@@ -5,6 +5,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace Vortex {
+/**
+ * @brief The Camera class is an abstract class which should only be used for parameters or class members, but not get
+ * instantiated.
+ *
+ * @version 0.1
+ * @author Nico Grundei (malediktusrgb@gmail.com)
+ * @date 2023-03-31
+ * @copyright Copyright (c) 2023
+ */
 class Camera {
 public:
     Camera(const glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
@@ -57,6 +66,14 @@ private:
     float m_Rotation = 0.0f;
 };
 
+/**
+ * @brief The OrthographicCamera is a 2D Camera.
+ *
+ * @version 0.1
+ * @author Nico Grundei (malediktusrgb@gmail.com)
+ * @date 2023-03-31
+ * @copyright Copyright (c) 2023
+ */
 class OrthographicCamera : public Camera {
 public:
     OrthographicCamera(const float left, const float right, const float bottom, const float top)
@@ -64,6 +81,15 @@ public:
     }
 };
 
+/**
+ * @brief The PerspectiveCamera is a 3D Camera. The constructor takes the arguments fov (field of view) and aspectRatio. The fov
+ * can be something like 90 and the aspectRatio should be width/height of the viewport.
+ *
+ * @version 0.1
+ * @author Nico Grundei (malediktusrgb@gmail.com)
+ * @date 2023-03-31
+ * @copyright Copyright (c) 2023
+ */
 class PerspectiveCamera : public Camera {
 public:
     PerspectiveCamera(const float fov, const float aspectRatio)
