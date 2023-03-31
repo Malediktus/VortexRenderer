@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.14...3.26)
 
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/submodule.cmake")
-include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/ccache.cmake")
+include(cmake/submodule.cmake)
+include(cmake/ccache.cmake)
+include(cmake/clangformat.cmake)
 
 download_submodules()
 
