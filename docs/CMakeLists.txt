@@ -13,4 +13,5 @@ doxygen_add_docs(docs
     Vortex/Camera.hpp
     Vortex/Buffer.hpp
     "${CMAKE_CURRENT_SOURCE_DIR}/mainpage.md"
+    "${CMAKE_CURRENT_SOURCE_DIR}/shader.md"
     WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/include")
