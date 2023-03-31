@@ -4,7 +4,7 @@ set(GENERATE_TREEVIEW YES)
 set(DISABLE_INDEX NO)
 set(FULL_SIDEBAR NO)
 set(HTML_COLORSTYLE LIGHT)
-set(DOXYGEN_HTML_EXTRA_STYLESHEET ../extern/mcss/css/m-dark.css)
+set(DOXYGEN_HTML_EXTRA_STYLESHEET ../extern/doxygen-awesome-css/doxygen-awesome.css)
 
 doxygen_add_docs(docs
     Vortex/Vortex.hpp
