@@ -5,6 +5,9 @@
 #include "Core.hpp"
 #include "Shader.hpp"
 #include "Camera.hpp"
+#include "Texture.hpp"
+
+#include <glm/glm.hpp>
 
 #include <memory>
 #include <string>
@@ -32,7 +35,8 @@ public:
     static VT_API void BeginScene(const std::shared_ptr<Camera>& camera, const std::string& shaderName);
     static VT_API void EndScene();
 
-    static VT_API void Submit(const std::shared_ptr<VertexArray>& vertexArray);
+    static VT_API void Submit(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Texture2D>& texture,
+                              glm::mat4& transform);
 
     inline static VT_API RendererAPI::API GetAPI() {
         return RendererAPI::GetAPI();
