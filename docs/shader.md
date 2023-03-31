@@ -6,7 +6,7 @@ For now only vertex- and fragment shader are supported, but this will change.
 
 Example Base shader:  
 Base.glsl:   
-```
+```glsl
 #type vertex
 
 #version 330 core

@@ -1,5 +1,10 @@
 set(DOXYGEN_EXTRACT_ALL YES)
 set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
+set(GENERATE_TREEVIEW YES)
+set(DISABLE_INDEX NO)
+set(FULL_SIDEBAR NO)
+set(HTML_COLORSTYLE LIGHT)
+set(DOXYGEN_HTML_EXTRA_STYLESHEET ../extern/mcss/css/m-dark.css)
 
 doxygen_add_docs(docs
     Vortex/Vortex.hpp
