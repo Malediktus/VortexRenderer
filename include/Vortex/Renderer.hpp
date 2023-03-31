@@ -38,6 +38,12 @@ public:
     static VT_API void Submit(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Texture2D>& texture,
                               glm::mat4& transform);
 
+    static VT_API void Submit(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Texture2D>& texture);
+
+    static VT_API void Submit(const std::shared_ptr<VertexArray>& vertexArray, glm::mat4& transform);
+
+    static VT_API void Submit(const std::shared_ptr<VertexArray>& vertexArray);
+
     inline static VT_API RendererAPI::API GetAPI() {
         return RendererAPI::GetAPI();
     }
@@ -51,6 +57,7 @@ private:
     };
 
     static std::shared_ptr<ShaderLibrary> s_ShaderLibrary;
+    static std::shared_ptr<Texture2D> s_WhiteTexture;
     static std::shared_ptr<SceneData> s_SceneData;
 };
 } // namespace Vortex

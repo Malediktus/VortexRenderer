@@ -34,7 +34,7 @@ public:
 class Texture2D : public Texture {};
 
 /**
- * @brief This function is the only way that should be used for creating a Texture2D.
+ * @brief This function is the only way that should be used for creating a Texture2D from a file.
  *
  * @param path
  * @return std::shared_ptr<Texture2D>
@@ -44,4 +44,17 @@ class Texture2D : public Texture {};
  * @copyright Copyright (c) 2023
  */
 VT_API std::shared_ptr<Texture2D> Texture2DCreate(const std::string& path);
+/**
+ * @brief This function is the only way that should be used for creating a Texture2D from pixel data.
+ *
+ * @param width
+ * @param height
+ * @param data
+ * @return std::shared_ptr<Texture2D>
+ * @version 0.1
+ * @author Nico Grundei (malediktusrgb@gmail.com)
+ * @date 2023-03-31
+ * @copyright Copyright (c) 2023
+ */
+VT_API std::shared_ptr<Texture2D> Texture2DCreate(const int width, const int height, const void* data);
 } // namespace Vortex

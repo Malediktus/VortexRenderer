@@ -21,6 +21,18 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : m_Path(path) {
     stbi_image_free(pixels);
 }
 
+OpenGLTexture2D::OpenGLTexture2D(const int width, const int height, const void* data) : m_Path("") {
+    m_Width = width;
+    m_Height = height;
+    glGenTextures(1, &m_RendererID);
+    glBindTexture(GL_TEXTURE_2D, m_RendererID);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+}
+
 OpenGLTexture2D::~OpenGLTexture2D() {
     glDeleteTextures(1, &m_RendererID);
 }
