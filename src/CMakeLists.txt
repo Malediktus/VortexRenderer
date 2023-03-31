@@ -51,7 +51,7 @@ target_link_libraries(Vortex PRIVATE glfw glad stb_image)
 target_link_libraries(Vortex PUBLIC glm)
 
 source_group(
-    TREE "${PROJECT_SOURCE_DIR}/include"
+    TREE "${PROJECT_SOURCE_DIR}/include/Vortex"
     PREFIX "Header Files"
     FILES ${HEADER_LIST})
 
@@ -62,10 +62,10 @@ source_group(
 
 source_group(
     TREE "${PROJECT_SOURCE_DIR}/include/Vortex/Platform/OpenGL"
-    PREFIX "OpenGL Header Files"
+    PREFIX "Header Files/OpenGL"
     FILES ${OPENGL_HEADERS})
 
 source_group(
     TREE "${PROJECT_SOURCE_DIR}/src/Platform/OpenGL"
-    PREFIX "OpenGL Source Files"
+    PREFIX "Source Files/OpenGL"
     FILES ${OPENGL_SOURCES})
