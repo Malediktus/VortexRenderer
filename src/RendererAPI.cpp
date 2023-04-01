@@ -5,7 +5,7 @@
 
 using namespace Vortex;
 
-auto RendererAPI::s_API = RendererAPI::API::OpenGL;
+RendererAPI::API RendererAPI::s_API = RendererAPI::API::OpenGL;
 
 std::shared_ptr<RendererAPI> Vortex::RendererAPICreate() {
     switch (Renderer::GetAPI()) {
