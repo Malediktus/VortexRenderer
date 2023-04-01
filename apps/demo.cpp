@@ -69,13 +69,14 @@ int main() {
     RenderCommand::SetClearColor({0.0f, 0.0f, 0.0f, 1.0f});
 
     while (!glfwWindowShouldClose(window)) {
+        glfwGetFramebufferSize(window, &width, &height);
+        auto camera = std::make_shared<PerspectiveCamera>(90.0f, (float) width / (float) height);
+        camera->SetPosition({0.0f, 0.0f, 1.5f});
+
         Renderer::BeginScene(camera, "Base");
         Renderer::Submit(vertexArray, texture, transform);
         Renderer::EndScene();
 
-        glfwGetFramebufferSize(window, &width, &height);
-        auto camera = std::make_shared<PerspectiveCamera>(90.0f, (float) width / (float) height);
-        camera->SetPosition({0.0f, 0.0f, 1.5f});
         vortexContext->SwapBuffers();
         RenderCommand::Clear();
         glfwPollEvents();
