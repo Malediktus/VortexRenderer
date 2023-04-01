@@ -36,13 +36,12 @@ void Renderer::BeginScene(const std::shared_ptr<Camera>& camera, const std::stri
 void Renderer::EndScene() {
 }
 
-void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Texture2D>& texture,
-                      glm::mat4& transform) {
+void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Texture2D>& texture, glm::mat4& transform) {
     vertexArray->Bind();
     const auto& shader = s_ShaderLibrary->Get(s_SceneData->SceneShader);
     shader->Bind();
     texture->Bind(0);
-    shader->UploadUniformMat4("u_ViewProj", s_SceneData->SceneCamera->GetViewProjectionMatrix());
+    shader->UploadUniformMat4("u_ViewProj", s_SceneData->SceneCamera->GetViewProj());
     shader->UploadUniformMat4("u_Model", transform);
     shader->UploadUniformInt("u_TextureId", 0);
     RenderCommand::DrawIndexed(vertexArray);
@@ -53,7 +52,7 @@ void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray, const std
     const auto& shader = s_ShaderLibrary->Get(s_SceneData->SceneShader);
     shader->Bind();
     texture->Bind(0);
-    shader->UploadUniformMat4("u_ViewProj", s_SceneData->SceneCamera->GetViewProjectionMatrix());
+    shader->UploadUniformMat4("u_ViewProj", s_SceneData->SceneCamera->GetViewProj());
     shader->UploadUniformMat4("u_Model", glm::mat4(1.0f));
     shader->UploadUniformInt("u_TextureId", 0);
     RenderCommand::DrawIndexed(vertexArray);
@@ -64,7 +63,7 @@ void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray, glm::mat4
     const auto& shader = s_ShaderLibrary->Get(s_SceneData->SceneShader);
     shader->Bind();
     s_WhiteTexture->Bind(0);
-    shader->UploadUniformMat4("u_ViewProj", s_SceneData->SceneCamera->GetViewProjectionMatrix());
+    shader->UploadUniformMat4("u_ViewProj", s_SceneData->SceneCamera->GetViewProj());
     shader->UploadUniformMat4("u_Model", transform);
     shader->UploadUniformInt("u_TextureId", 0);
     RenderCommand::DrawIndexed(vertexArray);
@@ -75,7 +74,7 @@ void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray) {
     const auto& shader = s_ShaderLibrary->Get(s_SceneData->SceneShader);
     shader->Bind();
     s_WhiteTexture->Bind(0);
-    shader->UploadUniformMat4("u_ViewProj", s_SceneData->SceneCamera->GetViewProjectionMatrix());
+    shader->UploadUniformMat4("u_ViewProj", s_SceneData->SceneCamera->GetViewProj());
     shader->UploadUniformMat4("u_Model", glm::mat4(1.0f));
     shader->UploadUniformInt("u_TextureId", 0);
     RenderCommand::DrawIndexed(vertexArray);
