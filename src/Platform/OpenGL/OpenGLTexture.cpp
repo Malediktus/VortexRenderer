@@ -1,6 +1,7 @@
 #include <Vortex/Platform/OpenGL/OpenGLTexture.hpp>
 #include <stb_image/stb_image.h>
 #include <glad/glad.h>
+#include <cassert>
 
 using namespace Vortex::OpenGL;
 
