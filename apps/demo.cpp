@@ -4,17 +4,18 @@
 #include <cstdlib>
 #include <iostream>
 
+using namespace Vortex; // Not good practice
+
 static void GlfwErrorCallback(int error, const char* description) {
     std::cout << "GLFW Error (" << error << "): " << description << std::endl;
     exit(1);
 }
 
-int main() {
-    GLFWwindow* window;
+GLFWwindow* CreateWindow(GLFWwindow* window) {
     glfwSetErrorCallback(GlfwErrorCallback);
     if (!glfwInit()) {
         std::cout << "Failed to init GLFW!" << std::endl;
-        return 1;
+        exit(1);
     }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -24,43 +25,59 @@ int main() {
     window = glfwCreateWindow(1024, 720, "Vortex Renderer Demo", nullptr, nullptr);
     if (!window) {
         std::cout << "Failed to create window!" << std::endl;
-        return 1;
+        exit(1);
     }
+    return window;
+}
 
-    auto context = Vortex::ContextCreate(window);
-    context->Init();
+float vertices[] = {0.5f,  0.5f,  0.0f, 1.0f, 1.0f,  // 1
+                    0.5f,  -0.5f, 0.0f, 1.0f, 0.0f,  // 2
+                    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,  // 3
+                    -0.5f, 0.5f,  0.0f, 0.0f, 1.0f}; // 4
 
-    Vortex::Renderer::Init();
-    Vortex::RenderCommand::SetClearColor({0.0f, 0.0f, 0.0f, 1.0f});
+unsigned int indices[] = {0, 1, 3,  // 2
+                          1, 2, 3}; // 2
 
-    float vertices[] = {0.5f,  0.5f,  0.0f, 1.0f, 1.0f, 0.5f,  -0.5f, 0.0f, 1.0f, 0.0f,
-                        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, -0.5f, 0.5f,  0.0f, 0.0f, 1.0f};
-    unsigned int indices[] = {0, 1, 3, 1, 2, 3};
+glm::mat4 transform(1.0f);
 
-    std::shared_ptr<Vortex::VertexArray> vertexArray = Vortex::VertexArrayCreate();
-    Vortex::BufferLayout bufferLayout(
-        {{Vortex::ShaderDataType::Float3, "Position", false}, {Vortex::ShaderDataType::Float2, "TexCoords", false}});
-    std::shared_ptr<Vortex::VertexBuffer> vertexBuffer = Vortex::VertexBufferCreate(vertices, sizeof(vertices));
+int main() {
+    GLFWwindow* window = nullptr;
+    window = CreateWindow(window);
+
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+
+    auto vortexContext = ContextCreate(window);
+    vortexContext->Init();
+
+    BufferLayout bufferLayout({{ShaderDataType::Float3, "Position", false},    // Vertex position
+                               {ShaderDataType::Float2, "TexCoords", false}}); // Vertex texture coords
+
+    auto vertexBuffer = VertexBufferCreate(vertices, sizeof(vertices));
+    auto indexBuffer = IndexBufferCreate(indices, sizeof(indices));
+    auto vertexArray = VertexArrayCreate();
+    auto texture = Texture2DCreate("assets/Textures/Vulkano.png");
+    auto camera = std::make_shared<PerspectiveCamera>(90.0f, (float) width / (float) height);
+
+    camera->SetPosition({0.0f, 0.0f, 1.5f});
     vertexBuffer->SetLayout(bufferLayout);
     vertexArray->AddVertexBuffer(vertexBuffer);
-    std::shared_ptr<Vortex::IndexBuffer> indexBuffer = Vortex::IndexBufferCreate(indices, sizeof(indices));
     vertexArray->SetIndexBuffer(indexBuffer);
-    Vortex::Renderer::LoadShader("Base", "../../apps/assets/Shaders/Base.glsl");
 
-    std::shared_ptr<Vortex::PerspectiveCamera> camera = std::make_shared<Vortex::PerspectiveCamera>(90.0f, 1080.0f / 720.0f);
-    std::shared_ptr<Vortex::Texture2D> texture = Vortex::Texture2DCreate("assets/Textures/Vulkano.png");
-    camera->SetPosition({0.0f, 0.0f, 1.5f});
-
-    glm::mat4 transform(1.0f);
+    Renderer::Init();
+    Renderer::LoadShader("Base", "../../apps/assets/Shaders/Base.glsl");
+    RenderCommand::SetClearColor({0.0f, 0.0f, 0.0f, 1.0f});
 
     while (!glfwWindowShouldClose(window)) {
-        Vortex::RenderCommand::Clear();
+        Renderer::BeginScene(camera, "Base");
+        Renderer::Submit(vertexArray, texture, transform);
+        Renderer::EndScene();
 
-        Vortex::Renderer::BeginScene(camera, "Base");
-        Vortex::Renderer::Submit(vertexArray, texture, transform);
-        Vortex::Renderer::EndScene();
-
-        context->SwapBuffers();
+        glfwGetFramebufferSize(window, &width, &height);
+        auto camera = std::make_shared<PerspectiveCamera>(90.0f, (float) width / (float) height);
+        camera->SetPosition({0.0f, 0.0f, 1.5f});
+        vortexContext->SwapBuffers();
+        RenderCommand::Clear();
         glfwPollEvents();
     }
 

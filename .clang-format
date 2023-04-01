@@ -3,7 +3,7 @@ BasedOnStyle: LLVM
 AccessModifierOffset: -4
 AllowShortFunctionsOnASingleLine: None
 BreakStringLiterals: "false"
-ColumnLimit: "130"
+ColumnLimit: "180"
 CompactNamespaces: "false"
 ExperimentalAutoDetectBinPacking: "true"
 FixNamespaceComments: "true"
