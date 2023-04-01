@@ -1,6 +1,8 @@
 #include <GLFW/glfw3.h>
 #include <Vortex/Vortex.hpp>
 
+#include <glm/ext/matrix_transform.hpp>
+
 #include <cstdlib>
 #include <iostream>
 
@@ -39,10 +41,21 @@ unsigned int indices[] = {0, 1, 3,  // 2
                           1, 2, 3}; // 2
 
 glm::mat4 transform(1.0f);
+std::shared_ptr<PerspectiveCamera> camera;
+
+void OnResize(GLFWwindow*, int width, int height) {
+    auto position = camera->GetPosition();
+    auto rotation = camera->GetRotation();
+    camera = std::make_shared<PerspectiveCamera>(90.0f, (float) width / (float) height);
+    camera->SetPosition(position);
+    camera->SetRotation(rotation);
+    RenderCommand::SetViewport(width, height);
+}
 
 int main() {
     GLFWwindow* window = nullptr;
     window = CreateWindow(window);
+    glfwSetFramebufferSizeCallback(window, OnResize);
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
@@ -57,7 +70,7 @@ int main() {
     auto indexBuffer = IndexBufferCreate(indices, sizeof(indices));
     auto vertexArray = VertexArrayCreate();
     auto texture = Texture2DCreate("assets/Textures/Vulkano.png");
-    auto camera = std::make_shared<PerspectiveCamera>(90.0f, (float) width / (float) height);
+    camera = std::make_shared<PerspectiveCamera>(90.0f, (float) width / (float) height);
 
     camera->SetPosition({0.0f, 0.0f, 1.5f});
     vertexBuffer->SetLayout(bufferLayout);
@@ -66,13 +79,10 @@ int main() {
 
     Renderer::Init();
     Renderer::LoadShader("Base", "../../apps/assets/Shaders/Base.glsl");
+    RenderCommand::SetViewport(width, height);
     RenderCommand::SetClearColor({0.0f, 0.0f, 0.0f, 1.0f});
 
     while (!glfwWindowShouldClose(window)) {
-        glfwGetFramebufferSize(window, &width, &height);
-        auto camera = std::make_shared<PerspectiveCamera>(90.0f, (float) width / (float) height);
-        camera->SetPosition({0.0f, 0.0f, 1.5f});
-
         Renderer::BeginScene(camera, "Base");
         Renderer::Submit(vertexArray, texture, transform);
         Renderer::EndScene();

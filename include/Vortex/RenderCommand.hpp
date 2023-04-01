@@ -23,6 +23,10 @@ public:
         s_RendererAPI->SetClearColor(color);
     }
 
+    inline static VT_API void SetViewport(const int width, const int height) {
+        s_RendererAPI->SetViewport(width, height);
+    }
+
     inline static VT_API void Clear() {
         s_RendererAPI->Clear();
     }
