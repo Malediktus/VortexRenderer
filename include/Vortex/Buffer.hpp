@@ -9,9 +9,40 @@
 #include <vector>
 
 namespace Vortex {
-enum class ShaderDataType { None = 0, Float, Float2, Float3, Float4, Mat3, Mat4, Int, Int2, Int3, Int4, Bool };
+/**
+ * @brief This enum represents data types used in shaders. This is useful for specifying the vertex layout.
+ *
+ * @version 0.1
+ * @author Nico Grundei (malediktusrgb@gmail.com)
+ * @date 2023-03-31
+ * @copyright Copyright (c) 2023
+ */
+enum class ShaderDataType {
+    None = 0,
+    Float = 1,
+    Float2 = 2,
+    Float3 = 3,
+    Float4 = 4,
+    Mat3 = 5,
+    Mat4 = 6,
+    Int = 7,
+    Int2 = 8,
+    Int3 = 9,
+    Int4 = 10,
+    Bool = 11
+};
 
 namespace Utils {
+/**
+ * @brief This is a helper functions for retrieving the sizes for shader data types
+ *
+ * @param type
+ * @return uint32_t
+ * @version 0.1
+ * @author Nico Grundei (malediktusrgb@gmail.com)
+ * @date 2023-03-31
+ * @copyright Copyright (c) 2023
+ */
 static uint32_t ShaderDataTypeSize(ShaderDataType type) {
     switch (type) {
     case ShaderDataType::Float:
@@ -43,6 +74,14 @@ static uint32_t ShaderDataTypeSize(ShaderDataType type) {
 }
 } // namespace Utils
 
+/**
+ * @brief A BufferElement specifies how an element in the vertex layout looks.
+ *
+ * @version 0.1
+ * @author Nico Grundei (malediktusrgb@gmail.com)
+ * @date 2023-03-31
+ * @copyright Copyright (c) 2023
+ */
 struct BufferElement {
     std::string Name;
     ShaderDataType Type;
@@ -89,6 +128,14 @@ struct BufferElement {
     }
 };
 
+/**
+ * @brief The BufferLayout is used for setting the vertex layout
+ *
+ * @version 0.1
+ * @author Nico Grundei (malediktusrgb@gmail.com)
+ * @date 2023-03-31
+ * @copyright Copyright (c) 2023
+ */
 class BufferLayout {
 public:
     VT_API BufferLayout() {
@@ -133,6 +180,15 @@ private:
     uint32_t m_Stride = 0;
 };
 
+/**
+ * @brief The VertexBuffer class holds vertex data and can be submitted to a VertexArray and then get rendered. A VertexBuffer
+ * also own a BufferLayout (with getter and setter) which describes its layout
+ *
+ * @version 0.1
+ * @author Nico Grundei (malediktusrgb@gmail.com)
+ * @date 2023-03-31
+ * @copyright Copyright (c) 2023
+ */
 class VertexBuffer {
 public:
     virtual VT_API ~VertexBuffer() {
@@ -145,6 +201,15 @@ public:
     virtual VT_API void SetLayout(const BufferLayout& layout) = 0;
 };
 
+/**
+ * @brief The IndexBuffer holds index data (which is just an unsigned int array) and can get submitted to a VertexArray along with
+ * a VertexBuffer.
+ *
+ * @version 0.1
+ * @author Nico Grundei (malediktusrgb@gmail.com)
+ * @date 2023-03-31
+ * @copyright Copyright (c) 2023
+ */
 class IndexBuffer {
 public:
     virtual ~IndexBuffer() {
@@ -156,6 +221,28 @@ public:
     virtual uint32_t GetCount() const = 0;
 };
 
+/**
+ * @brief This function is the only way that should be used for creating a VertexBuffer.
+ *
+ * @param vertices
+ * @param size
+ * @return std::shared_ptr<VertexBuffer>
+ * @version 0.1
+ * @author Nico Grundei (malediktusrgb@gmail.com)
+ * @date 2023-03-31
+ * @copyright Copyright (c) 2023
+ */
 VT_API std::shared_ptr<VertexBuffer> VertexBufferCreate(float* vertices, uint32_t size);
+/**
+ * @brief This function is the only way that should be used for creating an IndexBuffer.
+ *
+ * @param indices
+ * @param size
+ * @return std::shared_ptr<IndexBuffer>
+ * @version 0.1
+ * @author Nico Grundei (malediktusrgb@gmail.com)
+ * @date 2023-03-31
+ * @copyright Copyright (c) 2023
+ */
 VT_API std::shared_ptr<IndexBuffer> IndexBufferCreate(uint32_t* indices, uint32_t size);
 } // namespace Vortex

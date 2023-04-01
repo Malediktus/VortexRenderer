@@ -1,8 +1,6 @@
 #include <GLFW/glfw3.h>
-#include <Vortex/Buffer.hpp>
-#include <Vortex/Context.hpp>
-#include <Vortex/Shader.hpp>
-#include <Vortex/VertexArray.hpp>
+#include <Vortex/Vortex.hpp>
+
 #include <cstdlib>
 #include <iostream>
 
@@ -32,21 +30,35 @@ int main() {
     auto context = Vortex::ContextCreate(window);
     context->Init();
 
-    float vertices[] = {0.5f, 0.5f, 0.0f, 0.5f, -0.5f, 0.0f, -0.5f, -0.5f, 0.0f, -0.5f, 0.5f, 0.0f};
+    Vortex::Renderer::Init();
+    Vortex::RenderCommand::SetClearColor({0.0f, 0.0f, 0.0f, 1.0f});
+
+    float vertices[] = {0.5f,  0.5f,  0.0f, 1.0f, 1.0f, 0.5f,  -0.5f, 0.0f, 1.0f, 0.0f,
+                        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, -0.5f, 0.5f,  0.0f, 0.0f, 1.0f};
     unsigned int indices[] = {0, 1, 3, 1, 2, 3};
 
     std::shared_ptr<Vortex::VertexArray> vertexArray = Vortex::VertexArrayCreate();
-    Vortex::BufferLayout bufferLayout({{Vortex::ShaderDataType::Float3, "Position", false}});
+    Vortex::BufferLayout bufferLayout(
+        {{Vortex::ShaderDataType::Float3, "Position", false}, {Vortex::ShaderDataType::Float2, "TexCoords", false}});
     std::shared_ptr<Vortex::VertexBuffer> vertexBuffer = Vortex::VertexBufferCreate(vertices, sizeof(vertices));
     vertexBuffer->SetLayout(bufferLayout);
     vertexArray->AddVertexBuffer(vertexBuffer);
     std::shared_ptr<Vortex::IndexBuffer> indexBuffer = Vortex::IndexBufferCreate(indices, sizeof(indices));
     vertexArray->SetIndexBuffer(indexBuffer);
-    std::shared_ptr<Vortex::Shader> shader = Vortex::ShaderCreate("../../resources/Base.glsl");
+    Vortex::Renderer::LoadShader("Base", "../../apps/assets/Shaders/Base.glsl");
+
+    std::shared_ptr<Vortex::PerspectiveCamera> camera = std::make_shared<Vortex::PerspectiveCamera>(90.0f, 1080.0f / 720.0f);
+    std::shared_ptr<Vortex::Texture2D> texture = Vortex::Texture2DCreate("assets/Textures/Vulkano.png");
+    camera->SetPosition({0.0f, 0.0f, 1.5f});
+
+    glm::mat4 transform(1.0f);
 
     while (!glfwWindowShouldClose(window)) {
-        vertexArray->Bind();
-        shader->Bind();
+        Vortex::RenderCommand::Clear();
+
+        Vortex::Renderer::BeginScene(camera, "Base");
+        Vortex::Renderer::Submit(vertexArray, texture, transform);
+        Vortex::Renderer::EndScene();
 
         context->SwapBuffers();
         glfwPollEvents();

@@ -1,13 +1,9 @@
-cmake_minimum_required(VERSION 3.14...3.26)
+cmake_minimum_required(VERSION 3.15...3.26)
 
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(VORTEX_BUILD_DEMO ON)
+set(VORTEX_BUILD_DOCS ON)
 
-include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/submodule.cmake")
-include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/ccache.cmake")
-
-download_submodules()
-
-project(VortexRenderer VERSION 0.1.0
+project(Vortex VERSION 0.1.0
     DESCRIPTION "A cross platform renderer supported multiple rendering APIs"
     LANGUAGES CXX)
 
@@ -15,11 +11,17 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(CMAKE_CXX_STANDARD, C++17)
     set(CMAKE_CXX_STANDARD_REQUIRED, ON)
     set(CMAKE_CXX_EXTENSIONS OFF)
-
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+    set(XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    set(CMAKE_CXX_VISIBILITY_PRESET hidden)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+endif()
 
-    include(CTest)
-
+if(VORTEX_BUILD_DOCS)
     find_package(Doxygen)
 
     if(Doxygen_FOUND)
@@ -29,8 +31,15 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     endif()
 endif()
 
+set(GLFW_BUILD_EXAMPLES OFF)
+set(GLFW_BUILD_TESTS OFF)
+set(GLFW_BUILD_DOCS OFF)
 add_subdirectory(extern/glfw)
 add_subdirectory(extern/glm)
 add_subdirectory(extern/glad)
+add_subdirectory(extern/stb_image)
 add_subdirectory(src)
-add_subdirectory(apps)
+
+if(VORTEX_BUILD_DEMO)
+    add_subdirectory(apps)
+endif()

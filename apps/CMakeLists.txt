@@ -1,4 +1,17 @@
-add_executable(demo demo.cpp)
-target_compile_features(demo PRIVATE cxx_std_17)
+set(ASSET_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders/Base.glsl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/assets/textures/Vulkano.png")
 
-target_link_libraries(demo PRIVATE Vortex glfw)
+add_executable(VortexDemo demo.cpp)
+target_compile_features(VortexDemo PRIVATE cxx_std_17)
+target_link_libraries(VortexDemo PRIVATE Vortex::Vortex glfw)
+
+set(ASSET_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets")
+set(ASSET_DEST_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets")
+
+add_custom_command(
+    TARGET VortexDemo POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E create_symlink ${ASSET_SOURCE_DIR} ${ASSET_DEST_DIR}
+    DEPENDS ${ASSET_DEST_DIR}
+    COMMENT "symbolic link resources folder from ${ASSET_SOURCE_DIR} => ${ASSET_DEST_DIR}"
+)
