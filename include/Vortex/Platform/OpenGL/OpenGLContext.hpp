@@ -9,7 +9,7 @@ class OpenGLContext : public Context {
 public:
     OpenGLContext(void* windowHandle) : m_WindowHandle(windowHandle) {
     }
-    ~OpenGLContext() = default;
+    virtual ~OpenGLContext() = default;
 
     virtual void Init() const override;
     virtual void SwapBuffers() const override;

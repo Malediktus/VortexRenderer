@@ -5,9 +5,12 @@
 namespace Vortex::OpenGL {
 class OpenGLRendererAPI : public RendererAPI {
 public:
-    void SetClearColor(const glm::vec4& color) override;
-    void Clear() override;
+    OpenGLRendererAPI() = default;
+    virtual ~OpenGLRendererAPI() = default;
 
-    void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray) override;
+    virtual void SetClearColor(const glm::vec4& color) override;
+    virtual void Clear() override;
+
+    virtual void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray) override;
 };
 } // namespace Vortex::OpenGL

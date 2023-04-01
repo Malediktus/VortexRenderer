@@ -30,7 +30,7 @@ public:
         CalculateMatrices();
     }
 
-    virtual const float GetRotation() const {
+    virtual float GetRotation() const {
         return m_Rotation;
     }
     virtual void SetRotation(const float rotation) {
