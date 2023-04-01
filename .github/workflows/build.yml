@@ -30,10 +30,10 @@ jobs:
         run: sudo apt install xorg-dev
 
       - name: Install gcc
-        run: sudo apt gcc
+        run: sudo apt install gcc
 
       - name: Install cmake
-        run: sudo apt cmake
+        run: sudo apt install cmake
 
       - name: Configure CMake
         run: cmake -B ${{github.workspace}}/build/${{ matrix.build-type }} -DCMAKE_BUILD_TYPE=${{ matrix.build-type }}
