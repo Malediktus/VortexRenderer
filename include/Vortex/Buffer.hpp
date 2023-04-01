@@ -197,6 +197,8 @@ public:
     virtual VT_API void Bind() const = 0;
     virtual VT_API void Unbind() const = 0;
 
+    virtual void SetData(const void* data, uint32_t size) = 0;
+
     virtual VT_API const BufferLayout& GetLayout() const = 0;
     virtual VT_API void SetLayout(const BufferLayout& layout) = 0;
 };
@@ -222,7 +224,7 @@ public:
 };
 
 /**
- * @brief This function is the only way that should be used for creating a VertexBuffer.
+ * @brief This function is the only way that should be used for creating a VertexBuffer from vertex data.
  *
  * @param vertices
  * @param size
@@ -233,6 +235,17 @@ public:
  * @copyright Copyright (c) 2023
  */
 VT_API std::shared_ptr<VertexBuffer> VertexBufferCreate(float* vertices, uint32_t size);
+/**
+ * @brief This function is the only way that should be used for creating a dynamic VertexBuffer.
+ *
+ * @param size
+ * @return std::shared_ptr<VertexBuffer>
+ * @version 0.1
+ * @author Nico Grundei (malediktusrgb@gmail.com)
+ * @date 2023-04-01
+ * @copyright Copyright (c) 2023
+ */
+VT_API std::shared_ptr<VertexBuffer> VertexBufferCreate(uint32_t size);
 /**
  * @brief This function is the only way that should be used for creating an IndexBuffer.
  *

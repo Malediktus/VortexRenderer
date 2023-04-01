@@ -15,6 +15,16 @@ std::shared_ptr<VertexBuffer> Vortex::VertexBufferCreate(float* vertices, uint32
     assert(false);
 }
 
+std::shared_ptr<VertexBuffer> Vortex::VertexBufferCreate(uint32_t size) {
+    switch (Renderer::GetAPI()) {
+    case RendererAPI::API::OpenGL:
+        return std::make_shared<OpenGL::OpenGLVertexBuffer>(size);
+    default:
+        assert(false);
+    }
+    assert(false);
+}
+
 std::shared_ptr<IndexBuffer> Vortex::IndexBufferCreate(uint32_t* indices, uint32_t size) {
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
