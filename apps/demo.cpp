@@ -45,7 +45,7 @@ int main() {
     vertexArray->AddVertexBuffer(vertexBuffer);
     std::shared_ptr<Vortex::IndexBuffer> indexBuffer = Vortex::IndexBufferCreate(indices, sizeof(indices));
     vertexArray->SetIndexBuffer(indexBuffer);
-    Vortex::Renderer::LoadShader("Base", "assets/Shaders/Base.glsl");
+    Vortex::Renderer::LoadShader("Base", "../../apps/assets/Shaders/Base.glsl");
 
     std::shared_ptr<Vortex::PerspectiveCamera> camera = std::make_shared<Vortex::PerspectiveCamera>(90.0f, 1080.0f / 720.0f);
     std::shared_ptr<Vortex::Texture2D> texture = Vortex::Texture2DCreate("assets/Textures/Vulkano.png");

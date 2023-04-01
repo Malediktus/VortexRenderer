@@ -4,7 +4,7 @@
 
 The requirements are:
 
-- CMake 3.11 or better; 3.14+ highly recommended.
+- CMake 3.15 or better; 3.14+ highly recommended.
 - A C++17 compatible compiler
 - Git (highly recommend)
 - cppcheck (optional)
