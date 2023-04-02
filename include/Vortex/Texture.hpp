@@ -3,6 +3,7 @@
 #include "Core.hpp"
 #include <memory>
 #include <string>
+#include <cassert>
 
 namespace Vortex {
 /**
@@ -31,7 +32,21 @@ public:
  * @date 2023-03-31
  * @copyright Copyright (c) 2023
  */
-class Texture2D : public Texture {};
+class Texture2D : public Texture {
+public:
+    virtual ~Texture2D() = default;
+
+    virtual uint32_t GetWidth() const override {
+        assert(false);
+    };
+    virtual uint32_t GetHeight() const override {
+        assert(false);
+    };
+
+    virtual void Bind(uint32_t) const override {
+        assert(false);
+    };
+};
 
 /**
  * @brief This function is the only way that should be used for creating a Texture2D from a file.
