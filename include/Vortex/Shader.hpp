@@ -23,15 +23,15 @@ public:
     virtual VT_API void Bind() const = 0;
     virtual VT_API void Unbind() const = 0;
 
-    virtual VT_API void UploadUniformInt(const std::string& name, int value) = 0;
+    virtual VT_API void SetInt(const std::string& name, int value) = 0;
 
-    virtual VT_API void UploadUniformFloat(const std::string& name, float value) = 0;
-    virtual VT_API void UploadUniformFloat2(const std::string& name, const glm::vec2& value) = 0;
-    virtual VT_API void UploadUniformFloat3(const std::string& name, const glm::vec3& value) = 0;
-    virtual VT_API void UploadUniformFloat4(const std::string& name, const glm::vec4& value) = 0;
+    virtual VT_API void SetFloat(const std::string& name, float value) = 0;
+    virtual VT_API void SetFloat2(const std::string& name, const glm::vec2& value) = 0;
+    virtual VT_API void SetFloat3(const std::string& name, const glm::vec3& value) = 0;
+    virtual VT_API void SetFloat4(const std::string& name, const glm::vec4& value) = 0;
 
-    virtual VT_API void UploadUniformMat3(const std::string& name, const glm::mat3& matrix) = 0;
-    virtual VT_API void UploadUniformMat4(const std::string& name, const glm::mat4& matrix) = 0;
+    virtual VT_API void SetMatrix3(const std::string& name, const glm::mat3& matrix) = 0;
+    virtual VT_API void SetMatrix4(const std::string& name, const glm::mat4& matrix) = 0;
 
     virtual VT_API const std::string& GetName() const = 0;
 };
@@ -57,8 +57,7 @@ VT_API std::shared_ptr<Shader> ShaderCreate(const std::string& filepath);
  * @date 2023-03-31
  * @copyright Copyright (c) 2023
  */
-VT_API std::shared_ptr<Shader> ShaderCreate(const std::string& name, const std::string& vertexSrc,
-                                            const std::string& fragmentSrc);
+VT_API std::shared_ptr<Shader> ShaderCreate(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
 
 /**
  * @brief This is a high level API for managing shaders. It automaticly handles allocation and deallocation of shaders.
