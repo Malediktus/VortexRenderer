@@ -32,6 +32,10 @@ public:
         UpdateMatrices();
     }
 
+    void MoveUp(float amount) {
+        Translate(m_Up * amount);
+    }
+
     void MoveFront(float amount) {
         Translate(glm::normalize(glm::vec3(1.0f, 0.0f, 1.0f) * m_LookAt) * amount);
         UpdateMatrices();
@@ -40,6 +44,14 @@ public:
     void MoveSideways(float amount) {
         Translate(glm::normalize(glm::cross(m_LookAt, m_Up)) * amount);
         UpdateMatrices();
+    }
+
+    const glm::vec3& GetPosition() {
+        return m_Position;
+    }
+
+    const glm::vec3& GetFront() {
+        return m_LookAt;
     }
 
 protected:
@@ -56,61 +68,26 @@ protected:
 };
 
 float cubeVertices[] = {
-    -0.5f, -0.5f, -0.5f, // 1
-    0.5f,  -0.5f, -0.5f, // 2
-    0.5f,  0.5f,  -0.5f, // 3
-    0.5f,  0.5f,  -0.5f, // 4
-    -0.5f, 0.5f,  -0.5f, // 5
-    -0.5f, -0.5f, -0.5f, // 6
+    -0.5f, -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 0.0f, 0.0f, 0.5f,  -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 1.0f, 0.0f, 0.5f,  0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f, 1.0f, 1.0f,
+    0.5f,  0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f, 1.0f, 1.0f, -0.5f, 0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f, 0.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 0.0f, 0.0f,
+    -0.5f, -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 0.0f, 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
+    0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f, -0.5f, 0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 1.0f, -0.5f, -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
+    -0.5f, 0.5f,  0.5f,  -1.0f, 0.0f,  0.0f,  1.0f, 0.0f, -0.5f, 0.5f,  -0.5f, -1.0f, 0.0f,  0.0f,  1.0f, 1.0f, -0.5f, -0.5f, -0.5f, -1.0f, 0.0f,  0.0f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f, 0.0f,  0.0f,  0.0f, 1.0f, -0.5f, -0.5f, 0.5f,  -1.0f, 0.0f,  0.0f,  0.0f, 0.0f, -0.5f, 0.5f,  0.5f,  -1.0f, 0.0f,  0.0f,  1.0f, 0.0f,
+    0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.5f,  0.5f,  -0.5f, 1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+    0.5f,  -0.5f, -0.5f, 1.0f,  0.0f,  0.0f,  0.0f, 1.0f, 0.5f,  -0.5f, 0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,  0.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,  1.0f, 1.0f, 0.5f,  -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,  1.0f, 0.0f,
+    0.5f,  -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,  1.0f, 0.0f, -0.5f, -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,  0.0f, 0.0f, -0.5f, -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,  0.0f, 1.0f,
+    -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  1.0f, 1.0f, 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+    0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f, -0.5f, 0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  0.0f, 1.0f};
 
-    -0.5f, -0.5f, 0.5f, // 7
-    0.5f,  -0.5f, 0.5f, // 8
-    0.5f,  0.5f,  0.5f, // 9
-    0.5f,  0.5f,  0.5f, // 10
-    -0.5f, 0.5f,  0.5f, // 11
-    -0.5f, -0.5f, 0.5f, // 12
+uint32_t cubeIndices[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35};
 
-    -0.5f, 0.5f,  0.5f,  // 13
-    -0.5f, 0.5f,  -0.5f, // 14
-    -0.5f, -0.5f, -0.5f, // 15
-    -0.5f, -0.5f, -0.5f, // 16
-    -0.5f, -0.5f, 0.5f,  // 17
-    -0.5f, 0.5f,  0.5f,  // 18
+glm::vec3 cubePositions[] = {glm::vec3(0.0f, 0.0f, 0.0f),   glm::vec3(2.0f, 5.0f, -15.0f), glm::vec3(-1.5f, -2.2f, -2.5f), glm::vec3(-3.8f, -2.0f, -12.3f),
+                             glm::vec3(2.4f, -0.4f, -3.5f), glm::vec3(-1.7f, 3.0f, -7.5f), glm::vec3(1.3f, -2.0f, -2.5f),  glm::vec3(1.5f, 2.0f, -2.5f),
+                             glm::vec3(1.5f, 0.2f, -1.5f),  glm::vec3(-1.3f, 1.0f, -1.5f)};
 
-    0.5f,  0.5f,  0.5f,  // 19
-    0.5f,  0.5f,  -0.5f, // 20
-    0.5f,  -0.5f, -0.5f, // 21
-    0.5f,  -0.5f, -0.5f, // 22
-    0.5f,  -0.5f, 0.5f,  // 23
-    0.5f,  0.5f,  0.5f,  // 24
-
-    -0.5f, -0.5f, -0.5f, // 25
-    0.5f,  -0.5f, -0.5f, // 26
-    0.5f,  -0.5f, 0.5f,  // 27
-    0.5f,  -0.5f, 0.5f,  // 28
-    -0.5f, -0.5f, 0.5f,  // 29
-    -0.5f, -0.5f, -0.5f, // 30
-
-    -0.5f, 0.5f,  -0.5f, // 31
-    0.5f,  0.5f,  -0.5f, // 32
-    0.5f,  0.5f,  0.5f,  // 33
-    0.5f,  0.5f,  0.5f,  // 34
-    -0.5f, 0.5f,  0.5f,  // 35
-    -0.5f, 0.5f,  -0.5f  // 36
-};
-
-uint32_t cubeIndices[] = {0,  1,  2,   // 1
-                          3,  4,  5,   // 2
-                          6,  7,  8,   // 3
-                          9,  10, 11,  // 4
-                          12, 13, 14,  // 5
-                          15, 16, 17,  // 6
-                          18, 19, 20,  // 7
-                          21, 22, 23,  // 8
-                          24, 25, 26,  // 9
-                          27, 28, 29,  // 10
-                          30, 31, 32,  // 11
-                          33, 34, 35}; // 12
+glm::vec3 pointLightPositions[] = {glm::vec3(0.7f, 0.2f, 2.0f), glm::vec3(2.3f, -3.3f, -4.0f), glm::vec3(-4.0f, 2.0f, -12.0f), glm::vec3(0.0f, 0.0f, -3.0f)};
 
 class VortexDemo {
 public:
@@ -146,11 +123,15 @@ public:
 
         m_BufferLayout = Vortex::BufferLayout({
             {Vortex::ShaderDataType::Float3, "Position", false},
+            {Vortex::ShaderDataType::Float3, "Normal", false},
+            {Vortex::ShaderDataType::Float2, "TexCoords", false},
         });
 
         m_CubeVertexBuffer = Vortex::VertexBufferCreate(cubeVertices, sizeof(cubeVertices));
         m_CubeIndexBuffer = Vortex::IndexBufferCreate(cubeIndices, sizeof(cubeIndices));
         m_CubeVertexArray = Vortex::VertexArrayCreate();
+        m_CubeDiffuseMap = Vortex::Texture2DCreate("assets/Textures/Box.png");
+        m_CubeSpecularMap = Vortex::Texture2DCreate("assets/Textures/BoxSpecular.png");
         m_CubeVertexBuffer->SetLayout(m_BufferLayout);
         m_CubeVertexArray->AddVertexBuffer(m_CubeVertexBuffer);
         m_CubeVertexArray->SetIndexBuffer(m_CubeIndexBuffer);
@@ -162,14 +143,10 @@ public:
         m_LightVertexArray->AddVertexBuffer(m_LightVertexBuffer);
         m_LightVertexArray->SetIndexBuffer(m_LightIndexBuffer);
 
-        m_LightPos = glm::vec3(1.2f, 1.0f, 2.0f);
-        m_LightTransform = glm::mat4(1.0f);
-        m_LightTransform = glm::translate(m_LightTransform, m_LightPos);
-        m_LightTransform = glm::scale(m_LightTransform, glm::vec3(0.2f));
-        m_CubeTransform = glm::mat4(1.0f);
-
         m_ShaderLibrary = std::make_shared<Vortex::ShaderLibrary>();
-        m_ShaderLibrary->Load("../../apps/assets/Shaders/Base.glsl");
+        m_ShaderLibrary->Load("assets/Shaders/Base.glsl");
+        m_ShaderLibrary->Load("assets/Shaders/Light.glsl");
+        m_ShaderLibrary->Load("assets/Shaders/Phong.glsl");
 
         Vortex::Renderer::Init();
         Vortex::RenderCommand::SetViewport(width, height);
@@ -183,18 +160,86 @@ public:
     void Update() {
         Vortex::Renderer::BeginScene();
         {
-            auto baseShader = m_ShaderLibrary->Get("Base");
-            baseShader->Bind();
-            baseShader->SetMatrix4("u_ViewProj", m_Camera->GetViewProj());
-            baseShader->SetMatrix4("u_Model", m_CubeTransform);
-            baseShader->SetFloat3("u_Color", {1.0f, 0.0f, 1.0f});
-            Vortex::Renderer::Submit(m_CubeVertexArray);
+            auto phongShader = m_ShaderLibrary->Get("Phong");
+            auto lightShader = m_ShaderLibrary->Get("Light");
+            phongShader->Bind();
+            phongShader->SetMatrix4("u_ViewProj", m_Camera->GetViewProj());
+            phongShader->SetFloat3("u_ViewPos", m_Camera->GetPosition());
+            phongShader->SetInt("u_Material.diffuse", 0);
+            phongShader->SetInt("u_Material.specular", 1);
+            phongShader->SetFloat("u_Material.shininess", 32.0f);
+            // directional light
+            phongShader->SetFloat3("u_DirectionalLight.direction", {-0.2f, -1.0f, -0.3f});
+            phongShader->SetFloat3("u_DirectionalLight.ambient", {0.05f, 0.05f, 0.05f});
+            phongShader->SetFloat3("u_DirectionalLight.diffuse", {0.4f, 0.4f, 0.4f});
+            phongShader->SetFloat3("u_DirectionalLight.specular", {0.5f, 0.5f, 0.5f});
+            // point light 1
+            phongShader->SetFloat3("u_PointLights[0].position", pointLightPositions[0]);
+            phongShader->SetFloat3("u_PointLights[0].ambient", {0.05f, 0.05f, 0.05f});
+            phongShader->SetFloat3("u_PointLights[0].diffuse", {0.8f, 0.8f, 0.8f});
+            phongShader->SetFloat3("u_PointLights[0].specular", {1.0f, 1.0f, 1.0f});
+            phongShader->SetFloat("u_PointLights[0].constant", 1.0f);
+            phongShader->SetFloat("u_PointLights[0].linear", 0.09f);
+            phongShader->SetFloat("u_PointLights[0].quadratic", 0.032f);
+            // point light 2
+            phongShader->SetFloat3("u_PointLights[1].position", pointLightPositions[1]);
+            phongShader->SetFloat3("u_PointLights[1].ambient", {0.05f, 0.05f, 0.05f});
+            phongShader->SetFloat3("u_PointLights[1].diffuse", {0.8f, 0.8f, 0.8f});
+            phongShader->SetFloat3("u_PointLights[1].specular", {1.0f, 1.0f, 1.0f});
+            phongShader->SetFloat("u_PointLights[1].constant", 1.0f);
+            phongShader->SetFloat("u_PointLights[1].linear", 0.09f);
+            phongShader->SetFloat("u_PointLights[1].quadratic", 0.032f);
+            // point light 3
+            phongShader->SetFloat3("u_PointLights[2].position", pointLightPositions[2]);
+            phongShader->SetFloat3("u_PointLights[2].ambient", {0.05f, 0.05f, 0.05f});
+            phongShader->SetFloat3("u_PointLights[2].diffuse", {0.8f, 0.8f, 0.8f});
+            phongShader->SetFloat3("u_PointLights[2].specular", {1.0f, 1.0f, 1.0f});
+            phongShader->SetFloat("u_PointLights[2].constant", 1.0f);
+            phongShader->SetFloat("u_PointLights[2].linear", 0.09f);
+            phongShader->SetFloat("u_PointLights[2].quadratic", 0.032f);
+            // point light 4
+            phongShader->SetFloat3("u_PointLights[3].position", pointLightPositions[3]);
+            phongShader->SetFloat3("u_PointLights[3].ambient", {0.05f, 0.05f, 0.05f});
+            phongShader->SetFloat3("u_PointLights[3].diffuse", {0.8f, 0.8f, 0.8f});
+            phongShader->SetFloat3("u_PointLights[3].specular", {1.0f, 1.0f, 1.0f});
+            phongShader->SetFloat("u_PointLights[3].constant", 1.0f);
+            phongShader->SetFloat("u_PointLights[3].linear", 0.09f);
+            phongShader->SetFloat("u_PointLights[3].quadratic", 0.032f);
+            // spotlight
+            phongShader->SetFloat3("u_SpotLight.position", m_Camera->GetPosition());
+            phongShader->SetFloat3("u_SpotLight.direction", m_Camera->GetFront());
+            phongShader->SetFloat3("u_SpotLight.ambient", {0.0f, 0.0f, 0.0f});
+            phongShader->SetFloat3("u_SpotLight.diffuse", {1.0f, 1.0f, 1.0f});
+            phongShader->SetFloat3("u_SpotLight.specular", {1.0f, 1.0f, 1.0f});
+            phongShader->SetFloat("u_SpotLight.constant", 1.0f);
+            phongShader->SetFloat("u_SpotLight.linear", 0.09f);
+            phongShader->SetFloat("u_SpotLight.quadratic", 0.032f);
+            phongShader->SetFloat("u_SpotLight.cutOff", glm::cos(glm::radians(12.5f)));
+            phongShader->SetFloat("u_SpotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
 
-            baseShader->Bind();
-            baseShader->SetMatrix4("u_ViewProj", m_Camera->GetViewProj());
-            baseShader->SetMatrix4("u_Model", m_LightTransform);
-            baseShader->SetFloat3("u_Color", {1.0f, 1.0f, 1.0f});
-            Vortex::Renderer::Submit(m_LightVertexArray);
+            m_CubeDiffuseMap->Bind(0);
+            m_CubeSpecularMap->Bind(1);
+
+            for (unsigned int i = 0; i < 10; i++) {
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, cubePositions[i]);
+                float angle = 20.0f * i;
+                model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+                phongShader->SetMatrix4("u_Model", model);
+                Vortex::Renderer::Submit(m_CubeVertexArray);
+            }
+
+            lightShader->Bind();
+            lightShader->SetMatrix4("u_ViewProj", m_Camera->GetViewProj());
+            lightShader->SetFloat3("u_Color", {1.0f, 1.0f, 1.0f});
+
+            for (unsigned int i = 0; i < 4; i++) {
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, pointLightPositions[i]);
+                model = glm::scale(model, glm::vec3(0.2f));
+                lightShader->SetMatrix4("u_Model", model);
+                Vortex::Renderer::Submit(m_LightVertexArray);
+            }
         }
         Vortex::Renderer::EndScene();
 
@@ -206,6 +251,10 @@ public:
             m_Camera->MoveSideways(-0.02f);
         if (glfwGetKey(m_Window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_D) == GLFW_REPEAT)
             m_Camera->MoveSideways(0.02f);
+        if (glfwGetKey(m_Window, GLFW_KEY_SPACE) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_SPACE) == GLFW_REPEAT)
+            m_Camera->MoveUp(0.02f);
+        if (glfwGetKey(m_Window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_LEFT_SHIFT) == GLFW_REPEAT)
+            m_Camera->MoveUp(-0.02f);
         if (glfwGetKey(m_Window, GLFW_KEY_Q) == GLFW_PRESS)
             glfwSetWindowShouldClose(m_Window, true);
 
@@ -242,10 +291,6 @@ private:
     GLFWwindow* m_Window;
     Vortex::BufferLayout m_BufferLayout;
 
-    glm::vec3 m_LightPos;
-    glm::mat4 m_LightTransform;
-    glm::mat4 m_CubeTransform;
-
     static std::shared_ptr<FPSCamera> m_Camera;
     std::shared_ptr<Vortex::Context> m_Context;
     std::shared_ptr<Vortex::ShaderLibrary> m_ShaderLibrary;
@@ -253,6 +298,8 @@ private:
     std::shared_ptr<Vortex::VertexBuffer> m_CubeVertexBuffer;
     std::shared_ptr<Vortex::IndexBuffer> m_CubeIndexBuffer;
     std::shared_ptr<Vortex::VertexArray> m_CubeVertexArray;
+    std::shared_ptr<Vortex::Texture2D> m_CubeDiffuseMap;
+    std::shared_ptr<Vortex::Texture2D> m_CubeSpecularMap;
 
     std::shared_ptr<Vortex::VertexBuffer> m_LightVertexBuffer;
     std::shared_ptr<Vortex::IndexBuffer> m_LightIndexBuffer;
