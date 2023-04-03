@@ -6,6 +6,10 @@
 #include <cstdlib>
 #include <iostream>
 
+#include <imgui.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
+
 class FPSCamera : public Vortex::Camera {
 public:
     FPSCamera(float fov, float width, float height) : Camera(fov, width, height) {
@@ -121,6 +125,16 @@ public:
         m_Context = Vortex::ContextCreate(m_Window);
         m_Context->Init();
 
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO();
+        (void) io;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+        ImGui::StyleColorsClassic();
+        ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
+        ImGui_ImplOpenGL3_Init("#version 150");
+
         m_BufferLayout = Vortex::BufferLayout({
             {Vortex::ShaderDataType::Float3, "Position", false},
             {Vortex::ShaderDataType::Float3, "Normal", false},
@@ -151,6 +165,10 @@ public:
         Vortex::Renderer::Init();
         Vortex::RenderCommand::SetViewport(width, height);
         Vortex::RenderCommand::SetClearColor({0.0f, 0.0f, 0.0f, 1.0f});
+        Vortex::RenderCommand::ConfigureStencilTesting(false, 0x11, 0x11, Vortex::RendererAPI::StencilTestFunc::ALWAYS, 0x11, Vortex::RendererAPI::StencilTestAction::KEEP,
+                                                       Vortex::RendererAPI::StencilTestAction::KEEP, Vortex::RendererAPI::StencilTestAction::KEEP);
+        Vortex::RenderCommand::ConfigureBlending(true, Vortex::RendererAPI::BlendingFunc::SRC_ALPHA, Vortex::RendererAPI::BlendingFunc::ONE_MINUS_SRC_ALPHA);
+        // Vortex::RenderCommand::EnableCulling();
     }
 
     bool ShouldClose() {
@@ -243,6 +261,22 @@ public:
         }
         Vortex::Renderer::EndScene();
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::Begin("Settings");
+        ImGui::Text("Depth testing");
+        ImGui::Checkbox("Enable", &m_EnableDepthTest);
+        ImGui::Checkbox("Mask", &m_EnableDepthMask);
+        ImGui::InputInt("Func", &m_DepthTestFunc);
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        Vortex::RenderCommand::ConfigureDepthTesting(m_EnableDepthTest, m_EnableDepthMask, (Vortex::RendererAPI::DepthTestFunc) m_DepthTestFunc);
+
         if (glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_REPEAT)
             m_Camera->MoveFront(0.02f);
         if (glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_REPEAT)
@@ -255,11 +289,16 @@ public:
             m_Camera->MoveUp(0.02f);
         if (glfwGetKey(m_Window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_LEFT_SHIFT) == GLFW_REPEAT)
             m_Camera->MoveUp(-0.02f);
+        if (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        if (glfwGetKey(m_Window, GLFW_KEY_ENTER) == GLFW_PRESS)
+            glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         if (glfwGetKey(m_Window, GLFW_KEY_Q) == GLFW_PRESS)
             glfwSetWindowShouldClose(m_Window, true);
 
         m_Context->SwapBuffers();
-        Vortex::RenderCommand::Clear();
+        Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::COLOR);
+        Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::DEPTH);
         glfwPollEvents();
     }
 
@@ -278,12 +317,13 @@ private:
         Vortex::RenderCommand::SetViewport(width, height);
     }
 
-    static void OnMouseMove(GLFWwindow*, double mouseX, double mouseY) {
+    static void OnMouseMove(GLFWwindow* window, double mouseX, double mouseY) {
         double deltaX = mouseX - m_LastMouseX;
         double deltaY = mouseY - m_LastMouseY;
         m_LastMouseX = mouseX;
         m_LastMouseY = mouseY;
-        m_Camera->OnMouseMoved(deltaX, deltaY);
+        if (glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
+            m_Camera->OnMouseMoved(deltaX, deltaY);
     }
 
     static double m_LastMouseX;
@@ -304,6 +344,10 @@ private:
     std::shared_ptr<Vortex::VertexBuffer> m_LightVertexBuffer;
     std::shared_ptr<Vortex::IndexBuffer> m_LightIndexBuffer;
     std::shared_ptr<Vortex::VertexArray> m_LightVertexArray;
+
+    bool m_EnableDepthTest = true;
+    bool m_EnableDepthMask = true;
+    int m_DepthTestFunc = 2;
 };
 
 double VortexDemo::m_LastMouseX = 0;

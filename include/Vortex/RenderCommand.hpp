@@ -27,8 +27,22 @@ public:
         s_RendererAPI->SetViewport(width, height);
     }
 
-    inline static VT_API void Clear() {
-        s_RendererAPI->Clear();
+    inline static VT_API void Clear(const RendererAPI::ClearBuffer clearBuffer) {
+        s_RendererAPI->Clear(clearBuffer);
+    }
+
+    inline static VT_API void ConfigureDepthTesting(const bool enable, const bool depthMask, const RendererAPI::DepthTestFunc func) {
+        s_RendererAPI->ConfigureDepthTesting(enable, depthMask, func);
+    }
+
+    inline static VT_API void ConfigureStencilTesting(const bool enable, const int writeMask, const int readMask, const RendererAPI::StencilTestFunc func, const int ref,
+                                                      const RendererAPI::StencilTestAction stencilFailAction, const RendererAPI::StencilTestAction stencilPassDepthFailAction,
+                                                      const RendererAPI::StencilTestAction stencilPassDepthPassAction) {
+        s_RendererAPI->ConfigureStencilTesting(enable, writeMask, readMask, func, ref, stencilFailAction, stencilPassDepthFailAction, stencilPassDepthPassAction);
+    }
+
+    inline static VT_API void ConfigureBlending(const bool enable, const RendererAPI::BlendingFunc blendingFunc1, const RendererAPI::BlendingFunc blendingFunc2) {
+        s_RendererAPI->ConfigureBlending(enable, blendingFunc1, blendingFunc2);
     }
 
     inline static VT_API void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t count = 0) {
