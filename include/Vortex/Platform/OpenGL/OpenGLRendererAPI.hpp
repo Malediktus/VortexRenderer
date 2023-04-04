@@ -15,7 +15,9 @@ public:
     virtual void ConfigureStencilTesting(const bool enable, const int writeMask, const int readMask, const StencilTestFunc func, const int ref,
                                          const StencilTestAction stencilFailAction, const StencilTestAction stencilPassDepthFailAction,
                                          const StencilTestAction stencilPassDepthPassAction) override;
-    virtual void ConfigureBlending(const bool enable, const BlendingFunc blendingFunc1, const BlendingFunc blendingFunc2) override;
+    virtual void ConfigureBlending(const bool enable, const BlendingFunc blendingFunc1, const BlendingFunc blendingFunc2, const BlendingFunc blendingFuncR,
+                                   const BlendingFunc blendingFuncG, const BlendingFunc blendingFuncB, const BlendingFunc blendingFuncA) override;
+    virtual void ConfigureCulling(const bool enable, const CullingType type) override;
 
     virtual void SetViewport(const int width, const int height) override;
 

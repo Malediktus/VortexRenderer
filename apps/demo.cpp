@@ -126,7 +126,9 @@ public:
         Vortex::RenderCommand::SetClearColor({0.0f, 0.0f, 0.0f, 1.0f});
         Vortex::RenderCommand::ConfigureStencilTesting(false, 0x11, 0x11, Vortex::RendererAPI::StencilTestFunc::ALWAYS, 0x11, Vortex::RendererAPI::StencilTestAction::KEEP,
                                                        Vortex::RendererAPI::StencilTestAction::KEEP, Vortex::RendererAPI::StencilTestAction::KEEP);
-        Vortex::RenderCommand::ConfigureBlending(true, Vortex::RendererAPI::BlendingFunc::SRC_ALPHA, Vortex::RendererAPI::BlendingFunc::ONE_MINUS_SRC_ALPHA);
+        Vortex::RenderCommand::ConfigureBlending(true, Vortex::RendererAPI::BlendingFunc::SRC_ALPHA, Vortex::RendererAPI::BlendingFunc::ONE_MINUS_SRC_ALPHA,
+                                                 Vortex::RendererAPI::BlendingFunc::ONE, Vortex::RendererAPI::BlendingFunc::ZERO, Vortex::RendererAPI::BlendingFunc::ONE,
+                                                 Vortex::RendererAPI::BlendingFunc::ZERO);
     }
 
     bool ShouldClose() {
@@ -198,15 +200,20 @@ public:
 
         ImGui::Begin("Settings");
         ImGui::Text("Depth testing");
-        ImGui::Checkbox("Enable", &m_EnableDepthTest);
-        ImGui::Checkbox("Mask", &m_EnableDepthMask);
-        ImGui::InputInt("Func", &m_DepthTestFunc);
+        ImGui::Checkbox("EnableDepthTest", &m_EnableDepthTest);
+        ImGui::Checkbox("DepthTestMask", &m_EnableDepthMask);
+        ImGui::InputInt("DepthTestFunc", &m_DepthTestFunc);
+
+        ImGui::Text("Culling");
+        ImGui::Checkbox("EnableCulling", &m_EnableCulling);
+        ImGui::InputInt("CullingType", &m_CullingType);
         ImGui::End();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         Vortex::RenderCommand::ConfigureDepthTesting(m_EnableDepthTest, m_EnableDepthMask, (Vortex::RendererAPI::DepthTestFunc) m_DepthTestFunc);
+        Vortex::RenderCommand::ConfigureCulling(m_EnableCulling, (Vortex::RendererAPI::CullingType) m_CullingType);
 
         if (glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_REPEAT)
             m_Camera->MoveFront(0.02f);
@@ -271,6 +278,8 @@ private:
     bool m_EnableDepthTest = true;
     bool m_EnableDepthMask = true;
     int m_DepthTestFunc = 2;
+    bool m_EnableCulling = false;
+    int m_CullingType = 0;
 };
 
 double VortexDemo::m_LastMouseX = 0;

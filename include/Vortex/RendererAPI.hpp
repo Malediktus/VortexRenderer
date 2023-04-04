@@ -38,6 +38,8 @@ public:
         CONSTANT_ALPHA = 12,
         ONE_MINUS_CONSTANT_ALPHA = 13
     };
+    enum class CullingType { BACK = 0, FRONT = 1, FRONT_AND_BACK = 2 };
+    enum class CullingDirection { CLOCKWISE = 0, COUNTERCLOCKWISE = 1 };
 
     virtual VT_API void SetClearColor(const glm::vec4& color) = 0;
     virtual VT_API void Clear(const ClearBuffer clearBuffer) = 0;
@@ -47,7 +49,10 @@ public:
     virtual VT_API void ConfigureStencilTesting(const bool enable, const int writeMask, const int readMask, const StencilTestFunc func, const int ref,
                                                 const StencilTestAction stencilFailAction, const StencilTestAction stencilPassDepthFailAction,
                                                 const StencilTestAction stencilPassDepthPassAction) = 0;
-    virtual VT_API void ConfigureBlending(const bool enable, const BlendingFunc blendingFunc1, const BlendingFunc blendingFunc2) = 0;
+    virtual VT_API void ConfigureBlending(const bool enable, const BlendingFunc blendingFunc1, const BlendingFunc blendingFunc2, const BlendingFunc blendingFuncR,
+                                          const BlendingFunc blendingFuncG, const BlendingFunc blendingFuncB, const BlendingFunc blendingFuncA) = 0;
+
+    virtual VT_API void ConfigureCulling(const bool enable, const CullingType type) = 0;
 
     virtual VT_API void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount = 0) = 0;
 

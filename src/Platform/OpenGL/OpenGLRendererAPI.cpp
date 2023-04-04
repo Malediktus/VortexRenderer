@@ -161,13 +161,32 @@ void OpenGLRendererAPI::ConfigureStencilTesting(const bool enable, const int wri
                 Utils::StencilActionToGLenum(stencilPassDepthPassAction));
 }
 
-void OpenGLRendererAPI::ConfigureBlending(const bool enable, const BlendingFunc blendingFunc1, const BlendingFunc blendingFunc2) {
+void OpenGLRendererAPI::ConfigureBlending(const bool enable, const BlendingFunc blendingFunc1, const BlendingFunc blendingFunc2, const BlendingFunc blendingFuncR,
+                                          const BlendingFunc blendingFuncG, const BlendingFunc blendingFuncB, const BlendingFunc blendingFuncA) {
     if (enable)
         glEnable(GL_BLEND);
     else
         glDisable(GL_BLEND);
 
     glBlendFunc(Utils::BlendingFuncToGLenum(blendingFunc1), Utils::BlendingFuncToGLenum(blendingFunc2));
+    glBlendFuncSeparate(Utils::BlendingFuncToGLenum(blendingFuncR), Utils::BlendingFuncToGLenum(blendingFuncG), Utils::BlendingFuncToGLenum(blendingFuncB),
+                        Utils::BlendingFuncToGLenum(blendingFuncA));
+}
+
+void OpenGLRendererAPI::ConfigureCulling(const bool enable, const CullingType type) {
+    if (enable)
+        glEnable(GL_CULL_FACE);
+    else
+        glDisable(GL_CULL_FACE);
+    switch (type) {
+    case CullingType::BACK:
+        glCullFace(GL_BACK);
+    case CullingType::FRONT:
+        glCullFace(GL_FRONT);
+    case CullingType::FRONT_AND_BACK:
+        glCullFace(GL_FRONT_AND_BACK);
+        break;
+    }
 }
 
 void OpenGLRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount) {
