@@ -8,7 +8,7 @@ uniform mat4 u_ViewProj;
 uniform mat4 u_Model;
 
 void main() {
-    gl_Position = u_ViewProj * u_Model * vec4(v_in_Pos, 1.0f);
+    gl_Position = u_ViewProj * u_Model * vec4(v_in_Pos, 1.0);
 }
 
 #type fragment
@@ -20,5 +20,5 @@ uniform vec3 u_Color;
 out vec4 FragColor;
 
 void main() {
-    FragColor = vec4(u_Color, 1.0f);
+    FragColor = vec4(u_Color, 1.0);
 }

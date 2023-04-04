@@ -9,7 +9,9 @@ set(HEADER_LIST
     "${PROJECT_SOURCE_DIR}/include/Vortex/Camera.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Buffer.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Texture.hpp"
-    "${PROJECT_SOURCE_DIR}/include/Vortex/VertexArray.hpp")
+    "${PROJECT_SOURCE_DIR}/include/Vortex/VertexArray.hpp"
+    "${PROJECT_SOURCE_DIR}/include/Vortex/Scene/Mesh.hpp"
+    "${PROJECT_SOURCE_DIR}/include/Vortex/Scene/Model.hpp")
 
 set(SOURCE_LIST
     Context.cpp
@@ -20,7 +22,9 @@ set(SOURCE_LIST
     VertexArray.cpp
     Renderer.cpp
     RenderCommand.cpp
-    RendererAPI.cpp)
+    RendererAPI.cpp
+    Scene/Mesh.cpp
+    Scene/Model.cpp)
 
 set(OPENGL_HEADERS
     "${PROJECT_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLShader.hpp"
@@ -50,7 +54,7 @@ else()
     target_compile_options(Vortex PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
-target_link_libraries(Vortex PRIVATE glfw glad stb_image)
+target_link_libraries(Vortex PRIVATE glfw glad stb_image assimp)
 target_link_libraries(Vortex PUBLIC glm)
 
 source_group(

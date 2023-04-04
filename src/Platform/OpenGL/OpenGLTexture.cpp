@@ -12,13 +12,27 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : m_Path(path) {
     assert(pixels);
     m_Width = width;
     m_Height = height;
+    GLenum format;
+    GLenum internalFormat;
+    if (channels == 1) {
+        format = GL_RED;
+        internalFormat = GL_RED_INTEGER;
+    } else if (channels == 3) {
+        format = GL_RGB;
+        internalFormat = GL_RGB8;
+    } else if (channels == 4) {
+        format = GL_RGBA;
+        internalFormat = GL_RGBA8;
+    } else
+        assert(false);
+
     glGenTextures(1, &m_RendererID);
     glBindTexture(GL_TEXTURE_2D, m_RendererID);
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, pixels);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     stbi_image_free(pixels);
 }
 
