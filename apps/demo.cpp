@@ -87,14 +87,13 @@ public:
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        m_Window = glfwCreateWindow(1024, 720, "Vortex Renderer Demo", nullptr, nullptr);
+        m_Window = glfwCreateWindow(1280, 900, "Vortex Renderer Demo", nullptr, nullptr);
         if (!m_Window) {
             std::cout << "Failed to create window!" << std::endl;
             exit(1);
         }
 
         glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        glfwSetFramebufferSizeCallback(m_Window, OnResize);
         glfwSetCursorPosCallback(m_Window, OnMouseMove);
         glfwGetCursorPos(m_Window, &m_LastMouseX, &m_LastMouseY);
 
@@ -121,8 +120,17 @@ public:
 
         m_Model = std::make_shared<Vortex::Scene::Model>("assets/Objects/Monkey/monkey.obj");
 
+        auto renderbuffer = Vortex::RenderbufferCreate(1280, 720, Vortex::Renderbuffer::RenderbufferType::DEPTH24_STENCIL8);
+
+        m_Texture = Vortex::Texture2DCreate(1280, 720);
+        m_Framebuffer = Vortex::FramebufferCreate();
+        m_Framebuffer->Bind();
+        m_Framebuffer->AttachColorBuffer(m_Texture);
+        m_Framebuffer->AttachDepthStencilBuffer(renderbuffer);
+        m_Framebuffer->Unbind();
+
         Vortex::Renderer::Init();
-        Vortex::RenderCommand::SetViewport(width, height);
+        Vortex::RenderCommand::SetViewport(1280, 720);
         Vortex::RenderCommand::SetClearColor({0.0f, 0.0f, 0.0f, 1.0f});
         Vortex::RenderCommand::ConfigureStencilTesting(false, 0x11, 0x11, Vortex::RendererAPI::StencilTestFunc::ALWAYS, 0x11, Vortex::RendererAPI::StencilTestAction::KEEP,
                                                        Vortex::RendererAPI::StencilTestAction::KEEP, Vortex::RendererAPI::StencilTestAction::KEEP);
@@ -136,6 +144,9 @@ public:
     }
 
     void Update() {
+        m_Framebuffer->Bind();
+        Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::COLOR);
+        Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::DEPTH);
         Vortex::Renderer::BeginScene();
         {
             auto phongShader = m_ShaderLibrary->Get("Phong");
@@ -193,6 +204,7 @@ public:
             }
         }
         Vortex::Renderer::EndScene();
+        m_Framebuffer->Unbind();
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -208,6 +220,12 @@ public:
         ImGui::Checkbox("EnableCulling", &m_EnableCulling);
         ImGui::InputInt("CullingType", &m_CullingType);
         ImGui::End();
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+        ImGui::Begin("Viewport");
+        ImGui::Image(*(ImTextureID*) m_Texture->GetNative(), ImVec2(1280, 720), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::End();
+        ImGui::PopStyleVar();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -251,10 +269,6 @@ private:
         exit(1);
     }
 
-    static void OnResize(GLFWwindow*, int width, int height) {
-        Vortex::RenderCommand::SetViewport(width, height);
-    }
-
     static void OnMouseMove(GLFWwindow* window, double mouseX, double mouseY) {
         double deltaX = mouseX - m_LastMouseX;
         double deltaY = mouseY - m_LastMouseY;
@@ -274,6 +288,8 @@ private:
     std::shared_ptr<Vortex::ShaderLibrary> m_ShaderLibrary;
 
     std::shared_ptr<Vortex::Scene::Model> m_Model;
+    std::shared_ptr<Vortex::Framebuffer> m_Framebuffer;
+    std::shared_ptr<Vortex::Texture2D> m_Texture;
 
     bool m_EnableDepthTest = true;
     bool m_EnableDepthMask = true;

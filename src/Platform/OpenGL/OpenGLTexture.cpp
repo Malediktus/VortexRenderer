@@ -36,6 +36,18 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : m_Path(path) {
     stbi_image_free(pixels);
 }
 
+OpenGLTexture2D::OpenGLTexture2D(const int width, const int height) : m_Path("") {
+    m_Width = width;
+    m_Height = height;
+    glGenTextures(1, &m_RendererID);
+    glBindTexture(GL_TEXTURE_2D, m_RendererID);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+}
+
 OpenGLTexture2D::OpenGLTexture2D(const int width, const int height, const void* data) : m_Path("") {
     m_Width = width;
     m_Height = height;
@@ -56,4 +68,8 @@ void OpenGLTexture2D::Bind(uint32_t slot) const {
     assert(slot <= 31);
     glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D, m_RendererID);
+}
+
+void* OpenGLTexture2D::GetNative() const {
+    return (void*) &m_RendererID;
 }

@@ -22,6 +22,8 @@ public:
     virtual uint32_t GetHeight() const = 0;
 
     virtual void Bind(uint32_t slot = 0) const = 0;
+
+    virtual void* GetNative() const = 0;
 };
 
 /**
@@ -46,6 +48,10 @@ public:
     virtual void Bind(uint32_t) const override {
         assert(false);
     };
+
+    virtual void* GetNative() const override {
+        assert(false);
+    }
 };
 
 /**
@@ -59,6 +65,7 @@ public:
  * @copyright Copyright (c) 2023
  */
 VT_API std::shared_ptr<Texture2D> Texture2DCreate(const std::string& path);
+VT_API std::shared_ptr<Texture2D> Texture2DCreate(const int width, const int height);
 /**
  * @brief This function is the only way that should be used for creating a Texture2D from pixel data.
  *

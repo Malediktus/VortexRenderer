@@ -10,6 +10,8 @@ set(HEADER_LIST
     "${PROJECT_SOURCE_DIR}/include/Vortex/Buffer.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Texture.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/VertexArray.hpp"
+    "${PROJECT_SOURCE_DIR}/include/Vortex/Framebuffer.hpp"
+    "${PROJECT_SOURCE_DIR}/include/Vortex/Renderbuffer.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Scene/Mesh.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Scene/Model.hpp")
 
@@ -23,6 +25,8 @@ set(SOURCE_LIST
     Renderer.cpp
     RenderCommand.cpp
     RendererAPI.cpp
+    Framebuffer.cpp
+    Renderbuffer.cpp
     Scene/Mesh.cpp
     Scene/Model.cpp)
 
@@ -32,7 +36,9 @@ set(OPENGL_HEADERS
     "${PROJECT_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLBuffer.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLTexture.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLVertexArray.hpp"
-    "${PROJECT_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLRendererAPI.hpp")
+    "${PROJECT_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLRendererAPI.hpp"
+    "${PROJECT_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLFramebuffer.hpp"
+    "${PROJECT_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLRenderbuffer.hpp")
 
 set(OPENGL_SOURCES
     Platform/OpenGL/OpenGLContext.cpp
@@ -40,7 +46,9 @@ set(OPENGL_SOURCES
     Platform/OpenGL/OpenGLBuffer.cpp
     Platform/OpenGL/OpenGLTexture.cpp
     Platform/OpenGL/OpenGLVertexArray.cpp
-    Platform/OpenGL/OpenGLRendererAPI.cpp)
+    Platform/OpenGL/OpenGLRendererAPI.cpp
+    Platform/OpenGL/OpenGLFramebuffer.cpp
+    Platform/OpenGL/OpenGLRenderbuffer.cpp)
 
 add_library(Vortex ${HEADER_LIST} ${SOURCE_LIST} ${OPENGL_SOURCES} ${OPENGL_HEADERS})
 
