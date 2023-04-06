@@ -3,6 +3,8 @@
 #version 330 core
 
 layout(location = 0) in vec3 v_in_Pos;
+layout(location = 0) in vec3 v_in_Normals;
+layout(location = 0) in vec2 v_in_TexCoords;
 
 uniform mat4 u_ViewProj;
 uniform mat4 u_Model;
@@ -15,10 +17,8 @@ void main() {
 
 #version 330 core
 
-uniform vec3 u_Color;
-
 out vec4 FragColor;
 
 void main() {
-    FragColor = vec4(u_Color, 1.0);
+    FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }

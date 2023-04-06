@@ -12,3 +12,4 @@
 #include "VertexArray.hpp"
 #include "Framebuffer.hpp"
 #include "Renderbuffer.hpp"
+#include "Scene/Scene.hpp"

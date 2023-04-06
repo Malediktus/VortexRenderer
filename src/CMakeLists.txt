@@ -12,6 +12,7 @@ set(HEADER_LIST
     "${PROJECT_SOURCE_DIR}/include/Vortex/VertexArray.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Framebuffer.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Renderbuffer.hpp"
+    "${PROJECT_SOURCE_DIR}/include/Vortex/Scene/Scene.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Scene/Mesh.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Scene/Model.hpp")
 

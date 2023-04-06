@@ -97,9 +97,7 @@ public:
         glfwSetCursorPosCallback(m_Window, OnMouseMove);
         glfwGetCursorPos(m_Window, &m_LastMouseX, &m_LastMouseY);
 
-        int width, height;
-        glfwGetFramebufferSize(m_Window, &width, &height);
-        m_Camera = std::make_shared<FPSCamera>(90.0f, (float) width, (float) height);
+        m_Camera = std::make_shared<FPSCamera>(90.0f, 1280, 720);
         m_Camera->MoveFront(-5.0f);
 
         m_Context = Vortex::ContextCreate(m_Window);
@@ -115,11 +113,6 @@ public:
         ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
         ImGui_ImplOpenGL3_Init("#version 150");
 
-        m_ShaderLibrary = std::make_shared<Vortex::ShaderLibrary>();
-        m_ShaderLibrary->Load("assets/Shaders/Phong.glsl");
-
-        m_Model = std::make_shared<Vortex::Scene::Model>("assets/Objects/Monkey/monkey.obj");
-
         auto renderbuffer = Vortex::RenderbufferCreate(1280, 720, Vortex::Renderbuffer::RenderbufferType::DEPTH24_STENCIL8);
 
         m_Texture = Vortex::Texture2DCreate(1280, 720);
@@ -129,7 +122,7 @@ public:
         m_Framebuffer->AttachDepthStencilBuffer(renderbuffer);
         m_Framebuffer->Unbind();
 
-        Vortex::Renderer::Init();
+        Vortex::Renderer::Init("assets/Shaders/Base.glsl");
         Vortex::RenderCommand::SetViewport(1280, 720);
         Vortex::RenderCommand::SetClearColor({0.0f, 0.0f, 0.0f, 1.0f});
         Vortex::RenderCommand::ConfigureStencilTesting(false, 0x11, 0x11, Vortex::RendererAPI::StencilTestFunc::ALWAYS, 0x11, Vortex::RendererAPI::StencilTestAction::KEEP,
@@ -147,63 +140,16 @@ public:
         m_Framebuffer->Bind();
         Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::COLOR);
         Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::DEPTH);
-        Vortex::Renderer::BeginScene();
-        {
-            auto phongShader = m_ShaderLibrary->Get("Phong");
 
-            phongShader->Bind();
-            phongShader->SetMatrix4("u_ViewProj", m_Camera->GetViewProj());
-            phongShader->SetFloat3("u_ViewPos", m_Camera->GetPosition());
-            phongShader->SetFloat("u_Material.shininess", 32.0f);
+        std::shared_ptr<Vortex::Scene> scene = std::make_shared<Vortex::Scene>(m_Camera);
+        std::shared_ptr<Vortex::Mesh> mesh = std::make_shared<Vortex::Mesh>("assets/Objects/Monkey/monkey.obj");
+        std::shared_ptr<Vortex::Object> object = std::make_shared<Vortex::Object>();
+        object->Attach(mesh);
+        scene->Append(object);
 
-            phongShader->SetInt("u_NumPointLights", 4);
-            phongShader->SetInt("u_NumSpotLights", 0);
-            phongShader->SetInt("u_NumDirectionalLights", 0);
-
-            // point light 1
-            phongShader->SetFloat3("u_PointLights[0].position", pointLightPositions[0]);
-            phongShader->SetFloat3("u_PointLights[0].ambient", {0.05f, 0.05f, 0.05f});
-            phongShader->SetFloat3("u_PointLights[0].diffuse", {0.8f, 0.8f, 0.8f});
-            phongShader->SetFloat3("u_PointLights[0].specular", {1.0f, 1.0f, 1.0f});
-            phongShader->SetFloat("u_PointLights[0].constant", 1.0f);
-            phongShader->SetFloat("u_PointLights[0].linear", 0.09f);
-            phongShader->SetFloat("u_PointLights[0].quadratic", 0.032f);
-            // point light 2
-            phongShader->SetFloat3("u_PointLights[1].position", pointLightPositions[1]);
-            phongShader->SetFloat3("u_PointLights[1].ambient", {0.05f, 0.05f, 0.05f});
-            phongShader->SetFloat3("u_PointLights[1].diffuse", {0.8f, 0.8f, 0.8f});
-            phongShader->SetFloat3("u_PointLights[1].specular", {1.0f, 1.0f, 1.0f});
-            phongShader->SetFloat("u_PointLights[1].constant", 1.0f);
-            phongShader->SetFloat("u_PointLights[1].linear", 0.09f);
-            phongShader->SetFloat("u_PointLights[1].quadratic", 0.032f);
-            // point light 3
-            phongShader->SetFloat3("u_PointLights[2].position", pointLightPositions[2]);
-            phongShader->SetFloat3("u_PointLights[2].ambient", {0.05f, 0.05f, 0.05f});
-            phongShader->SetFloat3("u_PointLights[2].diffuse", {0.8f, 0.8f, 0.8f});
-            phongShader->SetFloat3("u_PointLights[2].specular", {1.0f, 1.0f, 1.0f});
-            phongShader->SetFloat("u_PointLights[2].constant", 1.0f);
-            phongShader->SetFloat("u_PointLights[2].linear", 0.09f);
-            phongShader->SetFloat("u_PointLights[2].quadratic", 0.032f);
-            // point light 4
-            phongShader->SetFloat3("u_PointLights[3].position", pointLightPositions[3]);
-            phongShader->SetFloat3("u_PointLights[3].ambient", {0.05f, 0.05f, 0.05f});
-            phongShader->SetFloat3("u_PointLights[3].diffuse", {0.8f, 0.8f, 0.8f});
-            phongShader->SetFloat3("u_PointLights[3].specular", {1.0f, 1.0f, 1.0f});
-            phongShader->SetFloat("u_PointLights[3].constant", 1.0f);
-            phongShader->SetFloat("u_PointLights[3].linear", 0.09f);
-            phongShader->SetFloat("u_PointLights[3].quadratic", 0.032f);
-
-            phongShader->SetMatrix4("u_ViewProj", m_Camera->GetViewProj());
-
-            glm::mat4 model = glm::mat4(1.0f);
-            phongShader->SetMatrix4("u_Model", model);
-
-            for (auto mesh : m_Model->GetMeshes()) {
-                mesh.BindTextures(phongShader);
-                Vortex::Renderer::Submit(mesh.GetVertexArray());
-            }
-        }
-        Vortex::Renderer::EndScene();
+        Vortex::Renderer::BeginFrame();
+        Vortex::Renderer::Submit(scene);
+        Vortex::Renderer::EndFrame();
         m_Framebuffer->Unbind();
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -281,13 +227,10 @@ private:
     static double m_LastMouseX;
     static double m_LastMouseY;
     GLFWwindow* m_Window;
-    Vortex::BufferLayout m_BufferLayout;
 
     static std::shared_ptr<FPSCamera> m_Camera;
     std::shared_ptr<Vortex::Context> m_Context;
-    std::shared_ptr<Vortex::ShaderLibrary> m_ShaderLibrary;
 
-    std::shared_ptr<Vortex::Scene::Model> m_Model;
     std::shared_ptr<Vortex::Framebuffer> m_Framebuffer;
     std::shared_ptr<Vortex::Texture2D> m_Texture;
 
