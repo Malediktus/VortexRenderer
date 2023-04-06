@@ -16,8 +16,7 @@ namespace Vortex {
  */
 class VertexArray {
 public:
-    virtual ~VertexArray() {
-    }
+    virtual ~VertexArray() = default;
 
     virtual VT_API void Bind() const = 0;
     virtual VT_API void Unbind() const = 0;

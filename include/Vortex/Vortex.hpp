@@ -10,3 +10,5 @@
 #include "Shader.hpp"
 #include "Texture.hpp"
 #include "VertexArray.hpp"
+#include "Framebuffer.hpp"
+#include "Renderbuffer.hpp"

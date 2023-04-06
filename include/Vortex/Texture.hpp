@@ -3,6 +3,7 @@
 #include "Core.hpp"
 #include <memory>
 #include <string>
+#include <cassert>
 
 namespace Vortex {
 /**
@@ -21,6 +22,8 @@ public:
     virtual uint32_t GetHeight() const = 0;
 
     virtual void Bind(uint32_t slot = 0) const = 0;
+
+    virtual void* GetNative() const = 0;
 };
 
 /**
@@ -31,7 +34,25 @@ public:
  * @date 2023-03-31
  * @copyright Copyright (c) 2023
  */
-class Texture2D : public Texture {};
+class Texture2D : public Texture {
+public:
+    virtual ~Texture2D() = default;
+
+    virtual uint32_t GetWidth() const override {
+        assert(false);
+    };
+    virtual uint32_t GetHeight() const override {
+        assert(false);
+    };
+
+    virtual void Bind(uint32_t) const override {
+        assert(false);
+    };
+
+    virtual void* GetNative() const override {
+        assert(false);
+    }
+};
 
 /**
  * @brief This function is the only way that should be used for creating a Texture2D from a file.
@@ -44,6 +65,7 @@ class Texture2D : public Texture {};
  * @copyright Copyright (c) 2023
  */
 VT_API std::shared_ptr<Texture2D> Texture2DCreate(const std::string& path);
+VT_API std::shared_ptr<Texture2D> Texture2DCreate(const int width, const int height);
 /**
  * @brief This function is the only way that should be used for creating a Texture2D from pixel data.
  *

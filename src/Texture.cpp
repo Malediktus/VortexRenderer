@@ -15,6 +15,16 @@ std::shared_ptr<Texture2D> Vortex::Texture2DCreate(const std::string& path) {
     assert(false);
 }
 
+std::shared_ptr<Texture2D> Vortex::Texture2DCreate(const int width, const int height) {
+    switch (Renderer::GetAPI()) {
+    case RendererAPI::API::OpenGL:
+        return std::make_shared<OpenGL::OpenGLTexture2D>(width, height);
+    default:
+        assert(false);
+    }
+    assert(false);
+}
+
 std::shared_ptr<Texture2D> Vortex::Texture2DCreate(const int width, const int height, const void* data) {
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
