@@ -12,7 +12,6 @@ public:
     virtual ~OpenGLContext() = default;
 
     virtual void Init() const override;
-    virtual void SwapBuffers() const override;
 
 private:
     void* m_WindowHandle;

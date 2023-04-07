@@ -18,7 +18,6 @@ public:
     VT_API ~Context() = default;
 
     virtual VT_API void Init() const = 0;
-    virtual VT_API void SwapBuffers() const = 0;
 };
 
 /**

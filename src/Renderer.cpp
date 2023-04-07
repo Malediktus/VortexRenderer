@@ -4,13 +4,33 @@
 using namespace Vortex;
 
 std::shared_ptr<Shader> Renderer::m_Shader;
+std::shared_ptr<Context> Renderer::m_Context;
 
-void Renderer::Init(const std::string& shaderPath) {
+void Renderer::Init(const std::shared_ptr<Context>& context, const std::string& shaderPath, const int width, const int height) {
+    m_Context = context;
+    m_Context->Init();
     RenderCommand::Init();
     m_Shader = ShaderCreate(shaderPath);
+
+    // Settings
+    Vortex::RenderCommand::SetClearColor({0.0f, 0.0f, 0.0f, 1.0f});
+    Vortex::RenderCommand::ConfigureStencilTesting(false, 0xFF, 0xFF, Vortex::RendererAPI::StencilTestFunc::ALWAYS, 0x11, Vortex::RendererAPI::StencilTestAction::KEEP,
+                                                   Vortex::RendererAPI::StencilTestAction::KEEP, Vortex::RendererAPI::StencilTestAction::KEEP);
+    Vortex::RenderCommand::ConfigureBlending(true, Vortex::RendererAPI::BlendingFunc::SRC_ALPHA, Vortex::RendererAPI::BlendingFunc::ONE_MINUS_SRC_ALPHA,
+                                             Vortex::RendererAPI::BlendingFunc::ONE, Vortex::RendererAPI::BlendingFunc::ZERO, Vortex::RendererAPI::BlendingFunc::ONE,
+                                             Vortex::RendererAPI::BlendingFunc::ZERO);
+    Vortex::RenderCommand::ConfigureDepthTesting(true, true, Vortex::RendererAPI::DepthTestFunc::LESS);
+    Vortex::RenderCommand::ConfigureCulling(false, Vortex::RendererAPI::CullingType::BACK);
+    Vortex::RenderCommand::SetViewport(width, height);
+}
+
+void Renderer::OnResize(const int width, const int height) {
+    Vortex::RenderCommand::SetViewport(width, height);
 }
 
 void Renderer::BeginFrame() {
+    Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::COLOR);
+    Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::DEPTH);
 }
 
 void Renderer::EndFrame() {

@@ -6,6 +6,7 @@
 #include "Shader.hpp"
 #include "Camera.hpp"
 #include "Texture.hpp"
+#include "Context.hpp"
 #include "Scene/Scene.hpp"
 
 #include <glm/glm.hpp>
@@ -26,7 +27,9 @@ namespace Vortex {
  */
 class Renderer {
 public:
-    static VT_API void Init(const std::string& shaderPath);
+    static VT_API void Init(const std::shared_ptr<Context>& context, const std::string& shaderPath, const int width, const int height);
+
+    static VT_API void OnResize(const int width, const int height);
 
     static VT_API void BeginFrame();
     static VT_API void EndFrame();
@@ -40,5 +43,6 @@ public:
 
 private:
     static std::shared_ptr<Shader> m_Shader;
+    static std::shared_ptr<Context> m_Context;
 };
 } // namespace Vortex

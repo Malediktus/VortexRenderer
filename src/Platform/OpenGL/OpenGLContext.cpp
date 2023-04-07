@@ -10,7 +10,3 @@ void OpenGLContext::Init() const {
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
         assert(false);
 }
-
-void OpenGLContext::SwapBuffers() const {
-    glfwSwapBuffers((GLFWwindow*) m_WindowHandle);
-}

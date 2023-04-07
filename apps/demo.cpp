@@ -51,10 +51,6 @@ public:
         UpdateMatrices();
     }
 
-    const glm::vec3& GetFront() {
-        return m_LookAt;
-    }
-
 protected:
     void UpdateMatrices() override {
         m_View = glm::lookAt(m_Position, m_Position + m_LookAt, m_Up);
@@ -67,8 +63,6 @@ protected:
     const float m_MouseSensitivity = 0.1f;
     glm::vec3 m_Up;
 };
-
-glm::vec3 pointLightPositions[] = {glm::vec3(0.1f, 0.2f, 2.0f), glm::vec3(2.3f, -3.3f, -4.0f), glm::vec3(-4.0f, 2.0f, -12.0f), glm::vec3(0.0f, 0.0f, -3.0f)};
 
 class VortexDemo {
 public:
@@ -97,7 +91,7 @@ public:
         m_Camera->MoveFront(-5.0f);
 
         m_Context = Vortex::ContextCreate(m_Window);
-        m_Context->Init();
+        Vortex::Renderer::Init(m_Context, "assets/Shaders/Light.glsl", 1280, 720);
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -110,7 +104,6 @@ public:
         ImGui_ImplOpenGL3_Init("#version 150");
 
         auto renderbuffer = Vortex::RenderbufferCreate(1280, 720, Vortex::Renderbuffer::RenderbufferType::DEPTH24_STENCIL8);
-
         m_Texture = Vortex::Texture2DCreate(1280, 720);
         m_Framebuffer = Vortex::FramebufferCreate();
         m_Framebuffer->Bind();
@@ -118,22 +111,15 @@ public:
         m_Framebuffer->AttachDepthStencilBuffer(renderbuffer);
         m_Framebuffer->Unbind();
 
-        Vortex::Renderer::Init("assets/Shaders/Light.glsl");
-        Vortex::RenderCommand::SetViewport(1280, 720);
-        Vortex::RenderCommand::SetClearColor({0.0f, 0.0f, 0.0f, 1.0f});
-        Vortex::RenderCommand::ConfigureStencilTesting(false, 0x11, 0x11, Vortex::RendererAPI::StencilTestFunc::ALWAYS, 0x11, Vortex::RendererAPI::StencilTestAction::KEEP,
-                                                       Vortex::RendererAPI::StencilTestAction::KEEP, Vortex::RendererAPI::StencilTestAction::KEEP);
-        Vortex::RenderCommand::ConfigureBlending(true, Vortex::RendererAPI::BlendingFunc::SRC_ALPHA, Vortex::RendererAPI::BlendingFunc::ONE_MINUS_SRC_ALPHA,
-                                                 Vortex::RendererAPI::BlendingFunc::ONE, Vortex::RendererAPI::BlendingFunc::ZERO, Vortex::RendererAPI::BlendingFunc::ONE,
-                                                 Vortex::RendererAPI::BlendingFunc::ZERO);
-
         m_Scene = std::make_shared<Vortex::Scene>(m_Camera);
         std::shared_ptr<Vortex::Mesh> mesh = std::make_shared<Vortex::Mesh>("assets/Objects/Monkey/monkey.obj");
         std::shared_ptr<Vortex::Object> meshObject = std::make_shared<Vortex::Object>();
         meshObject->Attach(mesh);
         std::shared_ptr<Vortex::PointLight> light =
             std::make_shared<Vortex::PointLight>(1.0f, 1.0f, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-        std::shared_ptr<Vortex::Object> lightObject = std::make_shared<Vortex::Object>();
+        glm::mat4 lightTransform(1.0f);
+        lightTransform = glm::translate(lightTransform, glm::vec3(1.0f, 0.5f, 1.0f));
+        std::shared_ptr<Vortex::Object> lightObject = std::make_shared<Vortex::Object>(lightTransform);
         lightObject->Attach(light);
         m_Scene->Append(meshObject);
         m_Scene->Append(lightObject);
@@ -145,8 +131,6 @@ public:
 
     void Update() {
         m_Framebuffer->Bind();
-        Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::COLOR);
-        Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::DEPTH);
 
         Vortex::Renderer::BeginFrame();
         Vortex::Renderer::Submit(m_Scene);
@@ -177,9 +161,6 @@ public:
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        Vortex::RenderCommand::ConfigureDepthTesting(m_EnableDepthTest, m_EnableDepthMask, (Vortex::RendererAPI::DepthTestFunc) m_DepthTestFunc);
-        Vortex::RenderCommand::ConfigureCulling(m_EnableCulling, (Vortex::RendererAPI::CullingType) m_CullingType);
-
         if (glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_REPEAT)
             m_Camera->MoveFront(0.02f);
         if (glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_REPEAT)
@@ -199,7 +180,7 @@ public:
         if (glfwGetKey(m_Window, GLFW_KEY_Q) == GLFW_PRESS)
             glfwSetWindowShouldClose(m_Window, true);
 
-        m_Context->SwapBuffers();
+        glfwSwapBuffers(m_Window);
         Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::COLOR);
         Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::DEPTH);
         glfwPollEvents();
