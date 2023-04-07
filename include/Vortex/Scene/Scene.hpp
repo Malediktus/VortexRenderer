@@ -10,20 +10,18 @@
 #include "Model.hpp"
 
 namespace Vortex {
-class PointLight {
-public:
-    PointLight() : m_Color(1.0f, 1.0f, 1.0f, 1.0f) {
-    }
-    PointLight(const glm::vec4& color) : m_Color(color) {
+struct PointLight {
+    PointLight(float constant, float linear, float quadratic, const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3 specular)
+        : Constant(constant), Linear(linear), Quadratic(quadratic), Ambient(ambient), Diffuse(diffuse), Specular(specular) {
     }
     ~PointLight() = default;
 
-    const glm::vec4& GetColor() {
-        return m_Color;
-    }
-
-private:
-    glm::vec4 m_Color;
+    float Constant;
+    float Linear;
+    float Quadratic;
+    glm::vec3 Ambient;
+    glm::vec3 Diffuse;
+    glm::vec3 Specular;
 };
 
 class Mesh {

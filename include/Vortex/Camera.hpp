@@ -16,8 +16,12 @@ public:
 
     virtual ~Camera() = default;
 
-    glm::mat4 GetViewProj() {
+    const glm::mat4& GetViewProj() {
         return m_ViewProj;
+    }
+
+    const glm::vec3& GetPosition() {
+        return m_Position;
     }
 
     virtual void Translate(glm::vec3 v) {

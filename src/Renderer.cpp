@@ -1,4 +1,5 @@
 #include <Vortex/Renderer.hpp>
+#include <glm/gtc/matrix_access.hpp>
 
 using namespace Vortex;
 
@@ -21,41 +22,28 @@ void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray) {
 }
 
 void Renderer::Submit(const std::shared_ptr<Scene>& scene) {
-    struct SceneLight {
-        SceneLight() = default;
-        SceneLight(const glm::mat4& transform, const glm::vec4& color) : Transform(transform), Color(color) {
-        }
-        ~SceneLight() = default;
+    // Possible optimization:
+    // - Iterate over scene objects and set all lights in the shader
+    // - Iterate again and render all vertexArrays
+    // Benefit: No need to store a mat4, which is realy huge, for each light and vertex array
 
-        glm::mat4 Transform;
-        glm::vec4 Color;
-    };
-
-    struct SceneMesh {
-        SceneMesh() = default;
-        SceneMesh(const glm::mat4& transform, const std::shared_ptr<VertexArray>& vertexArray) : Transform(transform), VertexArray(vertexArray) {
-        }
-        ~SceneMesh() = default;
-
-        glm::mat4 Transform;
-        std::shared_ptr<VertexArray> VertexArray;
-    };
-
-    std::vector<SceneLight> lights;
-    std::vector<SceneMesh> meshes;
+    std::vector<std::shared_ptr<PointLight>> pointLights;
+    std::vector<glm::mat4> pointLightTransforms;
+    std::vector<std::shared_ptr<VertexArray>> vertexArrays;
+    std::vector<glm::mat4> vertexArrayTransforms;
 
     for (auto object : scene->GetObjects()) {
         auto transform = object->GetTransform();
-        auto pointLights = object->GetPointLights();
+        auto objectPointLights = object->GetPointLights();
         auto objectMeshes = object->GetMeshs();
-        for (auto pointLight : pointLights) {
-            SceneLight sceneLight(transform, pointLight->GetColor());
-            lights.push_back(sceneLight);
+        for (auto pointLight : objectPointLights) {
+            pointLights.push_back(pointLight);
+            pointLightTransforms.push_back(transform);
         }
         for (auto mesh : objectMeshes) {
             for (auto vertexArray : mesh->GetVertexArrays()) {
-                SceneMesh sceneMesh(transform, vertexArray);
-                meshes.push_back(sceneMesh);
+                vertexArrays.push_back(vertexArray);
+                vertexArrayTransforms.push_back(transform);
             }
         }
     }
@@ -64,14 +52,23 @@ void Renderer::Submit(const std::shared_ptr<Scene>& scene) {
 
     m_Shader->Bind();
     m_Shader->SetMatrix4("u_ViewProj", camera->GetViewProj());
-    // Bind lights to shader
-    // ...
+    m_Shader->SetFloat3("u_ViewPos", camera->GetPosition());
+    m_Shader->SetInt("u_NumPointLights", pointLights.size());
+    for (uint32_t i = 0; i < pointLights.size(); i++) {
+        auto pointLight = pointLights[i];
+        std::string prefix = "u_PointLights[" + std::to_string(i) + "].";
+        glm::vec3 position = glm::vec3(glm::column(pointLightTransforms[i], 3));
+        m_Shader->SetFloat3(prefix + "position", position);
+        m_Shader->SetFloat(prefix + "constant", pointLight->Constant);
+        m_Shader->SetFloat(prefix + "linear", pointLight->Linear);
+        m_Shader->SetFloat(prefix + "quadratic", pointLight->Quadratic);
+        m_Shader->SetFloat3(prefix + "ambient", pointLight->Ambient);
+        m_Shader->SetFloat3(prefix + "diffuse", pointLight->Diffuse);
+        m_Shader->SetFloat3(prefix + "specular", pointLight->Specular);
+    }
 
-    for (auto mesh : meshes) {
-        auto vertexArray = mesh.VertexArray;
-        glm::mat4 model = mesh.Transform;
-        m_Shader->SetMatrix4("u_Model", model);
-        vertexArray->Bind();
-        RenderCommand::DrawIndexed(vertexArray);
+    for (uint32_t i = 0; i < vertexArrays.size(); i++) {
+        m_Shader->SetMatrix4("u_Model", vertexArrayTransforms[i]);
+        RenderCommand::DrawIndexed(vertexArrays[i]);
     }
 }
