@@ -77,21 +77,21 @@ public:
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        m_Window = glfwCreateWindow(1280, 900, "Vortex Renderer Demo", nullptr, nullptr);
+        m_Window = glfwCreateWindow(1280, 850, "Vortex Renderer Demo", nullptr, nullptr);
         if (!m_Window) {
             std::cout << "Failed to create window!" << std::endl;
             exit(1);
         }
 
-        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        // glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetCursorPosCallback(m_Window, OnMouseMove);
         glfwGetCursorPos(m_Window, &m_LastMouseX, &m_LastMouseY);
 
-        m_Camera = std::make_shared<FPSCamera>(90.0f, 1280, 720);
+        m_Camera = std::make_shared<FPSCamera>(90.0f, 1280, 600);
         m_Camera->MoveFront(-5.0f);
 
         m_Context = Vortex::ContextCreate(m_Window);
-        Vortex::Renderer::Init(m_Context, "assets/Shaders/Light.glsl", 1280, 720);
+        Vortex::Renderer::Init(m_Context, "assets/Shaders/Light.glsl", 1280, 600);
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -99,12 +99,14 @@ public:
         (void) io;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
         ImGui::StyleColorsClassic();
         ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
         ImGui_ImplOpenGL3_Init("#version 150");
 
-        auto renderbuffer = Vortex::RenderbufferCreate(1280, 720, Vortex::Renderbuffer::RenderbufferType::DEPTH24_STENCIL8);
-        m_Texture = Vortex::Texture2DCreate(1280, 720);
+        auto renderbuffer = Vortex::RenderbufferCreate(1280, 600, Vortex::Renderbuffer::RenderbufferType::DEPTH24_STENCIL8);
+        m_Texture = Vortex::Texture2DCreate(1280, 600);
         m_Framebuffer = Vortex::FramebufferCreate();
         m_Framebuffer->Bind();
         m_Framebuffer->AttachColorBuffer(m_Texture);
@@ -141,6 +143,49 @@ public:
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        static bool dockspaceOpen = true;
+        static bool opt_fullscreen_persistant = true;
+        bool opt_fullscreen = opt_fullscreen_persistant;
+        static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+        if (opt_fullscreen) {
+            ImGuiViewport* viewport = ImGui::GetMainViewport();
+            ImGui::SetNextWindowPos(viewport->Pos);
+            ImGui::SetNextWindowSize(viewport->Size);
+            ImGui::SetNextWindowViewport(viewport->ID);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+            window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+            window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+        }
+
+        if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+            window_flags |= ImGuiWindowFlags_NoBackground;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+        ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
+        ImGui::PopStyleVar();
+
+        if (opt_fullscreen)
+            ImGui::PopStyleVar(2);
+
+        // DockSpace
+        ImGuiIO& io = ImGui::GetIO();
+        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
+            ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+        }
+
+        if (ImGui::BeginMenuBar()) {
+            if (ImGui::BeginMenu("File")) {
+                if (ImGui::MenuItem("Exit"))
+                    glfwSetWindowShouldClose(m_Window, true);
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenuBar();
+        }
+
         ImGui::Begin("Settings");
         ImGui::Text("Depth testing");
         ImGui::Checkbox("EnableDepthTest", &m_EnableDepthTest);
@@ -154,12 +199,20 @@ public:
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
         ImGui::Begin("Viewport");
-        ImGui::Image(*(ImTextureID*) m_Texture->GetNative(), ImVec2(1280, 720), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Image(*(ImTextureID*) m_Texture->GetNative(), ImVec2(1280, 600), ImVec2(0, 1), ImVec2(1, 0));
         ImGui::End();
         ImGui::PopStyleVar();
 
+        ImGui::End();
+
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        // Not good, but imgui is temporary and only opengl here anyways
+        GLFWwindow* backup_current_context = glfwGetCurrentContext();
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+        glfwMakeContextCurrent(backup_current_context);
 
         if (glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_REPEAT)
             m_Camera->MoveFront(0.02f);

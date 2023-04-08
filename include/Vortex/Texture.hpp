@@ -40,14 +40,15 @@ public:
 
     virtual uint32_t GetWidth() const override {
         assert(false);
-    };
+    }
+
     virtual uint32_t GetHeight() const override {
         assert(false);
-    };
+    }
 
     virtual void Bind(uint32_t) const override {
         assert(false);
-    };
+    }
 
     virtual void* GetNative() const override {
         assert(false);
