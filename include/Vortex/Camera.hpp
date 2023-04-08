@@ -14,6 +14,11 @@ public:
         UpdateMatrices();
     }
 
+    void Resize(float fov, float width, float height) {
+        m_Projection = glm::perspective(fov / 2.0f, width / height, 0.1f, 1000.0f);
+        UpdateMatrices();
+    }
+
     virtual ~Camera() = default;
 
     const glm::mat4& GetViewProj() {

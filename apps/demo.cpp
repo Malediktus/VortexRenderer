@@ -77,7 +77,7 @@ public:
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        m_Window = glfwCreateWindow(1280, 850, "Vortex Renderer Demo", nullptr, nullptr);
+        m_Window = glfwCreateWindow(1280, 720, "Vortex Renderer Demo", nullptr, nullptr);
         if (!m_Window) {
             std::cout << "Failed to create window!" << std::endl;
             exit(1);
@@ -87,11 +87,11 @@ public:
         glfwSetCursorPosCallback(m_Window, OnMouseMove);
         glfwGetCursorPos(m_Window, &m_LastMouseX, &m_LastMouseY);
 
-        m_Camera = std::make_shared<FPSCamera>(90.0f, 1280, 600);
+        m_Camera = std::make_shared<FPSCamera>(90.0f, 1280, 720);
         m_Camera->MoveFront(-5.0f);
 
         m_Context = Vortex::ContextCreate(m_Window);
-        Vortex::Renderer::Init(m_Context, "assets/Shaders/Light.glsl", 1280, 600);
+        Vortex::Renderer::Init(m_Context, "assets/Shaders/Light.glsl", 1280, 720);
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -105,8 +105,8 @@ public:
         ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
         ImGui_ImplOpenGL3_Init("#version 150");
 
-        auto renderbuffer = Vortex::RenderbufferCreate(1280, 600, Vortex::Renderbuffer::RenderbufferType::DEPTH24_STENCIL8);
-        m_Texture = Vortex::Texture2DCreate(1280, 600);
+        auto renderbuffer = Vortex::RenderbufferCreate(1280, 720, Vortex::Renderbuffer::RenderbufferType::DEPTH24_STENCIL8);
+        m_Texture = Vortex::Texture2DCreate(1280, 720);
         m_Framebuffer = Vortex::FramebufferCreate();
         m_Framebuffer->Bind();
         m_Framebuffer->AttachColorBuffer(m_Texture);
@@ -132,6 +132,13 @@ public:
     }
 
     void Update() {
+        if (m_OldViewportWidth != m_ViewportWidth || m_OldViewportHeight != m_ViewportHeight) {
+            m_Texture->Resize(m_ViewportWidth, m_ViewportHeight);
+            Vortex::Renderer::OnResize(m_ViewportWidth, m_ViewportHeight);
+            m_OldViewportWidth = m_ViewportWidth;
+            m_OldViewportHeight = m_ViewportHeight;
+            m_Camera->Resize(90.0f, m_ViewportWidth, m_ViewportHeight);
+        }
         m_Framebuffer->Bind();
 
         Vortex::Renderer::BeginFrame();
@@ -199,7 +206,9 @@ public:
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
         ImGui::Begin("Viewport");
-        ImGui::Image(*(ImTextureID*) m_Texture->GetNative(), ImVec2(1280, 600), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Image(*(ImTextureID*) m_Texture->GetNative(), ImVec2(m_ViewportWidth, m_ViewportHeight), ImVec2(0, 1), ImVec2(1, 0));
+        m_ViewportWidth = ImGui::GetWindowSize().x;
+        m_ViewportHeight = ImGui::GetWindowSize().y - 19;
         ImGui::End();
         ImGui::PopStyleVar();
 
@@ -275,6 +284,11 @@ private:
     int m_DepthTestFunc = 2;
     bool m_EnableCulling = false;
     int m_CullingType = 0;
+
+    uint32_t m_ViewportWidth = 1280;
+    uint32_t m_ViewportHeight = 720;
+    uint32_t m_OldViewportWidth = 1280;
+    uint32_t m_OldViewportHeight = 720;
 };
 
 double VortexDemo::m_LastMouseX = 0;

@@ -70,6 +70,13 @@ void OpenGLTexture2D::Bind(uint32_t slot) const {
     glBindTexture(GL_TEXTURE_2D, m_RendererID);
 }
 
+void OpenGLTexture2D::Resize(uint32_t width, uint32_t height) {
+    glBindTexture(GL_TEXTURE_2D, m_RendererID);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    m_Width = width;
+    m_Height = height;
+}
+
 void* OpenGLTexture2D::GetNative() const {
     return (void*) &m_RendererID;
 }
