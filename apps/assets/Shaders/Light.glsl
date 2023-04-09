@@ -20,7 +20,7 @@ void main() {
     gl_Position = u_ViewProj * vec4(v_out_FragPos, 1.0);
 }
 
-#type fragment
+#type pixel
 
 #version 330 core
 

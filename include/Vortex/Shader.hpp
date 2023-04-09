@@ -57,7 +57,7 @@ VT_API std::shared_ptr<Shader> ShaderCreate(const std::string& filepath);
  * @date 2023-03-31
  * @copyright Copyright (c) 2023
  */
-VT_API std::shared_ptr<Shader> ShaderCreate(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
+VT_API std::shared_ptr<Shader> ShaderCreate(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& geometrySrc = "");
 
 /**
  * @brief This is a high level API for managing shaders. It automaticly handles allocation and deallocation of shaders.

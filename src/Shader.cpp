@@ -16,11 +16,10 @@ std::shared_ptr<Shader> Vortex::ShaderCreate(const std::string& filepath) {
     assert(false);
 }
 
-std::shared_ptr<Shader> Vortex::ShaderCreate(const std::string& name, const std::string& vertexSrc,
-                                             const std::string& fragmentSrc) {
+std::shared_ptr<Shader> Vortex::ShaderCreate(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& geometrySrc) {
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
-        return std::make_shared<OpenGL::OpenGLShader>(name, vertexSrc, fragmentSrc);
+        return std::make_shared<OpenGL::OpenGLShader>(name, vertexSrc, fragmentSrc, geometrySrc);
     default:
         assert(false);
     }
