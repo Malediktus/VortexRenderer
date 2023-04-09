@@ -7,10 +7,6 @@
 #include <cstdlib>
 #include <iostream>
 
-#include <imgui.h>
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
-
 class FPSCamera : public Vortex::Camera {
 public:
     FPSCamera(float fov, float width, float height) : Camera(fov, width, height) {
@@ -67,6 +63,45 @@ protected:
 class VortexDemo {
 public:
     VortexDemo() {
+        SetupGlfw();
+
+        Vortex::Renderer::Init(Vortex::ContextCreate(m_Window), "assets/Shaders/Light.glsl", 1280, 720);
+        m_Camera = std::make_shared<FPSCamera>(90.0f, 1280, 720);
+        m_Camera->MoveFront(-5.0f);
+        m_MonkeyMesh = std::make_shared<Vortex::Mesh>("assets/Objects/Monkey/monkey.obj");
+    }
+
+    void Update() {
+        auto scene = std::make_shared<Vortex::Scene>(m_Camera);
+
+        std::shared_ptr<Vortex::Object> meshObject = std::make_shared<Vortex::Object>();
+        meshObject->Attach(m_MonkeyMesh);
+
+        glm::mat4 lightTransform(1.0f);
+        lightTransform = glm::translate(lightTransform, glm::vec3(1.0f, 0.5f, 1.0f));
+
+        std::shared_ptr<Vortex::PointLight> light = std::make_shared<Vortex::PointLight>(1.0f, 1.0f, 1.0f, glm::vec3(1.0f), glm::vec3(1.0f), glm::vec3(1.0f));
+        std::shared_ptr<Vortex::Object> lightObject = std::make_shared<Vortex::Object>(lightTransform);
+        lightObject->Attach(light);
+
+        scene->Append(meshObject);
+        scene->Append(lightObject);
+
+        Vortex::Renderer::BeginFrame();
+        Vortex::Renderer::Submit(scene);
+        Vortex::Renderer::EndFrame();
+
+        ProcessKeyEvents();
+
+        glfwSwapBuffers(m_Window);
+        glfwPollEvents();
+    }
+
+    bool ShouldClose() {
+        return glfwWindowShouldClose(m_Window);
+    }
+
+    void SetupGlfw() {
         glfwSetErrorCallback(GlfwErrorCallback);
         if (!glfwInit()) {
             std::cout << "Failed to init GLFW!" << std::endl;
@@ -83,146 +118,12 @@ public:
             exit(1);
         }
 
-        // glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetCursorPosCallback(m_Window, OnMouseMove);
         glfwGetCursorPos(m_Window, &m_LastMouseX, &m_LastMouseY);
-
-        m_Camera = std::make_shared<FPSCamera>(90.0f, 1280, 720);
-        m_Camera->MoveFront(-5.0f);
-
-        m_Context = Vortex::ContextCreate(m_Window);
-        Vortex::Renderer::Init(m_Context, "assets/Shaders/Light.glsl", 1280, 720);
-
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO();
-        (void) io;
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-        ImGui::StyleColorsClassic();
-        ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
-        ImGui_ImplOpenGL3_Init("#version 150");
-
-        auto renderbuffer = Vortex::RenderbufferCreate(1280, 720, Vortex::Renderbuffer::RenderbufferType::DEPTH24_STENCIL8);
-        m_Texture = Vortex::Texture2DCreate(1280, 720);
-        m_Framebuffer = Vortex::FramebufferCreate();
-        m_Framebuffer->Bind();
-        m_Framebuffer->AttachColorBuffer(m_Texture);
-        m_Framebuffer->AttachDepthStencilBuffer(renderbuffer);
-        m_Framebuffer->Unbind();
-
-        m_Scene = std::make_shared<Vortex::Scene>(m_Camera);
-        std::shared_ptr<Vortex::Mesh> mesh = std::make_shared<Vortex::Mesh>("assets/Objects/Monkey/monkey.obj");
-        std::shared_ptr<Vortex::Object> meshObject = std::make_shared<Vortex::Object>();
-        meshObject->Attach(mesh);
-        std::shared_ptr<Vortex::PointLight> light =
-            std::make_shared<Vortex::PointLight>(1.0f, 1.0f, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-        glm::mat4 lightTransform(1.0f);
-        lightTransform = glm::translate(lightTransform, glm::vec3(1.0f, 0.5f, 1.0f));
-        std::shared_ptr<Vortex::Object> lightObject = std::make_shared<Vortex::Object>(lightTransform);
-        lightObject->Attach(light);
-        m_Scene->Append(meshObject);
-        m_Scene->Append(lightObject);
     }
 
-    bool ShouldClose() {
-        return glfwWindowShouldClose(m_Window);
-    }
-
-    void Update() {
-        if (m_OldViewportWidth != m_ViewportWidth || m_OldViewportHeight != m_ViewportHeight) {
-            m_Texture->Resize(m_ViewportWidth, m_ViewportHeight);
-            Vortex::Renderer::OnResize(m_ViewportWidth, m_ViewportHeight);
-            m_OldViewportWidth = m_ViewportWidth;
-            m_OldViewportHeight = m_ViewportHeight;
-            m_Camera->Resize(90.0f, m_ViewportWidth, m_ViewportHeight);
-        }
-        m_Framebuffer->Bind();
-
-        Vortex::Renderer::BeginFrame();
-        Vortex::Renderer::Submit(m_Scene);
-        Vortex::Renderer::EndFrame();
-        m_Framebuffer->Unbind();
-
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        static bool dockspaceOpen = true;
-        static bool opt_fullscreen_persistant = true;
-        bool opt_fullscreen = opt_fullscreen_persistant;
-        static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-        if (opt_fullscreen) {
-            ImGuiViewport* viewport = ImGui::GetMainViewport();
-            ImGui::SetNextWindowPos(viewport->Pos);
-            ImGui::SetNextWindowSize(viewport->Size);
-            ImGui::SetNextWindowViewport(viewport->ID);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-            window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-            window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-        }
-
-        if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-            window_flags |= ImGuiWindowFlags_NoBackground;
-
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
-        ImGui::PopStyleVar();
-
-        if (opt_fullscreen)
-            ImGui::PopStyleVar(2);
-
-        // DockSpace
-        ImGuiIO& io = ImGui::GetIO();
-        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
-            ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-        }
-
-        if (ImGui::BeginMenuBar()) {
-            if (ImGui::BeginMenu("File")) {
-                if (ImGui::MenuItem("Exit"))
-                    glfwSetWindowShouldClose(m_Window, true);
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenuBar();
-        }
-
-        ImGui::Begin("Settings");
-        ImGui::Text("Depth testing");
-        ImGui::Checkbox("EnableDepthTest", &m_EnableDepthTest);
-        ImGui::Checkbox("DepthTestMask", &m_EnableDepthMask);
-        ImGui::InputInt("DepthTestFunc", &m_DepthTestFunc);
-
-        ImGui::Text("Culling");
-        ImGui::Checkbox("EnableCulling", &m_EnableCulling);
-        ImGui::InputInt("CullingType", &m_CullingType);
-        ImGui::End();
-
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("Viewport");
-        ImGui::Image(*(ImTextureID*) m_Texture->GetNative(), ImVec2(m_ViewportWidth, m_ViewportHeight), ImVec2(0, 1), ImVec2(1, 0));
-        m_ViewportWidth = ImGui::GetWindowSize().x;
-        m_ViewportHeight = ImGui::GetWindowSize().y - 19;
-        ImGui::End();
-        ImGui::PopStyleVar();
-
-        ImGui::End();
-
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        // Not good, but imgui is temporary and only opengl here anyways
-        GLFWwindow* backup_current_context = glfwGetCurrentContext();
-        ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault();
-        glfwMakeContextCurrent(backup_current_context);
-
+    void ProcessKeyEvents() {
         if (glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_REPEAT)
             m_Camera->MoveFront(0.02f);
         if (glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_REPEAT)
@@ -241,11 +142,6 @@ public:
             glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         if (glfwGetKey(m_Window, GLFW_KEY_Q) == GLFW_PRESS)
             glfwSetWindowShouldClose(m_Window, true);
-
-        glfwSwapBuffers(m_Window);
-        Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::COLOR);
-        Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::DEPTH);
-        glfwPollEvents();
     }
 
     ~VortexDemo() {
@@ -273,22 +169,7 @@ private:
     GLFWwindow* m_Window;
 
     static std::shared_ptr<FPSCamera> m_Camera;
-    std::shared_ptr<Vortex::Context> m_Context;
-
-    std::shared_ptr<Vortex::Framebuffer> m_Framebuffer;
-    std::shared_ptr<Vortex::Texture2D> m_Texture;
-    std::shared_ptr<Vortex::Scene> m_Scene;
-
-    bool m_EnableDepthTest = true;
-    bool m_EnableDepthMask = true;
-    int m_DepthTestFunc = 2;
-    bool m_EnableCulling = false;
-    int m_CullingType = 0;
-
-    uint32_t m_ViewportWidth = 1280;
-    uint32_t m_ViewportHeight = 720;
-    uint32_t m_OldViewportWidth = 1280;
-    uint32_t m_OldViewportHeight = 720;
+    std::shared_ptr<Vortex::Mesh> m_MonkeyMesh;
 };
 
 double VortexDemo::m_LastMouseX = 0;
