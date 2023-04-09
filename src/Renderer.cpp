@@ -47,18 +47,18 @@ void Renderer::Submit(const std::shared_ptr<Scene>& scene) {
     // - Iterate again and render all vertexArrays
     // Benefit: No need to store a mat4, which is realy huge, for each light and vertex array
 
-    std::vector<std::shared_ptr<PointLight>> pointLights;
-    std::vector<glm::mat4> pointLightTransforms;
+    std::vector<std::shared_ptr<SceneLight>> sceneLights;
+    std::vector<glm::mat4> sceneLightTransforms;
     std::vector<std::shared_ptr<VertexArray>> vertexArrays;
     std::vector<glm::mat4> vertexArrayTransforms;
 
     for (auto object : scene->GetObjects()) {
         auto transform = object->GetTransform();
-        auto objectPointLights = object->GetPointLights();
+        auto objectPointLights = object->GetLights();
         auto objectMeshes = object->GetMeshs();
         for (auto pointLight : objectPointLights) {
-            pointLights.push_back(pointLight);
-            pointLightTransforms.push_back(transform);
+            sceneLights.push_back(pointLight);
+            sceneLightTransforms.push_back(transform);
         }
         for (auto mesh : objectMeshes) {
             for (auto vertexArray : mesh->GetVertexArrays()) {
@@ -73,19 +73,53 @@ void Renderer::Submit(const std::shared_ptr<Scene>& scene) {
     m_Shader->Bind();
     m_Shader->SetMatrix4("u_ViewProj", camera->GetViewProj());
     m_Shader->SetFloat3("u_ViewPos", camera->GetPosition());
-    m_Shader->SetInt("u_NumPointLights", pointLights.size());
-    for (uint32_t i = 0; i < pointLights.size(); i++) {
-        auto pointLight = pointLights[i];
-        std::string prefix = "u_PointLights[" + std::to_string(i) + "].";
-        glm::vec3 position = glm::vec3(glm::column(pointLightTransforms[i], 3));
-        m_Shader->SetFloat3(prefix + "position", position);
-        m_Shader->SetFloat(prefix + "constant", pointLight->Constant);
-        m_Shader->SetFloat(prefix + "linear", pointLight->Linear);
-        m_Shader->SetFloat(prefix + "quadratic", pointLight->Quadratic);
-        m_Shader->SetFloat3(prefix + "ambient", pointLight->Ambient);
-        m_Shader->SetFloat3(prefix + "diffuse", pointLight->Diffuse);
-        m_Shader->SetFloat3(prefix + "specular", pointLight->Specular);
+
+    uint32_t numPointLights = 0, numDirectionalLights = 0, numSpotLights = 0;
+
+    for (uint32_t i = 0; i < sceneLights.size(); i++) {
+        if (sceneLights[i]->Type == SceneLight::SceneLightType::Point) {
+            PointLight* pointLight = (PointLight*) sceneLights[i].get();
+            std::string prefix = "u_PointLights[" + std::to_string(i) + "].";
+            glm::vec3 position = glm::vec3(glm::column(sceneLightTransforms[i], 3));
+            m_Shader->SetFloat3(prefix + "position", position);
+            m_Shader->SetFloat(prefix + "constant", pointLight->Constant);
+            m_Shader->SetFloat(prefix + "linear", pointLight->Linear);
+            m_Shader->SetFloat(prefix + "quadratic", pointLight->Quadratic);
+            m_Shader->SetFloat3(prefix + "ambient", pointLight->Ambient);
+            m_Shader->SetFloat3(prefix + "diffuse", pointLight->Diffuse);
+            m_Shader->SetFloat3(prefix + "specular", pointLight->Specular);
+            numPointLights++;
+        } else if (sceneLights[i]->Type == SceneLight::SceneLightType::Directional) {
+            DirectionalLight* directionalLight = (DirectionalLight*) sceneLights[i].get();
+            std::string prefix = "u_DirectionalLights[" + std::to_string(i) + "].";
+            glm::vec3 position = glm::vec3(glm::column(sceneLightTransforms[i], 3));
+            m_Shader->SetFloat3(prefix + "position", position);
+            m_Shader->SetFloat3(prefix + "ambient", directionalLight->Ambient);
+            m_Shader->SetFloat3(prefix + "diffuse", directionalLight->Diffuse);
+            m_Shader->SetFloat3(prefix + "specular", directionalLight->Specular);
+            numDirectionalLights++;
+        } else if (sceneLights[i]->Type == SceneLight::SceneLightType::Spot) {
+            SpotLight* spotLight = (SpotLight*) sceneLights[i].get();
+            std::string prefix = "u_SpotLights[" + std::to_string(i) + "].";
+            glm::vec3 position = glm::vec3(glm::column(sceneLightTransforms[i], 3));
+            glm::vec3 direction = glm::vec3(glm::column(sceneLightTransforms[i], 2));
+            m_Shader->SetFloat3(prefix + "position", position);
+            m_Shader->SetFloat3(prefix + "direction", direction);
+            m_Shader->SetFloat(prefix + "cutOff", spotLight->CutOff);
+            m_Shader->SetFloat(prefix + "outerCutOff", spotLight->OuterCutOff);
+            m_Shader->SetFloat(prefix + "constant", spotLight->Constant);
+            m_Shader->SetFloat(prefix + "linear", spotLight->Linear);
+            m_Shader->SetFloat(prefix + "quadratic", spotLight->Quadratic);
+            m_Shader->SetFloat3(prefix + "ambient", spotLight->Ambient);
+            m_Shader->SetFloat3(prefix + "diffuse", spotLight->Diffuse);
+            m_Shader->SetFloat3(prefix + "specular", spotLight->Specular);
+            numSpotLights++;
+        }
     }
+
+    m_Shader->SetInt("u_NumPointLights", numPointLights);
+    m_Shader->SetInt("u_NumDirectionalLights", numDirectionalLights);
+    m_Shader->SetInt("u_NumSpotLights", numSpotLights);
 
     for (uint32_t i = 0; i < vertexArrays.size(); i++) {
         m_Shader->SetMatrix4("u_Model", vertexArrayTransforms[i]);

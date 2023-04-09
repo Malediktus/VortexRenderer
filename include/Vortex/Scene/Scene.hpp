@@ -10,18 +10,50 @@
 #include "Model.hpp"
 
 namespace Vortex {
-struct PointLight {
+struct SceneLight {
+    SceneLight(const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3 specular) : Ambient(ambient), Diffuse(diffuse), Specular(specular) {
+    }
+    ~SceneLight() = default;
+
+    enum SceneLightType { None = 0, Point = 1, Directional = 2, Spot = 3 };
+
+    SceneLightType Type = SceneLightType::None;
+    glm::vec3 Ambient;
+    glm::vec3 Diffuse;
+    glm::vec3 Specular;
+};
+
+struct PointLight : public SceneLight {
     PointLight(float constant, float linear, float quadratic, const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3 specular)
-        : Constant(constant), Linear(linear), Quadratic(quadratic), Ambient(ambient), Diffuse(diffuse), Specular(specular) {
+        : SceneLight(ambient, diffuse, specular), Constant(constant), Linear(linear), Quadratic(quadratic) {
+        Type = SceneLightType::Point;
     }
     ~PointLight() = default;
 
     float Constant;
     float Linear;
     float Quadratic;
-    glm::vec3 Ambient;
-    glm::vec3 Diffuse;
-    glm::vec3 Specular;
+};
+
+struct DirectionalLight : public SceneLight {
+    DirectionalLight(const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3 specular) : SceneLight(ambient, diffuse, specular) {
+        Type = SceneLightType::Directional;
+    }
+    ~DirectionalLight() = default;
+};
+
+struct SpotLight : public SceneLight {
+    SpotLight(float cutOff, float outerCutOff, float constant, float linear, float quadratic, const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3 specular)
+        : SceneLight(ambient, diffuse, specular), CutOff(cutOff), OuterCutOff(outerCutOff), Constant(constant), Linear(linear), Quadratic(quadratic) {
+        Type = SceneLightType::Spot;
+    }
+    ~SpotLight() = default;
+
+    float CutOff;
+    float OuterCutOff;
+    float Constant;
+    float Linear;
+    float Quadratic;
 };
 
 class Mesh {
@@ -57,8 +89,8 @@ public:
     }
     ~Object() = default;
 
-    void Attach(const std::shared_ptr<PointLight>& pointLight) {
-        m_PointLights.push_back(pointLight);
+    void Attach(const std::shared_ptr<SceneLight>& pointLight) {
+        m_Lights.push_back(pointLight);
     }
 
     void Attach(const std::shared_ptr<Mesh>& mesh) {
@@ -69,8 +101,8 @@ public:
         return m_Transform;
     }
 
-    const std::vector<std::shared_ptr<PointLight>>& GetPointLights() {
-        return m_PointLights;
+    const std::vector<std::shared_ptr<SceneLight>>& GetLights() {
+        return m_Lights;
     }
 
     const std::vector<std::shared_ptr<Mesh>>& GetMeshs() {
@@ -79,7 +111,7 @@ public:
 
 private:
     glm::mat4 m_Transform;
-    std::vector<std::shared_ptr<PointLight>> m_PointLights;
+    std::vector<std::shared_ptr<SceneLight>> m_Lights;
     std::vector<std::shared_ptr<Mesh>> m_Meshs;
 };
 

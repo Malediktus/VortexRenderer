@@ -25,6 +25,8 @@ void main() {
 #version 330 core
 
 #define NR_POINT_LIGHTS 4
+#define NR_DIRECTIONAL_LIGHTS 4
+#define NR_SPOT_LIGHTS 4
 
 struct PointLight {
     vec3 position;
@@ -38,9 +40,36 @@ struct PointLight {
     vec3 specular;
 };
 
+struct DirectionalLight {
+    vec3 direction;
+
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
+struct SpotLight {
+    vec3 position;
+    vec3 direction;
+    float cutOff;
+    float outerCutOff;
+
+    float constant;
+    float linear;
+    float quadratic;
+
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
 uniform vec3 u_ViewPos;
 uniform int u_NumPointLights;
+uniform int u_NumDirectionalLights;
+uniform int u_NumSpotLights;
 uniform PointLight u_PointLights[NR_POINT_LIGHTS];
+uniform DirectionalLight u_DirectionalLights[NR_DIRECTIONAL_LIGHTS];
+uniform SpotLight u_SpotLights[NR_SPOT_LIGHTS];
 
 in vec2 v_out_TexCoords;
 in vec3 v_out_Normal;
@@ -48,6 +77,8 @@ in vec3 v_out_FragPos;
 out vec4 FragColor;
 
 vec4 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
+vec4 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir);
+vec4 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 
 void main() {
     vec3 norm = normalize(v_out_Normal);
@@ -55,6 +86,10 @@ void main() {
     vec4 result = vec4(0.0, 0.0, 0.0, 0.0);
     for (int i = 0; i < u_NumPointLights; i++)
         result += CalcPointLight(u_PointLights[i], norm, v_out_FragPos, viewDir);
+    for (int i = 0; i < u_NumDirectionalLights; i++)
+        result += CalcDirectionalLight(u_DirectionalLights[i], norm, viewDir);
+    for (int i = 0; i < u_NumSpotLights; i++)
+        result += CalcSpotLight(u_SpotLights[i], norm, v_out_FragPos, viewDir);
 
     FragColor = result;
 }
@@ -73,5 +108,38 @@ vec4 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
     ambient *= attenuation;
     diffuse *= attenuation;
     specular *= attenuation;
+    return (ambient + diffuse + specular);
+}
+
+vec4 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir) {
+    vec3 lightDir = normalize(-light.direction);
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 1.0);
+    vec4 ambient = vec4(light.ambient, 1.0);
+    vec4 diffuse = vec4(light.diffuse * diff, 1.0);
+    vec4 specular = vec4(light.specular * spec, 1.0);
+
+    return (ambient + diffuse + specular);
+}
+
+vec4 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
+    vec3 lightDir = normalize(light.position - fragPos);
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 1.0);
+    float distance = length(light.position - fragPos);
+    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+    float theta = dot(lightDir, normalize(-light.direction));
+    float epsilon = light.cutOff - light.outerCutOff;
+    float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+
+    vec4 ambient = vec4(light.ambient, 1.0);
+    vec4 diffuse = vec4(light.diffuse * diff, 1.0);
+    vec4 specular = vec4(light.specular * spec, 1.0);
+
+    ambient *= attenuation * intensity;
+    diffuse *= attenuation * intensity;
+    specular *= attenuation * intensity;
     return (ambient + diffuse + specular);
 }
