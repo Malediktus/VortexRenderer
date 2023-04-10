@@ -1,6 +1,7 @@
 #include <Vortex/Platform/OpenGL/OpenGLTexture.hpp>
 #include <stb_image/stb_image.h>
 #include <glad/glad.h>
+#include <spdlog/spdlog.h>
 #include <cassert>
 
 using namespace Vortex::OpenGL;
@@ -34,6 +35,8 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : m_Path(path) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     stbi_image_free(pixels);
+
+    spdlog::trace("Created OpenGL texture2D from file (file: {}, ID: {})", path, m_RendererID);
 }
 
 OpenGLTexture2D::OpenGLTexture2D(const int width, const int height) : m_Path("") {
@@ -46,6 +49,7 @@ OpenGLTexture2D::OpenGLTexture2D(const int width, const int height) : m_Path("")
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    spdlog::trace("Created OpenGL texture2D from file (ID: {})", m_RendererID);
 }
 
 OpenGLTexture2D::OpenGLTexture2D(const int width, const int height, const void* data) : m_Path("") {
@@ -58,16 +62,19 @@ OpenGLTexture2D::OpenGLTexture2D(const int width, const int height, const void* 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    spdlog::trace("Created OpenGL texture2D from file (ID: {})", m_RendererID);
 }
 
 OpenGLTexture2D::~OpenGLTexture2D() {
     glDeleteTextures(1, &m_RendererID);
+    spdlog::trace("Deleted OpenGL texture2D (ID: {})", m_RendererID);
 }
 
 void OpenGLTexture2D::Bind(uint32_t slot) const {
     assert(slot <= 31);
     glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D, m_RendererID);
+    spdlog::trace("Bound OpenGL texture2D (ID: {})", m_RendererID);
 }
 
 void OpenGLTexture2D::Resize(uint32_t width, uint32_t height) {
@@ -75,6 +82,7 @@ void OpenGLTexture2D::Resize(uint32_t width, uint32_t height) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     m_Width = width;
     m_Height = height;
+    spdlog::trace("Resized OpenGL texture2D (ID: {})", m_RendererID);
 }
 
 void* OpenGLTexture2D::GetNative() const {

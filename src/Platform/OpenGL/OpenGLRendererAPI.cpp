@@ -1,4 +1,5 @@
 #include <Vortex/Platform/OpenGL/OpenGLRendererAPI.hpp>
+#include <spdlog/spdlog.h>
 #include <glad/glad.h>
 
 using namespace Vortex::OpenGL;
@@ -61,24 +62,29 @@ static GLenum BlendingFuncToGLenum(RendererAPI::BlendingFunc action) {
 
 void OpenGLRendererAPI::SetClearColor(const glm::vec4& color) {
     glClearColor(color.r, color.g, color.b, color.a);
+    spdlog::trace("Set OpenGL clear color to ({}, {}, {}, {})", color.r, color.g, color.b, color.a);
 }
 
 void OpenGLRendererAPI::Clear(const ClearBuffer clearBuffer) {
     switch (clearBuffer) {
     case ClearBuffer::COLOR:
         glClear(GL_COLOR_BUFFER_BIT);
+        spdlog::trace("Cleared OpenGL color buffer");
         break;
     case ClearBuffer::DEPTH:
         glClear(GL_DEPTH_BUFFER_BIT);
+        spdlog::trace("Cleared OpenGL color depth");
         break;
     case ClearBuffer::STENCIL:
         glClear(GL_STENCIL_BUFFER_BIT);
+        spdlog::trace("Cleared OpenGL color stencil");
         break;
     }
 }
 
 void OpenGLRendererAPI::SetViewport(const int width, const int height) {
     glViewport(0, 0, width, height);
+    spdlog::trace("Set OpenGL viewport size to ({}, {})", width, height);
 }
 
 void OpenGLRendererAPI::ConfigureDepthTesting(const bool enable, const bool depthMask, const DepthTestFunc func) {
@@ -118,6 +124,8 @@ void OpenGLRendererAPI::ConfigureDepthTesting(const bool enable, const bool dept
         glDepthFunc(GL_GEQUAL);
         break;
     }
+
+    spdlog::trace("Configured OpenGL depth testing: (enable: {}, mask: {}, func: {})", enable, depthMask, (int) func);
 }
 
 void OpenGLRendererAPI::ConfigureStencilTesting(const bool enable, const int writeMask, const int readMask, const StencilTestFunc func, const int ref,
@@ -159,6 +167,10 @@ void OpenGLRendererAPI::ConfigureStencilTesting(const bool enable, const int wri
 
     glStencilOp(Utils::StencilActionToGLenum(stencilFailAction), Utils::StencilActionToGLenum(stencilPassDepthFailAction),
                 Utils::StencilActionToGLenum(stencilPassDepthPassAction));
+
+    spdlog::trace(
+        "Configured OpenGL stencil testing: (enable: {}, writeMask: {}, readMask: {}, ref: {}, stencilFailAction: {}, stencilPassDepthFailAction: {}, stencilPassDepthPassAction: {})",
+        enable, writeMask, readMask, ref, (int) stencilFailAction, (int) stencilPassDepthFailAction, (int) stencilPassDepthPassAction);
 }
 
 void OpenGLRendererAPI::ConfigureBlending(const bool enable, const BlendingFunc blendingFunc1, const BlendingFunc blendingFunc2, const BlendingFunc blendingFuncR,
@@ -171,6 +183,10 @@ void OpenGLRendererAPI::ConfigureBlending(const bool enable, const BlendingFunc 
     glBlendFunc(Utils::BlendingFuncToGLenum(blendingFunc1), Utils::BlendingFuncToGLenum(blendingFunc2));
     glBlendFuncSeparate(Utils::BlendingFuncToGLenum(blendingFuncR), Utils::BlendingFuncToGLenum(blendingFuncG), Utils::BlendingFuncToGLenum(blendingFuncB),
                         Utils::BlendingFuncToGLenum(blendingFuncA));
+
+    spdlog::trace(
+        "Configured OpenGL blending testing: (enable: {}, blendingFunc1: {}, blendingFunc2: {}, blendingFuncR: {}, blendingFuncG: {}, blendingFuncB: {}, blendingFuncA: {})",
+        enable, (int) blendingFunc1, (int) blendingFunc2, (int) blendingFuncR, (int) blendingFuncG, (int) blendingFuncB, (int) blendingFuncA);
 }
 
 void OpenGLRendererAPI::ConfigureCulling(const bool enable, const CullingType type) {
@@ -187,9 +203,12 @@ void OpenGLRendererAPI::ConfigureCulling(const bool enable, const CullingType ty
         glCullFace(GL_FRONT_AND_BACK);
         break;
     }
+
+    spdlog::trace("Configured OpenGL culling: (enable: {}, type: {})", enable, (int) type);
 }
 
 void OpenGLRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount) {
     uint32_t count = indexCount == 0 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
     glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+    spdlog::trace("Drew OpenGL indexed vertex array (elements: {})", count);
 }

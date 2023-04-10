@@ -8,7 +8,7 @@ std::shared_ptr<Shader> Renderer::m_Shader;
 std::shared_ptr<Context> Renderer::m_Context;
 
 void Renderer::Init(void* glfwWindow, const std::string& shaderPath, const int width, const int height) {
-    spdlog::set_level(spdlog::level::level_enum::trace);
+    spdlog::set_level(spdlog::level::level_enum::info);
     spdlog::set_pattern("[%T] %^[%l%$] %v%$");
 
     m_Context = ContextCreate(glfwWindow);
@@ -26,23 +26,29 @@ void Renderer::Init(void* glfwWindow, const std::string& shaderPath, const int w
     Vortex::RenderCommand::ConfigureDepthTesting(true, true, Vortex::RendererAPI::DepthTestFunc::LESS);
     Vortex::RenderCommand::ConfigureCulling(false, Vortex::RendererAPI::CullingType::BACK);
     Vortex::RenderCommand::SetViewport(width, height);
+
+    spdlog::info("Initialized renderer");
 }
 
 void Renderer::OnResize(const int width, const int height) {
     Vortex::RenderCommand::SetViewport(width, height);
+    spdlog::trace("Resized renderer (width: {}, height: {})", width, height);
 }
 
 void Renderer::BeginFrame() {
     Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::COLOR);
     Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::DEPTH);
+    spdlog::trace("Began renderer frame");
 }
 
 void Renderer::EndFrame() {
+    spdlog::trace("Ended renderer frame");
 }
 
 void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray) {
     vertexArray->Bind();
     RenderCommand::DrawIndexed(vertexArray);
+    spdlog::trace("Submited vertex array to renderer");
 }
 
 void Renderer::Submit(const std::shared_ptr<Scene>& scene) {
@@ -129,4 +135,6 @@ void Renderer::Submit(const std::shared_ptr<Scene>& scene) {
         m_Shader->SetMatrix4("u_Model", vertexArrayTransforms[i]);
         RenderCommand::DrawIndexed(vertexArrays[i]);
     }
+
+    spdlog::trace("Submitted scene to renderer (NumLights: {}, NumVertexArrays: {})", sceneLights.size(), vertexArrays.size());
 }
