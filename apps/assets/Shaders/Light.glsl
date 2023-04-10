@@ -20,6 +20,32 @@ void main() {
     gl_Position = u_ViewProj * vec4(v_out_FragPos, 1.0);
 }
 
+#type geometry
+
+#version 330 core
+
+layout(triangles) in;
+layout(triangle_strip, max_vertices = 3) out;
+
+in vec2 v_out_TexCoords[];
+in vec3 v_out_Normal[];
+in vec3 v_out_FragPos[];
+
+out vec2 f_out_TexCoords;
+out vec3 f_out_Normal;
+out vec3 f_out_FragPos;
+
+void main() {
+    for (int i = 0; i < 3; i++) {
+        f_out_TexCoords = v_out_TexCoords[i];
+        f_out_Normal = v_out_Normal[i];
+        f_out_FragPos = v_out_FragPos[i];
+        gl_Position = gl_in[i].gl_Position;
+        EmitVertex();
+    }
+    EndPrimitive();
+}
+
 #type pixel
 
 #version 330 core
@@ -71,9 +97,9 @@ uniform PointLight u_PointLights[NR_POINT_LIGHTS];
 uniform DirectionalLight u_DirectionalLights[NR_DIRECTIONAL_LIGHTS];
 uniform SpotLight u_SpotLights[NR_SPOT_LIGHTS];
 
-in vec2 v_out_TexCoords;
-in vec3 v_out_Normal;
-in vec3 v_out_FragPos;
+in vec2 f_out_TexCoords;
+in vec3 f_out_Normal;
+in vec3 f_out_FragPos;
 out vec4 FragColor;
 
 vec4 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
@@ -81,15 +107,15 @@ vec4 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir);
 vec4 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 
 void main() {
-    vec3 norm = normalize(v_out_Normal);
-    vec3 viewDir = normalize(u_ViewPos - v_out_FragPos);
+    vec3 norm = normalize(f_out_Normal);
+    vec3 viewDir = normalize(u_ViewPos - f_out_FragPos);
     vec4 result = vec4(0.0, 0.0, 0.0, 0.0);
     for (int i = 0; i < u_NumPointLights; i++)
-        result += CalcPointLight(u_PointLights[i], norm, v_out_FragPos, viewDir);
+        result += CalcPointLight(u_PointLights[i], norm, f_out_FragPos, viewDir);
     for (int i = 0; i < u_NumDirectionalLights; i++)
         result += CalcDirectionalLight(u_DirectionalLights[i], norm, viewDir);
     for (int i = 0; i < u_NumSpotLights; i++)
-        result += CalcSpotLight(u_SpotLights[i], norm, v_out_FragPos, viewDir);
+        result += CalcSpotLight(u_SpotLights[i], norm, f_out_FragPos, viewDir);
 
     FragColor = result;
 }
