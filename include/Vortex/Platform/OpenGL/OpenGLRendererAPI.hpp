@@ -23,4 +23,8 @@ public:
 
     virtual void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount) override;
 };
+
+void CheckOpenGLError(const char* file, int line);
 } // namespace Vortex::OpenGL
+
+#define glCheckError() Vortex::OpenGL::CheckOpenGLError(__FILE__, __LINE__)

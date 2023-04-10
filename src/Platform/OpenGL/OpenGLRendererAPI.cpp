@@ -62,6 +62,7 @@ static GLenum BlendingFuncToGLenum(RendererAPI::BlendingFunc action) {
 
 void OpenGLRendererAPI::SetClearColor(const glm::vec4& color) {
     glClearColor(color.r, color.g, color.b, color.a);
+    glCheckError();
     spdlog::trace("Set OpenGL clear color to ({}, {}, {}, {})", color.r, color.g, color.b, color.a);
 }
 
@@ -80,10 +81,12 @@ void OpenGLRendererAPI::Clear(const ClearBuffer clearBuffer) {
         spdlog::trace("Cleared OpenGL color stencil");
         break;
     }
+    glCheckError();
 }
 
 void OpenGLRendererAPI::SetViewport(const int width, const int height) {
     glViewport(0, 0, width, height);
+    glCheckError();
     spdlog::trace("Set OpenGL viewport size to ({}, {})", width, height);
 }
 
@@ -125,6 +128,7 @@ void OpenGLRendererAPI::ConfigureDepthTesting(const bool enable, const bool dept
         break;
     }
 
+    glCheckError();
     spdlog::trace("Configured OpenGL depth testing: (enable: {}, mask: {}, func: {})", enable, depthMask, (int) func);
 }
 
@@ -168,6 +172,7 @@ void OpenGLRendererAPI::ConfigureStencilTesting(const bool enable, const int wri
     glStencilOp(Utils::StencilActionToGLenum(stencilFailAction), Utils::StencilActionToGLenum(stencilPassDepthFailAction),
                 Utils::StencilActionToGLenum(stencilPassDepthPassAction));
 
+    glCheckError();
     spdlog::trace(
         "Configured OpenGL stencil testing: (enable: {}, writeMask: {}, readMask: {}, ref: {}, stencilFailAction: {}, stencilPassDepthFailAction: {}, stencilPassDepthPassAction: {})",
         enable, writeMask, readMask, ref, (int) stencilFailAction, (int) stencilPassDepthFailAction, (int) stencilPassDepthPassAction);
@@ -184,6 +189,7 @@ void OpenGLRendererAPI::ConfigureBlending(const bool enable, const BlendingFunc 
     glBlendFuncSeparate(Utils::BlendingFuncToGLenum(blendingFuncR), Utils::BlendingFuncToGLenum(blendingFuncG), Utils::BlendingFuncToGLenum(blendingFuncB),
                         Utils::BlendingFuncToGLenum(blendingFuncA));
 
+    glCheckError();
     spdlog::trace(
         "Configured OpenGL blending testing: (enable: {}, blendingFunc1: {}, blendingFunc2: {}, blendingFuncR: {}, blendingFuncG: {}, blendingFuncB: {}, blendingFuncA: {})",
         enable, (int) blendingFunc1, (int) blendingFunc2, (int) blendingFuncR, (int) blendingFuncG, (int) blendingFuncB, (int) blendingFuncA);
@@ -204,11 +210,49 @@ void OpenGLRendererAPI::ConfigureCulling(const bool enable, const CullingType ty
         break;
     }
 
+    glCheckError();
     spdlog::trace("Configured OpenGL culling: (enable: {}, type: {})", enable, (int) type);
 }
 
 void OpenGLRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount) {
     uint32_t count = indexCount == 0 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
     glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+    glCheckError();
     spdlog::trace("Drew OpenGL indexed vertex array (elements: {})", count);
+}
+
+void Vortex::OpenGL::CheckOpenGLError(const char* file, int line) {
+    GLenum errorCode;
+    bool failure = false;
+    while ((errorCode = glGetError()) != GL_NO_ERROR) {
+        failure = true;
+        std::string error;
+        switch (errorCode) {
+        case GL_INVALID_ENUM:
+            error = "INVALID_ENUM";
+            break;
+        case GL_INVALID_VALUE:
+            error = "INVALID_VALUE";
+            break;
+        case GL_INVALID_OPERATION:
+            error = "INVALID_OPERATION";
+            break;
+        case GL_STACK_OVERFLOW:
+            error = "STACK_OVERFLOW";
+            break;
+        case GL_STACK_UNDERFLOW:
+            error = "STACK_UNDERFLOW";
+            break;
+        case GL_OUT_OF_MEMORY:
+            error = "OUT_OF_MEMORY";
+            break;
+        case GL_INVALID_FRAMEBUFFER_OPERATION:
+            error = "INVALID_FRAMEBUFFER_OPERATION";
+            break;
+        }
+        spdlog::error("An OpenGL error of type {} occured in file {}, line {}", error, file, line);
+    }
+
+    if (failure)
+        assert(false);
 }

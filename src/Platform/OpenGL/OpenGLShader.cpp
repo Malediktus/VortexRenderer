@@ -1,4 +1,5 @@
 #include <Vortex/Platform/OpenGL/OpenGLShader.hpp>
+#include <Vortex/Platform/OpenGL/OpenGLRendererAPI.hpp>
 #include <array>
 #include <cassert>
 #include <fstream>
@@ -60,6 +61,7 @@ OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc
 
 OpenGLShader::~OpenGLShader() {
     glDeleteProgram(m_RendererID);
+    glCheckError();
     // spdlog::trace("Deleted OpenGL shader program (ID: {})", m_RendererID); // Dont now why but this segfaults (maybe lifetime related)
 }
 
@@ -92,11 +94,11 @@ std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::stri
         assert(eol != std::string::npos);
         size_t begin = pos + typeTokenLength + 1;
         std::string type = source.substr(begin, eol - begin);
-        assert(Utils::ShaderTypeFromString(type));
+        assert(::Utils::ShaderTypeFromString(type));
 
         size_t nextLinePos = source.find_first_not_of("\r\n", eol);
         pos = source.find(typeToken, nextLinePos);
-        shaderSources[Utils::ShaderTypeFromString(type)] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
+        shaderSources[::Utils::ShaderTypeFromString(type)] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
     }
 
     return shaderSources;
@@ -113,13 +115,13 @@ void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shader
         const std::string& source = kv.second;
 
         GLuint shader = glCreateShader(type);
-        spdlog::trace("Created OpenGL shader of type {} (ID: {})", Utils::StringFromShaderType(type), shader);
+        spdlog::trace("Created OpenGL shader of type {} (ID: {})", ::Utils::StringFromShaderType(type), shader);
 
         const GLchar* sourceCStr = source.c_str();
         glShaderSource(shader, 1, &sourceCStr, 0);
 
         glCompileShader(shader);
-        spdlog::trace("Compiled OpenGL shader of type {} (ID: {})", Utils::StringFromShaderType(type), shader);
+        spdlog::trace("Compiled OpenGL shader of type {} (ID: {})", ::Utils::StringFromShaderType(type), shader);
 
         GLint isCompiled = 0;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
@@ -134,13 +136,13 @@ void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shader
             spdlog::trace("Deleted OpenGL shader (ID: {})", shader);
 
             spdlog::error("OpenGL shader compilation failed: {}", infoLog.data());
-            spdlog::error("Shader info: (type: {}, ID: {})", Utils::StringFromShaderType(type), shader);
+            spdlog::error("Shader info: (type: {}, ID: {})", ::Utils::StringFromShaderType(type), shader);
             assert(false);
             break;
         }
 
         glAttachShader(program, shader);
-        spdlog::trace("Attached OpenGL shader of type {} (ID: {}) to shader program (ID : {})", Utils::StringFromShaderType(type), shader, program);
+        spdlog::trace("Attached OpenGL shader of type {} (ID: {}) to shader program (ID : {})", ::Utils::StringFromShaderType(type), shader, program);
         glShaderIDs[glShaderIDIndex++] = shader;
     }
 
@@ -183,56 +185,66 @@ void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shader
         glDeleteShader(id);
         spdlog::trace("Deleted OpenGL shader (ID: {})", id);
     }
+    glCheckError();
 }
 
 void OpenGLShader::Bind() const {
     glUseProgram(m_RendererID);
+    glCheckError();
     spdlog::trace("Bound OpenGL shader program (ID: {})", m_RendererID);
 }
 
 void OpenGLShader::Unbind() const {
     glUseProgram(0);
+    glCheckError();
     spdlog::trace("Unbound OpenGL shader program (ID: {})", m_RendererID);
 }
 
 void OpenGLShader::SetInt(const std::string& name, int value) {
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniform1i(location, value);
+    glCheckError();
     spdlog::trace("Uploaded int to OpenGL shader program (name: {}, value: {}, ID: {})", name, value, m_RendererID);
 }
 
 void OpenGLShader::SetFloat(const std::string& name, float value) {
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniform1f(location, value);
+    glCheckError();
     spdlog::trace("Uploaded float to OpenGL shader program (name: {}, value: {}, ID: {})", name, value, m_RendererID);
 }
 
 void OpenGLShader::SetFloat2(const std::string& name, const glm::vec2& value) {
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniform2f(location, value.x, value.y);
+    glCheckError();
     spdlog::trace("Uploaded vector2 to OpenGL shader program (name: {}, value: ({}, {}), ID: {})", name, value.x, value.y, m_RendererID);
 }
 
 void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value) {
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniform3f(location, value.x, value.y, value.z);
+    glCheckError();
     spdlog::trace("Uploaded vector3 to OpenGL shader program (name: {}, value: ({}, {}, {}), ID: {})", name, value.x, value.y, value.z, m_RendererID);
 }
 
 void OpenGLShader::SetFloat4(const std::string& name, const glm::vec4& value) {
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniform4f(location, value.x, value.y, value.z, value.w);
+    glCheckError();
     spdlog::trace("Uploaded vector4 to OpenGL shader program (name: {}, value: ({}, {}, {}, {}), ID: {})", name, value.x, value.y, value.z, value.w, m_RendererID);
 }
 
 void OpenGLShader::SetMatrix3(const std::string& name, const glm::mat3& matrix) {
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
+    glCheckError();
     spdlog::trace("Uploaded matrix3x3 to OpenGL shader program (name: {}, ID: {})", name, m_RendererID);
 }
 
 void OpenGLShader::SetMatrix4(const std::string& name, const glm::mat4& matrix) {
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
+    glCheckError();
     spdlog::trace("Uploaded matrix4x4 to OpenGL shader program (name: {}, ID: {})", name, m_RendererID);
 }
