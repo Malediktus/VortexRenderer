@@ -65,10 +65,10 @@ public:
     VortexDemo() {
         SetupGlfw();
 
-        Vortex::Renderer::Init(Vortex::ContextCreate(m_Window), "assets/Shaders/Light.glsl", 1280, 720);
+        Vortex::Renderer::Init(m_Window, "../../apps/assets/Shaders/Light.glsl", 1280, 720);
         m_Camera = std::make_shared<FPSCamera>(90.0f, 1280, 720);
         m_Camera->MoveFront(-5.0f);
-        m_MonkeyMesh = std::make_shared<Vortex::Mesh>("assets/Objects/Monkey/monkey.obj");
+        m_MonkeyMesh = std::make_shared<Vortex::Mesh>("../../apps/assets/Objects/Monkey/monkey.obj");
     }
 
     void Update() {

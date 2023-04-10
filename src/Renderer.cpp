@@ -1,4 +1,5 @@
 #include <Vortex/Renderer.hpp>
+#include <spdlog/spdlog.h>
 #include <glm/gtc/matrix_access.hpp>
 
 using namespace Vortex;
@@ -6,8 +7,11 @@ using namespace Vortex;
 std::shared_ptr<Shader> Renderer::m_Shader;
 std::shared_ptr<Context> Renderer::m_Context;
 
-void Renderer::Init(const std::shared_ptr<Context>& context, const std::string& shaderPath, const int width, const int height) {
-    m_Context = context;
+void Renderer::Init(void* glfwWindow, const std::string& shaderPath, const int width, const int height) {
+    spdlog::set_level(spdlog::level::level_enum::trace);
+    spdlog::set_pattern("[%T] %^[%l%$] %v%$");
+
+    m_Context = ContextCreate(glfwWindow);
     m_Context->Init();
     RenderCommand::Init();
     m_Shader = ShaderCreate(shaderPath);

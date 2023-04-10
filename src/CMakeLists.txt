@@ -63,7 +63,7 @@ else()
     target_compile_options(Vortex PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
-target_link_libraries(Vortex PRIVATE glfw glad stb_image assimp)
+target_link_libraries(Vortex PRIVATE glfw glad stb_image assimp spdlog::spdlog)
 target_link_libraries(Vortex PUBLIC glm)
 
 source_group(

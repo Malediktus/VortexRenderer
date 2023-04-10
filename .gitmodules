@@ -10,3 +10,6 @@
 [submodule "extern/assimp"]
 	path = extern/assimp
 	url = https://github.com/assimp/assimp
+[submodule "extern/spdlog"]
+	path = extern/spdlog
+	url = https://github.com/gabime/spdlog
