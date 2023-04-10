@@ -201,50 +201,102 @@ void OpenGLShader::Unbind() const {
 }
 
 void OpenGLShader::SetInt(const std::string& name, int value) {
+    m_UniformInts[name] = value;
+}
+
+void OpenGLShader::SetFloat(const std::string& name, float value) {
+    m_UniformFloats[name] = value;
+}
+
+void OpenGLShader::SetFloat2(const std::string& name, const glm::vec2& value) {
+    m_UniformFloat2s[name] = value;
+}
+
+void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value) {
+    m_UniformFloat3s[name] = value;
+}
+
+void OpenGLShader::SetFloat4(const std::string& name, const glm::vec4& value) {
+    m_UniformFloat4s[name] = value;
+}
+
+void OpenGLShader::SetMatrix3(const std::string& name, const glm::mat3& matrix) {
+    m_UniformMatrix3s[name] = matrix;
+}
+
+void OpenGLShader::SetMatrix4(const std::string& name, const glm::mat4& matrix) {
+    m_UniformMatrix4s[name] = matrix;
+}
+
+void OpenGLShader::UploadInt(const std::string& name, int value) {
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniform1i(location, value);
     glCheckError();
     spdlog::trace("Uploaded int to OpenGL shader program (name: {}, value: {}, ID: {})", name, value, m_RendererID);
 }
 
-void OpenGLShader::SetFloat(const std::string& name, float value) {
+void OpenGLShader::UploadFloat(const std::string& name, float value) {
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniform1f(location, value);
     glCheckError();
     spdlog::trace("Uploaded float to OpenGL shader program (name: {}, value: {}, ID: {})", name, value, m_RendererID);
 }
 
-void OpenGLShader::SetFloat2(const std::string& name, const glm::vec2& value) {
+void OpenGLShader::UploadFloat2(const std::string& name, const glm::vec2& value) {
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniform2f(location, value.x, value.y);
     glCheckError();
     spdlog::trace("Uploaded vector2 to OpenGL shader program (name: {}, value: ({}, {}), ID: {})", name, value.x, value.y, m_RendererID);
 }
 
-void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value) {
+void OpenGLShader::UploadFloat3(const std::string& name, const glm::vec3& value) {
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniform3f(location, value.x, value.y, value.z);
     glCheckError();
     spdlog::trace("Uploaded vector3 to OpenGL shader program (name: {}, value: ({}, {}, {}), ID: {})", name, value.x, value.y, value.z, m_RendererID);
 }
 
-void OpenGLShader::SetFloat4(const std::string& name, const glm::vec4& value) {
+void OpenGLShader::UploadFloat4(const std::string& name, const glm::vec4& value) {
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniform4f(location, value.x, value.y, value.z, value.w);
     glCheckError();
     spdlog::trace("Uploaded vector4 to OpenGL shader program (name: {}, value: ({}, {}, {}, {}), ID: {})", name, value.x, value.y, value.z, value.w, m_RendererID);
 }
 
-void OpenGLShader::SetMatrix3(const std::string& name, const glm::mat3& matrix) {
+void OpenGLShader::UploadMatrix3(const std::string& name, const glm::mat3& matrix) {
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
     glCheckError();
     spdlog::trace("Uploaded matrix3x3 to OpenGL shader program (name: {}, ID: {})", name, m_RendererID);
 }
 
-void OpenGLShader::SetMatrix4(const std::string& name, const glm::mat4& matrix) {
+void OpenGLShader::UploadMatrix4(const std::string& name, const glm::mat4& matrix) {
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
     glCheckError();
     spdlog::trace("Uploaded matrix4x4 to OpenGL shader program (name: {}, ID: {})", name, m_RendererID);
+}
+
+void OpenGLShader::UploadUniformQueues() {
+    for (auto& [name, value] : m_UniformInts) {
+        UploadInt(name, value);
+    }
+    for (auto& [name, value] : m_UniformFloats) {
+        UploadFloat(name, value);
+    }
+    for (auto& [name, value] : m_UniformFloat2s) {
+        UploadFloat2(name, value);
+    }
+    for (auto& [name, value] : m_UniformFloat3s) {
+        UploadFloat3(name, value);
+    }
+    for (auto& [name, value] : m_UniformFloat4s) {
+        UploadFloat4(name, value);
+    }
+    for (auto& [name, value] : m_UniformMatrix3s) {
+        UploadMatrix3(name, value);
+    }
+    for (auto& [name, value] : m_UniformMatrix4s) {
+        UploadMatrix4(name, value);
+    }
 }

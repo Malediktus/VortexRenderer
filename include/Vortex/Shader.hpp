@@ -33,6 +33,18 @@ public:
     virtual VT_API void SetMatrix3(const std::string& name, const glm::mat3& matrix) = 0;
     virtual VT_API void SetMatrix4(const std::string& name, const glm::mat4& matrix) = 0;
 
+    virtual VT_API void UploadInt(const std::string& name, int value) = 0;
+
+    virtual VT_API void UploadFloat(const std::string& name, float value) = 0;
+    virtual VT_API void UploadFloat2(const std::string& name, const glm::vec2& value) = 0;
+    virtual VT_API void UploadFloat3(const std::string& name, const glm::vec3& value) = 0;
+    virtual VT_API void UploadFloat4(const std::string& name, const glm::vec4& value) = 0;
+
+    virtual VT_API void UploadMatrix3(const std::string& name, const glm::mat3& matrix) = 0;
+    virtual VT_API void UploadMatrix4(const std::string& name, const glm::mat4& matrix) = 0;
+
+    virtual VT_API void UploadUniformQueues() = 0;
+
     virtual VT_API const std::string& GetName() const = 0;
 };
 

@@ -81,8 +81,8 @@ void Renderer::Submit(const std::shared_ptr<Scene>& scene) {
     auto camera = scene->GetCamera();
 
     m_Shader->Bind();
-    m_Shader->SetMatrix4("u_ViewProj", camera->GetViewProj());
-    m_Shader->SetFloat3("u_ViewPos", camera->GetPosition());
+    m_Shader->UploadMatrix4("u_ViewProj", camera->GetViewProj());
+    m_Shader->UploadFloat3("u_ViewPos", camera->GetPosition());
 
     uint32_t numPointLights = 0, numDirectionalLights = 0, numSpotLights = 0;
 
@@ -91,48 +91,49 @@ void Renderer::Submit(const std::shared_ptr<Scene>& scene) {
             PointLight* pointLight = (PointLight*) sceneLights[i].get();
             std::string prefix = "u_PointLights[" + std::to_string(i) + "].";
             glm::vec3 position = glm::vec3(glm::column(sceneLightTransforms[i], 3));
-            m_Shader->SetFloat3(prefix + "position", position);
-            m_Shader->SetFloat(prefix + "constant", pointLight->Constant);
-            m_Shader->SetFloat(prefix + "linear", pointLight->Linear);
-            m_Shader->SetFloat(prefix + "quadratic", pointLight->Quadratic);
-            m_Shader->SetFloat3(prefix + "ambient", pointLight->Ambient);
-            m_Shader->SetFloat3(prefix + "diffuse", pointLight->Diffuse);
-            m_Shader->SetFloat3(prefix + "specular", pointLight->Specular);
+            m_Shader->UploadFloat3(prefix + "position", position);
+            m_Shader->UploadFloat(prefix + "constant", pointLight->Constant);
+            m_Shader->UploadFloat(prefix + "linear", pointLight->Linear);
+            m_Shader->UploadFloat(prefix + "quadratic", pointLight->Quadratic);
+            m_Shader->UploadFloat3(prefix + "ambient", pointLight->Ambient);
+            m_Shader->UploadFloat3(prefix + "diffuse", pointLight->Diffuse);
+            m_Shader->UploadFloat3(prefix + "specular", pointLight->Specular);
             numPointLights++;
         } else if (sceneLights[i]->Type == SceneLight::SceneLightType::Directional) {
             DirectionalLight* directionalLight = (DirectionalLight*) sceneLights[i].get();
             std::string prefix = "u_DirectionalLights[" + std::to_string(i) + "].";
             glm::vec3 position = glm::vec3(glm::column(sceneLightTransforms[i], 3));
-            m_Shader->SetFloat3(prefix + "position", position);
-            m_Shader->SetFloat3(prefix + "ambient", directionalLight->Ambient);
-            m_Shader->SetFloat3(prefix + "diffuse", directionalLight->Diffuse);
-            m_Shader->SetFloat3(prefix + "specular", directionalLight->Specular);
+            m_Shader->UploadFloat3(prefix + "position", position);
+            m_Shader->UploadFloat3(prefix + "ambient", directionalLight->Ambient);
+            m_Shader->UploadFloat3(prefix + "diffuse", directionalLight->Diffuse);
+            m_Shader->UploadFloat3(prefix + "specular", directionalLight->Specular);
             numDirectionalLights++;
         } else if (sceneLights[i]->Type == SceneLight::SceneLightType::Spot) {
             SpotLight* spotLight = (SpotLight*) sceneLights[i].get();
             std::string prefix = "u_SpotLights[" + std::to_string(i) + "].";
             glm::vec3 position = glm::vec3(glm::column(sceneLightTransforms[i], 3));
             glm::vec3 direction = glm::vec3(glm::column(sceneLightTransforms[i], 2));
-            m_Shader->SetFloat3(prefix + "position", position);
-            m_Shader->SetFloat3(prefix + "direction", direction);
-            m_Shader->SetFloat(prefix + "cutOff", spotLight->CutOff);
-            m_Shader->SetFloat(prefix + "outerCutOff", spotLight->OuterCutOff);
-            m_Shader->SetFloat(prefix + "constant", spotLight->Constant);
-            m_Shader->SetFloat(prefix + "linear", spotLight->Linear);
-            m_Shader->SetFloat(prefix + "quadratic", spotLight->Quadratic);
-            m_Shader->SetFloat3(prefix + "ambient", spotLight->Ambient);
-            m_Shader->SetFloat3(prefix + "diffuse", spotLight->Diffuse);
-            m_Shader->SetFloat3(prefix + "specular", spotLight->Specular);
+            m_Shader->UploadFloat3(prefix + "position", position);
+            m_Shader->UploadFloat3(prefix + "direction", direction);
+            m_Shader->UploadFloat(prefix + "cutOff", spotLight->CutOff);
+            m_Shader->UploadFloat(prefix + "outerCutOff", spotLight->OuterCutOff);
+            m_Shader->UploadFloat(prefix + "constant", spotLight->Constant);
+            m_Shader->UploadFloat(prefix + "linear", spotLight->Linear);
+            m_Shader->UploadFloat(prefix + "quadratic", spotLight->Quadratic);
+            m_Shader->UploadFloat3(prefix + "ambient", spotLight->Ambient);
+            m_Shader->UploadFloat3(prefix + "diffuse", spotLight->Diffuse);
+            m_Shader->UploadFloat3(prefix + "specular", spotLight->Specular);
             numSpotLights++;
         }
     }
 
-    m_Shader->SetInt("u_NumPointLights", numPointLights);
-    m_Shader->SetInt("u_NumDirectionalLights", numDirectionalLights);
-    m_Shader->SetInt("u_NumSpotLights", numSpotLights);
+    m_Shader->UploadInt("u_NumPointLights", numPointLights);
+    m_Shader->UploadInt("u_NumDirectionalLights", numDirectionalLights);
+    m_Shader->UploadInt("u_NumSpotLights", numSpotLights);
 
     for (uint32_t i = 0; i < vertexArrays.size(); i++) {
-        m_Shader->SetMatrix4("u_Model", vertexArrayTransforms[i]);
+        m_Shader->UploadMatrix4("u_Model", vertexArrayTransforms[i]);
+        m_Shader->UploadUniformQueues();
         RenderCommand::DrawIndexed(vertexArrays[i]);
     }
 
