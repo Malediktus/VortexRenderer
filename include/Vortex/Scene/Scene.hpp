@@ -7,6 +7,7 @@
 
 #include "../Camera.hpp"
 #include "../VertexArray.hpp"
+#include "../Shader.hpp"
 #include "Model.hpp"
 
 namespace Vortex {
@@ -58,10 +59,10 @@ struct SpotLight : public SceneLight {
 
 class Mesh {
 public:
-    Mesh(const std::shared_ptr<VertexArray>& vertexArray) {
+    Mesh(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Shader>& shader = nullptr) : m_Shader(shader) {
         m_VertexArrays.push_back(vertexArray);
     }
-    Mesh(const std::string& filepath) {
+    Mesh(const std::string& filepath, const std::shared_ptr<Shader>& shader = nullptr) : m_Shader(shader) {
         Model model(filepath);
         auto meshes = model.GetMeshes();
         for (auto mesh : meshes)
@@ -77,8 +78,13 @@ public:
         return m_VertexArrays;
     }
 
+    const std::shared_ptr<Shader>& GetShader() {
+        return m_Shader;
+    }
+
 private:
     std::vector<std::shared_ptr<VertexArray>> m_VertexArrays;
+    const std::shared_ptr<Shader>& m_Shader;
 };
 
 class Object {

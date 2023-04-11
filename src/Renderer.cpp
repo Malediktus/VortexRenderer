@@ -1,6 +1,7 @@
 #include <Vortex/Renderer.hpp>
 #include <spdlog/spdlog.h>
 #include <glm/gtc/matrix_access.hpp>
+#include <unordered_map>
 
 using namespace Vortex;
 
@@ -52,15 +53,9 @@ void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray) {
 }
 
 void Renderer::Submit(const std::shared_ptr<Scene>& scene) {
-    // Possible optimization:
-    // - Iterate over scene objects and set all lights in the shader
-    // - Iterate again and render all vertexArrays
-    // Benefit: No need to store a mat4, which is realy huge, for each light and vertex array
-
     std::vector<std::shared_ptr<SceneLight>> sceneLights;
     std::vector<glm::mat4> sceneLightTransforms;
-    std::vector<std::shared_ptr<VertexArray>> vertexArrays;
-    std::vector<glm::mat4> vertexArrayTransforms;
+    std::unordered_map<std::shared_ptr<Mesh>, glm::mat4> meshes;
 
     for (auto object : scene->GetObjects()) {
         auto transform = object->GetTransform();
@@ -71,71 +66,73 @@ void Renderer::Submit(const std::shared_ptr<Scene>& scene) {
             sceneLightTransforms.push_back(transform);
         }
         for (auto mesh : objectMeshes) {
-            for (auto vertexArray : mesh->GetVertexArrays()) {
-                vertexArrays.push_back(vertexArray);
-                vertexArrayTransforms.push_back(transform);
-            }
+            meshes[mesh] = transform;
         }
     }
 
     auto camera = scene->GetCamera();
 
-    m_Shader->Bind();
-    m_Shader->UploadMatrix4("u_ViewProj", camera->GetViewProj());
-    m_Shader->UploadFloat3("u_ViewPos", camera->GetPosition());
+    for (auto& [mesh, transform] : meshes) {
+        const std::shared_ptr<Shader>& shader = !mesh->GetShader() ? mesh->GetShader() : m_Shader;
 
-    uint32_t numPointLights = 0, numDirectionalLights = 0, numSpotLights = 0;
+        shader->Bind();
+        shader->UploadMatrix4("u_ViewProj", camera->GetViewProj());
+        shader->UploadFloat3("u_ViewPos", camera->GetPosition());
 
-    for (uint32_t i = 0; i < sceneLights.size(); i++) {
-        if (sceneLights[i]->Type == SceneLight::SceneLightType::Point) {
-            PointLight* pointLight = (PointLight*) sceneLights[i].get();
-            std::string prefix = "u_PointLights[" + std::to_string(i) + "].";
-            glm::vec3 position = glm::vec3(glm::column(sceneLightTransforms[i], 3));
-            m_Shader->UploadFloat3(prefix + "position", position);
-            m_Shader->UploadFloat(prefix + "constant", pointLight->Constant);
-            m_Shader->UploadFloat(prefix + "linear", pointLight->Linear);
-            m_Shader->UploadFloat(prefix + "quadratic", pointLight->Quadratic);
-            m_Shader->UploadFloat3(prefix + "ambient", pointLight->Ambient);
-            m_Shader->UploadFloat3(prefix + "diffuse", pointLight->Diffuse);
-            m_Shader->UploadFloat3(prefix + "specular", pointLight->Specular);
-            numPointLights++;
-        } else if (sceneLights[i]->Type == SceneLight::SceneLightType::Directional) {
-            DirectionalLight* directionalLight = (DirectionalLight*) sceneLights[i].get();
-            std::string prefix = "u_DirectionalLights[" + std::to_string(i) + "].";
-            glm::vec3 position = glm::vec3(glm::column(sceneLightTransforms[i], 3));
-            m_Shader->UploadFloat3(prefix + "position", position);
-            m_Shader->UploadFloat3(prefix + "ambient", directionalLight->Ambient);
-            m_Shader->UploadFloat3(prefix + "diffuse", directionalLight->Diffuse);
-            m_Shader->UploadFloat3(prefix + "specular", directionalLight->Specular);
-            numDirectionalLights++;
-        } else if (sceneLights[i]->Type == SceneLight::SceneLightType::Spot) {
-            SpotLight* spotLight = (SpotLight*) sceneLights[i].get();
-            std::string prefix = "u_SpotLights[" + std::to_string(i) + "].";
-            glm::vec3 position = glm::vec3(glm::column(sceneLightTransforms[i], 3));
-            glm::vec3 direction = glm::vec3(glm::column(sceneLightTransforms[i], 2));
-            m_Shader->UploadFloat3(prefix + "position", position);
-            m_Shader->UploadFloat3(prefix + "direction", direction);
-            m_Shader->UploadFloat(prefix + "cutOff", spotLight->CutOff);
-            m_Shader->UploadFloat(prefix + "outerCutOff", spotLight->OuterCutOff);
-            m_Shader->UploadFloat(prefix + "constant", spotLight->Constant);
-            m_Shader->UploadFloat(prefix + "linear", spotLight->Linear);
-            m_Shader->UploadFloat(prefix + "quadratic", spotLight->Quadratic);
-            m_Shader->UploadFloat3(prefix + "ambient", spotLight->Ambient);
-            m_Shader->UploadFloat3(prefix + "diffuse", spotLight->Diffuse);
-            m_Shader->UploadFloat3(prefix + "specular", spotLight->Specular);
-            numSpotLights++;
+        uint32_t numPointLights = 0, numDirectionalLights = 0, numSpotLights = 0;
+
+        for (uint32_t i = 0; i < sceneLights.size(); i++) {
+            if (sceneLights[i]->Type == SceneLight::SceneLightType::Point) {
+                PointLight* pointLight = (PointLight*) sceneLights[i].get();
+                std::string prefix = "u_PointLights[" + std::to_string(i) + "].";
+                glm::vec3 position = glm::vec3(glm::column(sceneLightTransforms[i], 3));
+                shader->UploadFloat3(prefix + "position", position);
+                shader->UploadFloat(prefix + "constant", pointLight->Constant);
+                shader->UploadFloat(prefix + "linear", pointLight->Linear);
+                shader->UploadFloat(prefix + "quadratic", pointLight->Quadratic);
+                shader->UploadFloat3(prefix + "ambient", pointLight->Ambient);
+                shader->UploadFloat3(prefix + "diffuse", pointLight->Diffuse);
+                shader->UploadFloat3(prefix + "specular", pointLight->Specular);
+                numPointLights++;
+            } else if (sceneLights[i]->Type == SceneLight::SceneLightType::Directional) {
+                DirectionalLight* directionalLight = (DirectionalLight*) sceneLights[i].get();
+                std::string prefix = "u_DirectionalLights[" + std::to_string(i) + "].";
+                glm::vec3 position = glm::vec3(glm::column(sceneLightTransforms[i], 3));
+                shader->UploadFloat3(prefix + "position", position);
+                shader->UploadFloat3(prefix + "ambient", directionalLight->Ambient);
+                shader->UploadFloat3(prefix + "diffuse", directionalLight->Diffuse);
+                shader->UploadFloat3(prefix + "specular", directionalLight->Specular);
+                numDirectionalLights++;
+            } else if (sceneLights[i]->Type == SceneLight::SceneLightType::Spot) {
+                SpotLight* spotLight = (SpotLight*) sceneLights[i].get();
+                std::string prefix = "u_SpotLights[" + std::to_string(i) + "].";
+                glm::vec3 position = glm::vec3(glm::column(sceneLightTransforms[i], 3));
+                glm::vec3 direction = glm::vec3(glm::column(sceneLightTransforms[i], 2));
+                shader->UploadFloat3(prefix + "position", position);
+                shader->UploadFloat3(prefix + "direction", direction);
+                shader->UploadFloat(prefix + "cutOff", spotLight->CutOff);
+                shader->UploadFloat(prefix + "outerCutOff", spotLight->OuterCutOff);
+                shader->UploadFloat(prefix + "constant", spotLight->Constant);
+                shader->UploadFloat(prefix + "linear", spotLight->Linear);
+                shader->UploadFloat(prefix + "quadratic", spotLight->Quadratic);
+                shader->UploadFloat3(prefix + "ambient", spotLight->Ambient);
+                shader->UploadFloat3(prefix + "diffuse", spotLight->Diffuse);
+                shader->UploadFloat3(prefix + "specular", spotLight->Specular);
+                numSpotLights++;
+            }
+        }
+
+        shader->UploadInt("u_NumPointLights", numPointLights);
+        shader->UploadInt("u_NumDirectionalLights", numDirectionalLights);
+        shader->UploadInt("u_NumSpotLights", numSpotLights);
+
+        shader->UploadMatrix4("u_Model", transform);
+
+        for (auto& vertexArray : mesh->GetVertexArrays()) {
+            shader->UploadUniformQueues();
+            RenderCommand::DrawIndexed(vertexArray);
         }
     }
 
-    m_Shader->UploadInt("u_NumPointLights", numPointLights);
-    m_Shader->UploadInt("u_NumDirectionalLights", numDirectionalLights);
-    m_Shader->UploadInt("u_NumSpotLights", numSpotLights);
-
-    for (uint32_t i = 0; i < vertexArrays.size(); i++) {
-        m_Shader->UploadMatrix4("u_Model", vertexArrayTransforms[i]);
-        m_Shader->UploadUniformQueues();
-        RenderCommand::DrawIndexed(vertexArrays[i]);
-    }
-
-    spdlog::trace("Submitted scene to renderer (NumLights: {}, NumVertexArrays: {})", sceneLights.size(), vertexArrays.size());
+    spdlog::trace("Submitted scene to renderer (NumLights: {}, NumMeshes: {})", sceneLights.size(), meshes.size());
 }
