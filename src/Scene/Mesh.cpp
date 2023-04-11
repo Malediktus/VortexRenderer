@@ -9,9 +9,9 @@ ModelMesh::ModelMesh(const std::vector<MeshVertex>& vertices, const std::vector<
         {ShaderDataType::Float3, "Normal", false},
         {ShaderDataType::Float2, "TexCoords", false},
     });
-    m_VertexBuffer = VertexBufferCreate((float*) m_Vertices.data(), m_Vertices.size() * sizeof(m_Vertices[0]));
+    m_VertexBuffer = VertexBufferCreate((float*) m_Vertices.data(), (uint32_t) m_Vertices.size() * sizeof(m_Vertices[0]));
     m_VertexBuffer->SetLayout(layout);
-    m_IndexBuffer = IndexBufferCreate((uint32_t*) m_Indices.data(), m_Indices.size() * sizeof(m_Indices[0]));
+    m_IndexBuffer = IndexBufferCreate((uint32_t*) m_Indices.data(), (uint32_t) m_Indices.size() * sizeof(m_Indices[0]));
     m_VertexArray = VertexArrayCreate();
     m_VertexArray->AddVertexBuffer(m_VertexBuffer);
     m_VertexArray->SetIndexBuffer(m_IndexBuffer);

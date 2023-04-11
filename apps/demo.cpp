@@ -118,7 +118,7 @@ public:
             exit(1);
         }
 
-        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        // glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetCursorPosCallback(m_Window, OnMouseMove);
         glfwGetCursorPos(m_Window, &m_LastMouseX, &m_LastMouseY);
     }
