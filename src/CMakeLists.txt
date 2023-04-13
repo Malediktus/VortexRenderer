@@ -55,6 +55,8 @@ add_library(Vortex ${HEADER_LIST} ${SOURCE_LIST} ${OPENGL_SOURCES} ${OPENGL_HEAD
 
 target_include_directories(Vortex PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_compile_definitions(Vortex PRIVATE VT_EXPORT_API)
+target_compile_definitions(Vortex PRIVATE $<$<CONFIG:Debug>:VT_DEBUG>)
+target_compile_definitions(Vortex PRIVATE $<$<CONFIG:Release>:VT_RELEASE>)
 target_compile_features(Vortex PUBLIC cxx_std_17)
 
 if(MSVC)
@@ -64,7 +66,7 @@ else()
 endif()
 
 target_link_libraries(Vortex PRIVATE glfw glad stb_image assimp spdlog::spdlog)
-target_link_libraries(Vortex PUBLIC glm)
+target_link_libraries(Vortex PUBLIC glm TracyClient)
 
 source_group(
     TREE "${PROJECT_SOURCE_DIR}/include/Vortex"

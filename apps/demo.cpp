@@ -3,6 +3,7 @@
 #include <Vortex/Scene/Model.hpp>
 
 #include <glm/ext/matrix_transform.hpp>
+#include <tracy/Tracy.hpp>
 
 #include <cstdlib>
 #include <iostream>
@@ -63,15 +64,21 @@ protected:
 class VortexDemo {
 public:
     VortexDemo() {
+        ZoneScoped;
         SetupGlfw();
 
         Vortex::Renderer::Init(m_Window, "../../apps/assets/Shaders/Light.glsl", 1280, 720);
         m_Camera = std::make_shared<FPSCamera>(90.0f, 1280, 720);
         m_Camera->MoveFront(-5.0f);
         m_MonkeyMesh = std::make_shared<Vortex::Mesh>("../../apps/assets/Objects/Monkey/monkey.obj");
+
+        glfwSwapInterval(0);
+        m_PerfCounterFrequency = glfwGetTimerFrequency();
+        m_LastCounter = glfwGetTimerValue();
     }
 
     void Update() {
+        ZoneScoped;
         auto scene = std::make_shared<Vortex::Scene>(m_Camera);
 
         std::shared_ptr<Vortex::Object> meshObject = std::make_shared<Vortex::Object>();
@@ -92,9 +99,30 @@ public:
         Vortex::Renderer::EndFrame();
 
         ProcessKeyEvents();
-
-        glfwSwapBuffers(m_Window);
-        glfwPollEvents();
+        {
+            ZoneScopedN("SwapBuffer");
+            glfwSwapBuffers(m_Window);
+        }
+        {
+            ZoneScopedN("PollEvents");
+            glfwPollEvents();
+        }
+        {
+            ZoneScopedN("CalculateFPS");
+            uint64_t endCounter = glfwGetTimerValue();
+            uint64_t counterElapsed = endCounter - m_LastCounter;
+            m_Delta = ((float) counterElapsed) / (float) m_PerfCounterFrequency;
+            m_FPS = (uint32_t) ((float) m_PerfCounterFrequency / (float) counterElapsed);
+            m_LastCounter = endCounter;
+            m_FrameCount++;
+        }
+        if (m_FrameCount >= 1000) {
+            ZoneScopedN("UpdateTitle");
+            std::string title = "Vortex Renderer Demo FPS: ";
+            title.append(std::to_string(m_FPS));
+            glfwSetWindowTitle(m_Window, title.c_str());
+            m_FrameCount = 0;
+        }
     }
 
     bool ShouldClose() {
@@ -102,6 +130,7 @@ public:
     }
 
     void SetupGlfw() {
+        ZoneScoped;
         glfwSetErrorCallback(GlfwErrorCallback);
         if (!glfwInit()) {
             std::cout << "Failed to init GLFW!" << std::endl;
@@ -124,6 +153,7 @@ public:
     }
 
     void ProcessKeyEvents() {
+        ZoneScoped;
         if (glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_REPEAT)
             m_Camera->MoveFront(0.02f);
         if (glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_REPEAT)
@@ -156,6 +186,7 @@ private:
     }
 
     static void OnMouseMove(GLFWwindow* window, double mouseX, double mouseY) {
+        ZoneScoped;
         double deltaX = mouseX - m_LastMouseX;
         double deltaY = mouseY - m_LastMouseY;
         m_LastMouseX = mouseX;
@@ -167,6 +198,11 @@ private:
     static double m_LastMouseX;
     static double m_LastMouseY;
     GLFWwindow* m_Window;
+    uint64_t m_PerfCounterFrequency;
+    uint64_t m_LastCounter;
+    uint32_t m_FrameCount = 0;
+    float m_Delta = 0.0f;
+    uint32_t m_FPS = 0.0f;
 
     static std::shared_ptr<FPSCamera> m_Camera;
     std::shared_ptr<Vortex::Mesh> m_MonkeyMesh;

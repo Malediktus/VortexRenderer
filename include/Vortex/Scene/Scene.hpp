@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include <glm/glm.hpp>
+#include <tracy/Tracy.hpp>
 
 #include "../Camera.hpp"
 #include "../VertexArray.hpp"
@@ -13,6 +14,7 @@
 namespace Vortex {
 struct SceneLight {
     SceneLight(const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3 specular) : Ambient(ambient), Diffuse(diffuse), Specular(specular) {
+        ZoneScoped;
     }
     ~SceneLight() = default;
 
@@ -27,6 +29,7 @@ struct SceneLight {
 struct PointLight : public SceneLight {
     PointLight(float constant, float linear, float quadratic, const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3 specular)
         : SceneLight(ambient, diffuse, specular), Constant(constant), Linear(linear), Quadratic(quadratic) {
+        ZoneScoped;
         Type = SceneLightType::Point;
     }
     ~PointLight() = default;
@@ -38,6 +41,7 @@ struct PointLight : public SceneLight {
 
 struct DirectionalLight : public SceneLight {
     DirectionalLight(const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3 specular) : SceneLight(ambient, diffuse, specular) {
+        ZoneScoped;
         Type = SceneLightType::Directional;
     }
     ~DirectionalLight() = default;
@@ -46,6 +50,7 @@ struct DirectionalLight : public SceneLight {
 struct SpotLight : public SceneLight {
     SpotLight(float cutOff, float outerCutOff, float constant, float linear, float quadratic, const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3 specular)
         : SceneLight(ambient, diffuse, specular), CutOff(cutOff), OuterCutOff(outerCutOff), Constant(constant), Linear(linear), Quadratic(quadratic) {
+        ZoneScoped;
         Type = SceneLightType::Spot;
     }
     ~SpotLight() = default;
@@ -60,9 +65,11 @@ struct SpotLight : public SceneLight {
 class Mesh {
 public:
     Mesh(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Shader>& shader = nullptr) : m_Shader(shader) {
+        ZoneScoped;
         m_VertexArrays.push_back(vertexArray);
     }
     Mesh(const std::string& filepath, const std::shared_ptr<Shader>& shader = nullptr) : m_Shader(shader) {
+        ZoneScoped;
         Model model(filepath);
         auto meshes = model.GetMeshes();
         for (auto mesh : meshes)
@@ -71,6 +78,7 @@ public:
     ~Mesh() = default;
 
     void Append(const std::shared_ptr<VertexArray>& vertexArray) {
+        ZoneScoped;
         m_VertexArrays.push_back(vertexArray);
     }
 
@@ -92,14 +100,17 @@ public:
     Object() : m_Transform(1.0f) {
     }
     Object(const glm::mat4& transform) : m_Transform(transform) {
+        ZoneScoped;
     }
     ~Object() = default;
 
     void Attach(const std::shared_ptr<SceneLight>& pointLight) {
+        ZoneScoped;
         m_Lights.push_back(pointLight);
     }
 
     void Attach(const std::shared_ptr<Mesh>& mesh) {
+        ZoneScoped;
         m_Meshs.push_back(mesh);
     }
 
@@ -128,6 +139,7 @@ public:
     ~Scene() = default;
 
     void Append(const std::shared_ptr<Object>& object) {
+        ZoneScoped;
         m_Objects.push_back(object);
     }
 

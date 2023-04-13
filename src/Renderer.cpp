@@ -1,6 +1,7 @@
 #include <Vortex/Renderer.hpp>
 #include <spdlog/spdlog.h>
 #include <glm/gtc/matrix_access.hpp>
+#include <tracy/Tracy.hpp>
 #include <unordered_map>
 
 using namespace Vortex;
@@ -9,7 +10,12 @@ std::shared_ptr<Shader> Renderer::m_Shader;
 std::shared_ptr<Context> Renderer::m_Context;
 
 void Renderer::Init(void* glfwWindow, const std::string& shaderPath, const int width, const int height) {
+    ZoneScoped;
+#ifdef VT_DEBUG
     spdlog::set_level(spdlog::level::level_enum::info);
+#else
+    spdlog::set_level(spdlog::level::level_enum::warn);
+#endif
     spdlog::set_pattern("[%T] %^[%l%$] %v%$");
 
     m_Context = ContextCreate(glfwWindow);
@@ -32,27 +38,33 @@ void Renderer::Init(void* glfwWindow, const std::string& shaderPath, const int w
 }
 
 void Renderer::OnResize(const int width, const int height) {
+    ZoneScoped;
     Vortex::RenderCommand::SetViewport(width, height);
     spdlog::trace("Resized renderer (width: {}, height: {})", width, height);
 }
 
 void Renderer::BeginFrame() {
+    ZoneScoped;
     Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::COLOR);
     Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::DEPTH);
     spdlog::trace("Began renderer frame");
 }
 
 void Renderer::EndFrame() {
+    ZoneScoped;
     spdlog::trace("Ended renderer frame");
+    FrameMark;
 }
 
 void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray) {
+    ZoneScoped;
     vertexArray->Bind();
     RenderCommand::DrawIndexed(vertexArray);
     spdlog::trace("Submited vertex array to renderer");
 }
 
 void Renderer::Submit(const std::shared_ptr<Scene>& scene) {
+    ZoneScoped;
     std::vector<std::shared_ptr<SceneLight>> sceneLights;
     std::vector<glm::mat4> sceneLightTransforms;
     std::unordered_map<std::shared_ptr<Mesh>, glm::mat4> meshes;
@@ -73,7 +85,7 @@ void Renderer::Submit(const std::shared_ptr<Scene>& scene) {
     auto camera = scene->GetCamera();
 
     for (auto& [mesh, transform] : meshes) {
-        const std::shared_ptr<Shader>& shader = !mesh->GetShader() ? mesh->GetShader() : m_Shader;
+        const std::shared_ptr<Shader>& shader = m_Shader;
 
         shader->Bind();
         shader->UploadMatrix4("u_ViewProj", camera->GetViewProj());

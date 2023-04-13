@@ -1,9 +1,11 @@
 #include <Vortex/Scene/Mesh.hpp>
+#include <tracy/Tracy.hpp>
 
 using namespace Vortex;
 
 ModelMesh::ModelMesh(const std::vector<MeshVertex>& vertices, const std::vector<uint32_t>& indices, std::vector<MeshTexture>& textures)
     : m_Indices(indices), m_Vertices(vertices), m_Textures(textures) {
+    ZoneScoped;
     BufferLayout layout = BufferLayout({
         {ShaderDataType::Float3, "Position", false},
         {ShaderDataType::Float3, "Normal", false},
@@ -18,6 +20,7 @@ ModelMesh::ModelMesh(const std::vector<MeshVertex>& vertices, const std::vector<
 }
 
 void ModelMesh::BindTextures(const std::shared_ptr<Shader>& shader) const {
+    ZoneScoped;
     uint32_t diffuseNr = 0;
     uint32_t specularNr = 0;
     for (uint32_t i = 0; i < m_Textures.size(); i++) {

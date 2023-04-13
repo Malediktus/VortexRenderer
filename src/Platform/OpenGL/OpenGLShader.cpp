@@ -6,6 +6,7 @@
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <spdlog/spdlog.h>
+#include <tracy/Tracy.hpp>
 #include <iostream>
 #include <vector>
 
@@ -13,6 +14,7 @@ using namespace Vortex::OpenGL;
 
 namespace Utils {
 static GLenum ShaderTypeFromString(const std::string& type) {
+    ZoneScoped;
     if (type == "vertex")
         return GL_VERTEX_SHADER;
     if (type == "fragment" || type == "pixel")
@@ -25,6 +27,7 @@ static GLenum ShaderTypeFromString(const std::string& type) {
 }
 
 static const std::string StringFromShaderType(const GLenum type) {
+    ZoneScoped;
     if (type == GL_VERTEX_SHADER)
         return "vertex";
     if (type == GL_FRAGMENT_SHADER)
@@ -38,6 +41,7 @@ static const std::string StringFromShaderType(const GLenum type) {
 } // namespace Utils
 
 OpenGLShader::OpenGLShader(const std::string& filepath) {
+    ZoneScoped;
     std::string source = ReadFile(filepath);
     auto shaderSources = PreProcess(source);
     Compile(shaderSources);
@@ -51,6 +55,7 @@ OpenGLShader::OpenGLShader(const std::string& filepath) {
 }
 
 OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& geometrySrc) : m_Name(name) {
+    ZoneScoped;
     std::unordered_map<GLenum, std::string> sources;
     sources[GL_VERTEX_SHADER] = vertexSrc;
     sources[GL_FRAGMENT_SHADER] = fragmentSrc;
@@ -60,12 +65,14 @@ OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc
 }
 
 OpenGLShader::~OpenGLShader() {
+    ZoneScoped;
     glDeleteProgram(m_RendererID);
     glCheckError();
     // spdlog::trace("Deleted OpenGL shader program (ID: {})", m_RendererID); // Dont now why but this segfaults (maybe lifetime related)
 }
 
 std::string OpenGLShader::ReadFile(const std::string& filepath) {
+    ZoneScoped;
     std::string result;
     std::ifstream in(filepath, std::ios::in | std::ios::binary);
     if (in) {
@@ -84,6 +91,7 @@ std::string OpenGLShader::ReadFile(const std::string& filepath) {
 }
 
 std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string& source) {
+    ZoneScoped;
     std::unordered_map<GLenum, std::string> shaderSources;
 
     const char* typeToken = "#type";
@@ -105,6 +113,7 @@ std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::stri
 }
 
 void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources) {
+    ZoneScoped;
     GLuint program = glCreateProgram();
     spdlog::trace("Created OpenGL shader program (ID: {})", program);
     assert(shaderSources.size() <= 3);
@@ -189,46 +198,56 @@ void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shader
 }
 
 void OpenGLShader::Bind() const {
+    ZoneScoped;
     glUseProgram(m_RendererID);
     glCheckError();
     spdlog::trace("Bound OpenGL shader program (ID: {})", m_RendererID);
 }
 
 void OpenGLShader::Unbind() const {
+    ZoneScoped;
     glUseProgram(0);
     glCheckError();
     spdlog::trace("Unbound OpenGL shader program (ID: {})", m_RendererID);
 }
 
 void OpenGLShader::SetInt(const std::string& name, int value) {
+    ZoneScoped;
     m_UniformInts[name] = value;
 }
 
 void OpenGLShader::SetFloat(const std::string& name, float value) {
+    ZoneScoped;
     m_UniformFloats[name] = value;
 }
 
 void OpenGLShader::SetFloat2(const std::string& name, const glm::vec2& value) {
+    ZoneScoped;
     m_UniformFloat2s[name] = value;
 }
 
 void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value) {
+    ZoneScoped;
     m_UniformFloat3s[name] = value;
 }
 
 void OpenGLShader::SetFloat4(const std::string& name, const glm::vec4& value) {
+    ZoneScoped;
     m_UniformFloat4s[name] = value;
 }
 
 void OpenGLShader::SetMatrix3(const std::string& name, const glm::mat3& matrix) {
+    ZoneScoped;
     m_UniformMatrix3s[name] = matrix;
 }
 
 void OpenGLShader::SetMatrix4(const std::string& name, const glm::mat4& matrix) {
+    ZoneScoped;
     m_UniformMatrix4s[name] = matrix;
 }
 
 void OpenGLShader::UploadInt(const std::string& name, int value) {
+    ZoneScoped;
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniform1i(location, value);
     glCheckError();
@@ -236,6 +255,7 @@ void OpenGLShader::UploadInt(const std::string& name, int value) {
 }
 
 void OpenGLShader::UploadFloat(const std::string& name, float value) {
+    ZoneScoped;
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniform1f(location, value);
     glCheckError();
@@ -243,6 +263,7 @@ void OpenGLShader::UploadFloat(const std::string& name, float value) {
 }
 
 void OpenGLShader::UploadFloat2(const std::string& name, const glm::vec2& value) {
+    ZoneScoped;
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniform2f(location, value.x, value.y);
     glCheckError();
@@ -250,6 +271,7 @@ void OpenGLShader::UploadFloat2(const std::string& name, const glm::vec2& value)
 }
 
 void OpenGLShader::UploadFloat3(const std::string& name, const glm::vec3& value) {
+    ZoneScoped;
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniform3f(location, value.x, value.y, value.z);
     glCheckError();
@@ -257,6 +279,7 @@ void OpenGLShader::UploadFloat3(const std::string& name, const glm::vec3& value)
 }
 
 void OpenGLShader::UploadFloat4(const std::string& name, const glm::vec4& value) {
+    ZoneScoped;
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniform4f(location, value.x, value.y, value.z, value.w);
     glCheckError();
@@ -264,6 +287,7 @@ void OpenGLShader::UploadFloat4(const std::string& name, const glm::vec4& value)
 }
 
 void OpenGLShader::UploadMatrix3(const std::string& name, const glm::mat3& matrix) {
+    ZoneScoped;
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
     glCheckError();
@@ -271,6 +295,7 @@ void OpenGLShader::UploadMatrix3(const std::string& name, const glm::mat3& matri
 }
 
 void OpenGLShader::UploadMatrix4(const std::string& name, const glm::mat4& matrix) {
+    ZoneScoped;
     GLint location = glGetUniformLocation(m_RendererID, name.c_str());
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
     glCheckError();
@@ -278,6 +303,7 @@ void OpenGLShader::UploadMatrix4(const std::string& name, const glm::mat4& matri
 }
 
 void OpenGLShader::UploadUniformQueues() {
+    ZoneScoped;
     for (auto& [name, value] : m_UniformInts) {
         UploadInt(name, value);
     }

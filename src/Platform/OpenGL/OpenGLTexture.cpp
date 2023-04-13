@@ -3,11 +3,13 @@
 #include <stb_image/stb_image.h>
 #include <glad/glad.h>
 #include <spdlog/spdlog.h>
+#include <tracy/Tracy.hpp>
 #include <cassert>
 
 using namespace Vortex::OpenGL;
 
 OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : m_Path(path) {
+    ZoneScoped;
     int width, height, channels;
     stbi_set_flip_vertically_on_load(1);
     auto* pixels = stbi_load(path.c_str(), &width, &height, &channels, 0);
@@ -25,8 +27,11 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : m_Path(path) {
     } else if (channels == 4) {
         format = GL_RGBA;
         internalFormat = GL_RGBA8;
-    } else
+    } else {
+        format = GL_RGBA;
+        internalFormat = GL_RGBA8;
         assert(false);
+    }
 
     glGenTextures(1, &m_RendererID);
     glBindTexture(GL_TEXTURE_2D, m_RendererID);
@@ -42,6 +47,7 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : m_Path(path) {
 }
 
 OpenGLTexture2D::OpenGLTexture2D(const int width, const int height) : m_Path("") {
+    ZoneScoped;
     m_Width = width;
     m_Height = height;
     glGenTextures(1, &m_RendererID);
@@ -57,6 +63,7 @@ OpenGLTexture2D::OpenGLTexture2D(const int width, const int height) : m_Path("")
 }
 
 OpenGLTexture2D::OpenGLTexture2D(const int width, const int height, const void* data) : m_Path("") {
+    ZoneScoped;
     m_Width = width;
     m_Height = height;
     glGenTextures(1, &m_RendererID);
@@ -72,12 +79,14 @@ OpenGLTexture2D::OpenGLTexture2D(const int width, const int height, const void* 
 }
 
 OpenGLTexture2D::~OpenGLTexture2D() {
+    ZoneScoped;
     glDeleteTextures(1, &m_RendererID);
     glCheckError();
     spdlog::trace("Deleted OpenGL texture2D (ID: {})", m_RendererID);
 }
 
 void OpenGLTexture2D::Bind(uint32_t slot) const {
+    ZoneScoped;
     assert(slot <= 31);
     glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D, m_RendererID);
@@ -86,6 +95,7 @@ void OpenGLTexture2D::Bind(uint32_t slot) const {
 }
 
 void OpenGLTexture2D::Resize(uint32_t width, uint32_t height) {
+    ZoneScoped;
     glBindTexture(GL_TEXTURE_2D, m_RendererID);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     m_Width = width;

@@ -1,5 +1,6 @@
 #include <Vortex/Platform/OpenGL/OpenGLRendererAPI.hpp>
 #include <spdlog/spdlog.h>
+#include <tracy/Tracy.hpp>
 #include <glad/glad.h>
 
 using namespace Vortex::OpenGL;
@@ -61,12 +62,14 @@ static GLenum BlendingFuncToGLenum(RendererAPI::BlendingFunc action) {
 } // namespace Vortex::Utils
 
 void OpenGLRendererAPI::SetClearColor(const glm::vec4& color) {
+    ZoneScoped;
     glClearColor(color.r, color.g, color.b, color.a);
     glCheckError();
     spdlog::trace("Set OpenGL clear color to ({}, {}, {}, {})", color.r, color.g, color.b, color.a);
 }
 
 void OpenGLRendererAPI::Clear(const ClearBuffer clearBuffer) {
+    ZoneScoped;
     switch (clearBuffer) {
     case ClearBuffer::COLOR:
         glClear(GL_COLOR_BUFFER_BIT);
@@ -85,12 +88,14 @@ void OpenGLRendererAPI::Clear(const ClearBuffer clearBuffer) {
 }
 
 void OpenGLRendererAPI::SetViewport(const int width, const int height) {
+    ZoneScoped;
     glViewport(0, 0, width, height);
     glCheckError();
     spdlog::trace("Set OpenGL viewport size to ({}, {})", width, height);
 }
 
 void OpenGLRendererAPI::ConfigureDepthTesting(const bool enable, const bool depthMask, const DepthTestFunc func) {
+    ZoneScoped;
     if (enable)
         glEnable(GL_DEPTH_TEST);
     else
@@ -135,6 +140,7 @@ void OpenGLRendererAPI::ConfigureDepthTesting(const bool enable, const bool dept
 void OpenGLRendererAPI::ConfigureStencilTesting(const bool enable, const int writeMask, const int readMask, const StencilTestFunc func, const int ref,
                                                 const StencilTestAction stencilFailAction, const StencilTestAction stencilPassDepthFailAction,
                                                 const StencilTestAction stencilPassDepthPassAction) {
+    ZoneScoped;
     if (enable)
         glEnable(GL_STENCIL_TEST);
     else
@@ -180,6 +186,7 @@ void OpenGLRendererAPI::ConfigureStencilTesting(const bool enable, const int wri
 
 void OpenGLRendererAPI::ConfigureBlending(const bool enable, const BlendingFunc blendingFunc1, const BlendingFunc blendingFunc2, const BlendingFunc blendingFuncR,
                                           const BlendingFunc blendingFuncG, const BlendingFunc blendingFuncB, const BlendingFunc blendingFuncA) {
+    ZoneScoped;
     if (enable)
         glEnable(GL_BLEND);
     else
@@ -196,6 +203,7 @@ void OpenGLRendererAPI::ConfigureBlending(const bool enable, const BlendingFunc 
 }
 
 void OpenGLRendererAPI::ConfigureCulling(const bool enable, const CullingType type) {
+    ZoneScoped;
     if (enable)
         glEnable(GL_CULL_FACE);
     else
@@ -215,6 +223,7 @@ void OpenGLRendererAPI::ConfigureCulling(const bool enable, const CullingType ty
 }
 
 void OpenGLRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount) {
+    ZoneScoped;
     uint32_t count = indexCount == 0 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
     glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
     glCheckError();
@@ -222,6 +231,7 @@ void OpenGLRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexAr
 }
 
 void Vortex::OpenGL::CheckOpenGLError(const char* file, int line) {
+    ZoneScoped;
     GLenum errorCode;
     bool failure = false;
     while ((errorCode = glGetError()) != GL_NO_ERROR) {

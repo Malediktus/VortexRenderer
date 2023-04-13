@@ -2,11 +2,13 @@
 #include <Vortex/Platform/OpenGL/OpenGLRendererAPI.hpp>
 #include <glad/glad.h>
 #include <spdlog/spdlog.h>
+#include <tracy/Tracy.hpp>
 #include <cassert>
 
 using namespace Vortex::OpenGL;
 
 OpenGLRenderbuffer::OpenGLRenderbuffer(uint32_t width, uint32_t height, Renderbuffer::RenderbufferType type) {
+    ZoneScoped;
     glGenRenderbuffers(1, &m_RendererID);
     glBindRenderbuffer(GL_RENDERBUFFER, m_RendererID);
     GLuint format;
@@ -22,18 +24,21 @@ OpenGLRenderbuffer::OpenGLRenderbuffer(uint32_t width, uint32_t height, Renderbu
 }
 
 OpenGLRenderbuffer::~OpenGLRenderbuffer() {
+    ZoneScoped;
     glDeleteRenderbuffers(1, &m_RendererID);
     glCheckError();
     spdlog::trace("Deleted OpenGL renderbuffer (ID: {})", m_RendererID);
 }
 
 void OpenGLRenderbuffer::Bind() const {
+    ZoneScoped;
     glBindRenderbuffer(GL_RENDERBUFFER, m_RendererID);
     glCheckError();
     spdlog::trace("Bound OpenGL renderbuffer (ID: {})", m_RendererID);
 }
 
 void OpenGLRenderbuffer::Unbind() const {
+    ZoneScoped;
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glCheckError();
     spdlog::trace("Unbound OpenGL renderbuffer (ID: {})", m_RendererID);

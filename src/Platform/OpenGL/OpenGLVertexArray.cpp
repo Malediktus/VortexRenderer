@@ -2,6 +2,7 @@
 #include <Vortex/Platform/OpenGL/OpenGLVertexArray.hpp>
 #include <Vortex/Platform/OpenGL/OpenGLRendererAPI.hpp>
 #include <spdlog/spdlog.h>
+#include <tracy/Tracy.hpp>
 #include <glad/glad.h>
 
 using namespace Vortex::OpenGL;
@@ -39,30 +40,35 @@ static GLenum ShaderDataTypeToOpenGLBaseType(Vortex::ShaderDataType type) {
 } // namespace Vortex::Utils
 
 OpenGLVertexArray::OpenGLVertexArray() {
+    ZoneScoped;
     glGenVertexArrays(1, &m_RendererID);
     glCheckError();
     spdlog::trace("Created OpenGL vertex array (ID: {})", m_RendererID);
 }
 
 OpenGLVertexArray::~OpenGLVertexArray() {
+    ZoneScoped;
     glDeleteVertexArrays(1, &m_RendererID);
     glCheckError();
     spdlog::trace("Deleted OpenGL vertex array (ID: {})", m_RendererID);
 }
 
 void OpenGLVertexArray::Bind() const {
+    ZoneScoped;
     glBindVertexArray(m_RendererID);
     glCheckError();
     spdlog::trace("Bound OpenGL vertex array (ID: {})", m_RendererID);
 }
 
 void OpenGLVertexArray::Unbind() const {
+    ZoneScoped;
     glBindVertexArray(0);
     glCheckError();
     spdlog::trace("Unbount OpenGL vertex array (ID: {})", m_RendererID);
 }
 
 void OpenGLVertexArray::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer) {
+    ZoneScoped;
     assert(vertexBuffer->GetLayout().GetElements().size());
 
     glBindVertexArray(m_RendererID);
@@ -83,6 +89,7 @@ void OpenGLVertexArray::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& ver
 }
 
 void OpenGLVertexArray::SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer) {
+    ZoneScoped;
     glBindVertexArray(m_RendererID);
     indexBuffer->Bind();
     m_IndexBuffer = indexBuffer;

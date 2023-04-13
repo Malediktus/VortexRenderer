@@ -3,6 +3,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <tracy/Tracy.hpp>
 
 #include <iostream>
 #include <cstdlib>
@@ -10,6 +11,7 @@
 using namespace Vortex;
 
 Model::Model(const std::string& filepath) {
+    ZoneScoped;
     Assimp::Importer import;
     const aiScene* scene = import.ReadFile(filepath, aiProcess_Triangulate | aiProcess_FlipUVs);
 
@@ -23,6 +25,7 @@ Model::Model(const std::string& filepath) {
 }
 
 void Model::ProcessNode(void* processNode, const void* processScene) {
+    ZoneScoped;
     aiNode* node = (aiNode*) processNode;
     const aiScene* scene = (const aiScene*) processScene;
 
@@ -36,6 +39,7 @@ void Model::ProcessNode(void* processNode, const void* processScene) {
 }
 
 ModelMesh Model::ProcessMesh(void* processMesh, const void* processScene) {
+    ZoneScoped;
     aiMesh* mesh = (aiMesh*) processMesh;
     const aiScene* scene = (const aiScene*) processScene;
 
@@ -83,6 +87,7 @@ ModelMesh Model::ProcessMesh(void* processMesh, const void* processScene) {
 }
 
 std::vector<MeshTexture> Model::LoadMaterialTextures(aiMaterial* mat, int textureType, const std::string& typeName) {
+    ZoneScoped;
     aiTextureType type = (aiTextureType) textureType;
 
     std::vector<MeshTexture> textures;
