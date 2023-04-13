@@ -12,7 +12,7 @@ std::shared_ptr<VertexArray> Vortex::VertexArrayCreate() {
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLVertexArray>();
     default:
-        assert(false);
+        VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
-    assert(false);
+    return nullptr;
 }

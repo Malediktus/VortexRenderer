@@ -3,7 +3,6 @@
 #include "Core.hpp"
 #include <memory>
 #include <string>
-#include <cassert>
 
 namespace Vortex {
 /**
@@ -39,23 +38,23 @@ public:
     virtual ~Texture2D() = default;
 
     virtual uint32_t GetWidth() const override {
-        assert(false);
+        VT_ASSERT_CHECK(false, "Texture2D is an abstract class and should not be called, (Please use TextureCreate)");
         return 0;
     }
 
     virtual uint32_t GetHeight() const override {
-        assert(false);
+        VT_ASSERT_CHECK(false, "Texture2D is an abstract class and should not be called, (Please use TextureCreate)");
         return 0;
     }
 
     virtual void Bind(uint32_t) const override {
-        assert(false);
+        VT_ASSERT_CHECK(false, "Texture2D is an abstract class and should not be called, (Please use TextureCreate)");
     }
 
     virtual void Resize(uint32_t width, uint32_t height) = 0;
 
     virtual void* GetNative() const override {
-        assert(false);
+        VT_ASSERT_CHECK(false, "Texture2D is an abstract class and should not be called, (Please use TextureCreate)");
         return nullptr;
     }
 };

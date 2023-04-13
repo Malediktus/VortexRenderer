@@ -11,7 +11,7 @@ std::shared_ptr<Framebuffer> Vortex::FramebufferCreate() {
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLFramebuffer>();
     default:
-        assert(false);
+        VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
-    assert(false);
+    return nullptr;
 }

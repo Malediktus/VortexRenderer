@@ -12,9 +12,9 @@ std::shared_ptr<VertexBuffer> Vortex::VertexBufferCreate(float* vertices, uint32
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLVertexBuffer>(vertices, size);
     default:
-        assert(false);
+        VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
-    assert(false);
+    return nullptr;
 }
 
 std::shared_ptr<VertexBuffer> Vortex::VertexBufferCreate(uint32_t size) {
@@ -23,9 +23,9 @@ std::shared_ptr<VertexBuffer> Vortex::VertexBufferCreate(uint32_t size) {
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLVertexBuffer>(size);
     default:
-        assert(false);
+        VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
-    assert(false);
+    return nullptr;
 }
 
 std::shared_ptr<IndexBuffer> Vortex::IndexBufferCreate(uint32_t* indices, uint32_t size) {
@@ -34,7 +34,7 @@ std::shared_ptr<IndexBuffer> Vortex::IndexBufferCreate(uint32_t* indices, uint32
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLIndexBuffer>(indices, size);
     default:
-        assert(false);
+        VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
-    assert(false);
+    return nullptr;
 }

@@ -4,7 +4,6 @@
 #include <glad/glad.h>
 #include <spdlog/spdlog.h>
 #include <tracy/Tracy.hpp>
-#include <cassert>
 
 using namespace Vortex::OpenGL;
 
@@ -13,7 +12,7 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : m_Path(path) {
     int width, height, channels;
     stbi_set_flip_vertically_on_load(1);
     auto* pixels = stbi_load(path.c_str(), &width, &height, &channels, 0);
-    assert(pixels);
+    VT_ASSERT(pixels, "Failed to open texture file");
     m_Width = width;
     m_Height = height;
     GLenum format;
@@ -30,7 +29,7 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : m_Path(path) {
     } else {
         format = GL_RGBA;
         internalFormat = GL_RGBA8;
-        assert(false);
+        VT_ASSERT(false, "Invalid or unsupported pixel format");
     }
 
     glGenTextures(1, &m_RendererID);
@@ -87,7 +86,7 @@ OpenGLTexture2D::~OpenGLTexture2D() {
 
 void OpenGLTexture2D::Bind(uint32_t slot) const {
     ZoneScoped;
-    assert(slot <= 31);
+    VT_ASSERT(slot <= 31, "Texture slots over 32 are not supported");
     glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D, m_RendererID);
     glCheckError();

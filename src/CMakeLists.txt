@@ -28,6 +28,7 @@ set(SOURCE_LIST
     RendererAPI.cpp
     Framebuffer.cpp
     Renderbuffer.cpp
+    Asserts.cpp
     Scene/Mesh.cpp
     Scene/Model.cpp)
 

@@ -12,9 +12,9 @@ std::shared_ptr<Texture2D> Vortex::Texture2DCreate(const std::string& path) {
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLTexture2D>(path);
     default:
-        assert(false);
+        VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
-    assert(false);
+    return nullptr;
 }
 
 std::shared_ptr<Texture2D> Vortex::Texture2DCreate(const int width, const int height) {
@@ -23,9 +23,9 @@ std::shared_ptr<Texture2D> Vortex::Texture2DCreate(const int width, const int he
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLTexture2D>(width, height);
     default:
-        assert(false);
+        VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
-    assert(false);
+    return nullptr;
 }
 
 std::shared_ptr<Texture2D> Vortex::Texture2DCreate(const int width, const int height, const void* data) {
@@ -34,7 +34,7 @@ std::shared_ptr<Texture2D> Vortex::Texture2DCreate(const int width, const int he
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLTexture2D>(width, height, data);
     default:
-        assert(false);
+        VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
-    assert(false);
+    return nullptr;
 }

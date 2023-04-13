@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #ifdef VT_EXPORT_API
     // Exports
     #ifdef _MSC_VER
@@ -15,3 +17,27 @@
         #define VT_API
     #endif
 #endif
+
+#ifdef VT_DEBUG
+    #define VT_ASSERT_CHECK(expr, msg)                                                                                                                                             \
+        if (expr)                                                                                                                                                                  \
+            ;                                                                                                                                                                      \
+        else                                                                                                                                                                       \
+            Vortex::ReportAssertionFailure(__FILE__, __LINE__, true, msg)
+    #define VT_ASSERT(expr, msg)                                                                                                                                                   \
+        if (expr)                                                                                                                                                                  \
+            ;                                                                                                                                                                      \
+        else                                                                                                                                                                       \
+            Vortex::ReportAssertionFailure(__FILE__, __LINE__, true, msg)
+#else
+    #define VT_ASSERT_CHECK(expr, msg)
+    #define VT_ASSERT(expr, msg)                                                                                                                                                   \
+        if (expr)                                                                                                                                                                  \
+            ;                                                                                                                                                                      \
+        else                                                                                                                                                                       \
+            Vortex::ReportAssertionFailure(__FILE__, __LINE__, false, msg)
+#endif
+
+namespace Vortex {
+__attribute__((noreturn)) void ReportAssertionFailure(const char* filename, uint64_t line, bool check, const std::string& msg);
+}

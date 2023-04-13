@@ -1,7 +1,6 @@
 #include <Vortex/Platform/OpenGL/OpenGLShader.hpp>
 #include <Vortex/Platform/OpenGL/OpenGLRendererAPI.hpp>
 #include <array>
-#include <cassert>
 #include <fstream>
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -22,7 +21,8 @@ static GLenum ShaderTypeFromString(const std::string& type) {
     if (type == "geometry")
         return GL_GEOMETRY_SHADER;
 
-    assert(false);
+    VT_ASSERT_CHECK(false, "Invalid renderer shader type");
+
     return 0;
 }
 
@@ -35,7 +35,8 @@ static const std::string StringFromShaderType(const GLenum type) {
     if (type == GL_GEOMETRY_SHADER)
         return "geometry";
 
-    assert(false);
+    VT_ASSERT_CHECK(false, "Invalid renderer shader type");
+
     return 0;
 }
 } // namespace Utils
@@ -75,17 +76,12 @@ std::string OpenGLShader::ReadFile(const std::string& filepath) {
     ZoneScoped;
     std::string result;
     std::ifstream in(filepath, std::ios::in | std::ios::binary);
-    if (in) {
-        in.seekg(0, std::ios::end);
-        result.resize(in.tellg());
-        in.seekg(0, std::ios::beg);
-        in.read(&result[0], result.size());
-        in.close();
-        ;
-    } else {
-        std::cout << "Could not open file '" << filepath << std::endl;
-        assert(false);
-    }
+    VT_ASSERT(in, "Failed to open shader file");
+    in.seekg(0, std::ios::end);
+    result.resize(in.tellg());
+    in.seekg(0, std::ios::beg);
+    in.read(&result[0], result.size());
+    in.close();
 
     return result;
 }
@@ -99,10 +95,9 @@ std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::stri
     size_t pos = source.find(typeToken, 0);
     while (pos != std::string::npos) {
         size_t eol = source.find_first_of("\r\n", pos);
-        assert(eol != std::string::npos);
+        VT_ASSERT(eol != std::string::npos, "Expected definition after #type instruction");
         size_t begin = pos + typeTokenLength + 1;
         std::string type = source.substr(begin, eol - begin);
-        assert(::Utils::ShaderTypeFromString(type));
 
         size_t nextLinePos = source.find_first_not_of("\r\n", eol);
         pos = source.find(typeToken, nextLinePos);
@@ -116,7 +111,7 @@ void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shader
     ZoneScoped;
     GLuint program = glCreateProgram();
     spdlog::trace("Created OpenGL shader program (ID: {})", program);
-    assert(shaderSources.size() <= 3);
+    VT_ASSERT_CHECK(shaderSources.size() <= 3, "More than 3 shader types in file, but only 3 are supported (vertex, pixel, geometry)");
     std::array<GLenum, 2> glShaderIDs;
     int glShaderIDIndex = 0;
     for (auto& kv : shaderSources) {
@@ -146,7 +141,7 @@ void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shader
 
             spdlog::error("OpenGL shader compilation failed:\n{}", infoLog.data());
             spdlog::error("Shader info: (type: {}, ID: {})", ::Utils::StringFromShaderType(type), shader);
-            assert(false);
+            VT_ASSERT(false, "Shader compilation failed");
             break;
         }
 
@@ -181,7 +176,7 @@ void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shader
         spdlog::error("OpenGL shader program linking failed:\n{}", infoLog.data());
         spdlog::error("Shader program info: (ID: {})", program);
 
-        assert(false);
+        VT_ASSERT(false, "Shader linking failed");
         return;
     }
 

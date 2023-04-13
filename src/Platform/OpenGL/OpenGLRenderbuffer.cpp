@@ -3,7 +3,6 @@
 #include <glad/glad.h>
 #include <spdlog/spdlog.h>
 #include <tracy/Tracy.hpp>
-#include <cassert>
 
 using namespace Vortex::OpenGL;
 

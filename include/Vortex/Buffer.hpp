@@ -2,7 +2,6 @@
 
 #include "Core.hpp"
 
-#include <cassert>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -17,20 +16,7 @@ namespace Vortex {
  * @date 2023-03-31
  * @copyright Copyright (c) 2023
  */
-enum class ShaderDataType {
-    None = 0,
-    Float = 1,
-    Float2 = 2,
-    Float3 = 3,
-    Float4 = 4,
-    Mat3 = 5,
-    Mat4 = 6,
-    Int = 7,
-    Int2 = 8,
-    Int3 = 9,
-    Int4 = 10,
-    Bool = 11
-};
+enum class ShaderDataType { None = 0, Float = 1, Float2 = 2, Float3 = 3, Float4 = 4, Mat3 = 5, Mat4 = 6, Int = 7, Int2 = 8, Int3 = 9, Int4 = 10, Bool = 11 };
 
 namespace Utils {
 /**
@@ -68,7 +54,7 @@ static uint32_t ShaderDataTypeSize(ShaderDataType type) {
     case ShaderDataType::Bool:
         return 1;
     default:
-        assert(false);
+        VT_ASSERT_CHECK(false, "Invalid shader data type");
     }
     return 0;
 }
@@ -121,7 +107,7 @@ struct BufferElement {
         case ShaderDataType::Bool:
             return 1;
         default:
-            assert(false);
+            VT_ASSERT_CHECK(false, "Invalid shader data type");
         }
 
         return 0;

@@ -263,6 +263,5 @@ void Vortex::OpenGL::CheckOpenGLError(const char* file, int line) {
         spdlog::error("An OpenGL error of type {} occured in file {}, line {}", error, file, line);
     }
 
-    if (failure)
-        assert(false);
+    VT_ASSERT_CHECK(!failure, "An OpenGL error occured");
 }

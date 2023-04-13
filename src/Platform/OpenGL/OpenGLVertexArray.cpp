@@ -33,7 +33,7 @@ static GLenum ShaderDataTypeToOpenGLBaseType(Vortex::ShaderDataType type) {
     case Vortex::ShaderDataType::Bool:
         return GL_BOOL;
     default:
-        assert(false);
+        VT_ASSERT_CHECK(false, "Invalid shader data type");
     }
     return 0;
 }
@@ -69,7 +69,7 @@ void OpenGLVertexArray::Unbind() const {
 
 void OpenGLVertexArray::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer) {
     ZoneScoped;
-    assert(vertexBuffer->GetLayout().GetElements().size());
+    VT_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "At lease one value is needed in vertex buffer layout");
 
     glBindVertexArray(m_RendererID);
     vertexBuffer->Bind();

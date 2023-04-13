@@ -3,7 +3,6 @@
 #include <Vortex/Shader.hpp>
 #include <Vortex/Renderer.hpp>
 #include <tracy/Tracy.hpp>
-#include <cassert>
 
 using namespace Vortex;
 
@@ -13,9 +12,9 @@ std::shared_ptr<Shader> Vortex::ShaderCreate(const std::string& filepath) {
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLShader>(filepath);
     default:
-        assert(false);
+        VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
-    assert(false);
+    return nullptr;
 }
 
 std::shared_ptr<Shader> Vortex::ShaderCreate(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& geometrySrc) {
@@ -24,14 +23,14 @@ std::shared_ptr<Shader> Vortex::ShaderCreate(const std::string& name, const std:
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLShader>(name, vertexSrc, fragmentSrc, geometrySrc);
     default:
-        assert(false);
+        VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
-    assert(false);
+    return nullptr;
 }
 
 void ShaderLibrary::Add(const std::string& name, const std::shared_ptr<Shader>& shader) {
     ZoneScoped;
-    assert(!Exists(name));
+    VT_ASSERT(Exists(name), "Shader name already registered in ShaderLibrary");
     m_Shaders[name] = shader;
 }
 
@@ -57,7 +56,7 @@ std::shared_ptr<Shader> ShaderLibrary::Load(const std::string& name, const std::
 
 std::shared_ptr<Shader> ShaderLibrary::Get(const std::string& name) {
     ZoneScoped;
-    assert(Exists(name));
+    VT_ASSERT(!Exists(name), "Shader name not registered in ShaderLibrary");
     return m_Shaders[name];
 }
 

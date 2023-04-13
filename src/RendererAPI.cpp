@@ -2,7 +2,6 @@
 #include <Vortex/Renderer.hpp>
 #include <Vortex/Platform/OpenGL/OpenGLRendererAPI.hpp>
 #include <tracy/Tracy.hpp>
-#include <cassert>
 
 using namespace Vortex;
 
@@ -14,7 +13,7 @@ std::shared_ptr<RendererAPI> Vortex::RendererAPICreate() {
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLRendererAPI>();
     default:
-        assert(false);
+        VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
-    assert(false);
+    return nullptr;
 }
