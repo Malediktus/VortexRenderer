@@ -14,6 +14,14 @@ public:
     virtual void AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer) override;
     virtual void SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer) override;
 
+    virtual void SetPrimitive(Primitive primitive) override {
+        m_Primitive = primitive;
+    }
+
+    virtual Primitive GetPrimitive() const override {
+        return m_Primitive;
+    }
+
     virtual const std::vector<std::shared_ptr<VertexBuffer>>& GetVertexBuffers() const override {
         return m_VertexBuffers;
     }
@@ -23,6 +31,7 @@ public:
 
 private:
     uint32_t m_RendererID;
+    Primitive m_Primitive;
     std::vector<std::shared_ptr<VertexBuffer>> m_VertexBuffers;
     std::shared_ptr<IndexBuffer> m_IndexBuffer;
 };

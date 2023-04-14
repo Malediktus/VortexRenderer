@@ -44,6 +44,7 @@ OpenGLVertexArray::OpenGLVertexArray() {
     glGenVertexArrays(1, &m_RendererID);
     glCheckError();
     spdlog::trace("Created OpenGL vertex array (ID: {})", m_RendererID);
+    m_Primitive = Primitive::Triangles;
 }
 
 OpenGLVertexArray::~OpenGLVertexArray() {

@@ -59,6 +59,25 @@ static GLenum BlendingFuncToGLenum(RendererAPI::BlendingFunc action) {
         return GL_ONE_MINUS_CONSTANT_ALPHA;
     }
 }
+
+static GLenum PrimitiveToGLenum(VertexArray::Primitive primitive) {
+    switch (primitive) {
+    case VertexArray::Primitive::Points:
+        return GL_POINTS;
+    case VertexArray::Primitive::Lines:
+        return GL_LINES;
+    case VertexArray::Primitive::LineStrip:
+        return GL_LINE_STRIP;
+    case VertexArray::Primitive::LineLoop:
+        return GL_LINE_LOOP;
+    case VertexArray::Primitive::Triangles:
+        return GL_TRIANGLES;
+    case VertexArray::Primitive::TriangleStrip:
+        return GL_TRIANGLE_STRIP;
+    case VertexArray::Primitive::TriangleFan:
+        return GL_TRIANGLE_FAN;
+    }
+}
 } // namespace Vortex::Utils
 
 void OpenGLRendererAPI::SetClearColor(const glm::vec4& color) {
@@ -225,7 +244,7 @@ void OpenGLRendererAPI::ConfigureCulling(const bool enable, const CullingType ty
 void OpenGLRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount) {
     ZoneScoped;
     uint32_t count = indexCount == 0 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
-    glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(Utils::PrimitiveToGLenum(vertexArray->GetPrimitive()), count, GL_UNSIGNED_INT, nullptr);
     glCheckError();
     spdlog::trace("Drew OpenGL indexed vertex array (elements: {})", count);
 }
