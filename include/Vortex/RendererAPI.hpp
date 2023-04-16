@@ -51,8 +51,8 @@ public:
                                                 const StencilTestAction stencilPassDepthPassAction) = 0;
     virtual VT_API void ConfigureBlending(const bool enable, const BlendingFunc blendingFunc1, const BlendingFunc blendingFunc2, const BlendingFunc blendingFuncR,
                                           const BlendingFunc blendingFuncG, const BlendingFunc blendingFuncB, const BlendingFunc blendingFuncA) = 0;
-
     virtual VT_API void ConfigureCulling(const bool enable, const CullingType type) = 0;
+    virtual VT_API void ConfigureWireframeView(const bool enable) = 0;
 
     virtual VT_API void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount = 0) = 0;
 

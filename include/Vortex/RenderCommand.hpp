@@ -51,6 +51,10 @@ public:
         s_RendererAPI->ConfigureCulling(enable, type);
     }
 
+    inline static VT_API void ConfigureWireframeView(const bool enable) {
+        s_RendererAPI->ConfigureWireframeView(enable);
+    }
+
     inline static VT_API void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t count = 0) {
         s_RendererAPI->DrawIndexed(vertexArray, count);
     }

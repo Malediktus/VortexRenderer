@@ -241,6 +241,13 @@ void OpenGLRendererAPI::ConfigureCulling(const bool enable, const CullingType ty
     spdlog::trace("Configured OpenGL culling: (enable: {}, type: {})", enable, (int) type);
 }
 
+void OpenGLRendererAPI::ConfigureWireframeView(const bool enable) {
+    if (enable)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    else
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
 void OpenGLRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount) {
     ZoneScoped;
     uint32_t count = indexCount == 0 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
