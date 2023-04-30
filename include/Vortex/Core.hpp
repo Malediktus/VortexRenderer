@@ -28,7 +28,7 @@
         if (expr)                                                                                                                                                                  \
             ;                                                                                                                                                                      \
         else                                                                                                                                                                       \
-            Vortex::ReportAssertionFailure(__FILE__, __LINE__, true, msg)
+            Vortex::ReportAssertionFailure(__FILE__, __LINE__, false, msg)
 #else
     #define VT_ASSERT_CHECK(expr, msg)
     #define VT_ASSERT(expr, msg)                                                                                                                                                   \

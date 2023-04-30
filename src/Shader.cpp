@@ -1,5 +1,6 @@
 #include <Vortex/Core.hpp>
 #include <Vortex/Platform/OpenGL/OpenGLShader.hpp>
+#include <Vortex/Platform/Vulkan/VulkanShader.hpp>
 #include <Vortex/Shader.hpp>
 #include <Vortex/Renderer.hpp>
 #include <tracy/Tracy.hpp>
@@ -11,6 +12,8 @@ std::shared_ptr<Shader> Vortex::ShaderCreate(const std::string& filepath) {
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLShader>(filepath);
+    case RendererAPI::API::Vulkan:
+        return std::make_shared<Vulkan::VulkanShader>(filepath);
     default:
         VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
@@ -22,6 +25,8 @@ std::shared_ptr<Shader> Vortex::ShaderCreate(const std::string& name, const std:
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLShader>(name, vertexSrc, fragmentSrc, geometrySrc);
+    case RendererAPI::API::Vulkan:
+        return std::make_shared<Vulkan::VulkanShader>(name, vertexSrc, fragmentSrc, geometrySrc);
     default:
         VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }

@@ -11,7 +11,9 @@ public:
     }
     virtual ~OpenGLContext() = default;
 
-    virtual void Init() const override;
+    virtual void Init() override;
+    virtual void Destroy() override {
+    }
 
 private:
     void* m_WindowHandle;

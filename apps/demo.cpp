@@ -18,7 +18,7 @@ public:
         m_Camera = std::make_shared<Vortex::Camera>(90.0f, 1280, 720);
         m_MonkeyMesh = std::make_shared<Vortex::Mesh>("../../apps/assets/Objects/Monkey/monkey.obj");
 
-        glfwSwapInterval(0);
+        // glfwSwapInterval(0);
         m_PerfCounterFrequency = glfwGetTimerFrequency();
         m_LastCounter = glfwGetTimerValue();
     }
@@ -96,6 +96,7 @@ public:
     }
 
     ~VortexDemo() {
+        Vortex::Renderer::Shutdown();
         glfwDestroyWindow(m_Window);
         glfwTerminate();
     }

@@ -12,7 +12,7 @@ std::shared_ptr<Context> Renderer::m_Context;
 void Renderer::Init(void* glfwWindow, const std::string& shaderPath, const int width, const int height) {
     ZoneScoped;
 #ifdef VT_DEBUG
-    spdlog::set_level(spdlog::level::level_enum::info);
+    spdlog::set_level(spdlog::level::level_enum::debug);
 #else
     spdlog::set_level(spdlog::level::level_enum::warn);
 #endif
@@ -35,6 +35,10 @@ void Renderer::Init(void* glfwWindow, const std::string& shaderPath, const int w
     Vortex::RenderCommand::SetViewport(width, height);
 
     spdlog::info("Initialized renderer");
+}
+
+void Renderer::Shutdown() {
+    m_Context->Destroy();
 }
 
 void Renderer::OnResize(const int width, const int height) {

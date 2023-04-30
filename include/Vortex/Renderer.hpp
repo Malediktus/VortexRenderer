@@ -28,6 +28,7 @@ namespace Vortex {
 class Renderer {
 public:
     static VT_API void Init(void* glfwWindow, const std::string& shaderPath, const int width, const int height);
+    static VT_API void Shutdown();
 
     static VT_API void OnResize(const int width, const int height);
 

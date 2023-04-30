@@ -2,6 +2,7 @@
 #include <Vortex/Core.hpp>
 #include <Vortex/Renderer.hpp>
 #include <Vortex/Platform/OpenGL/OpenGLBuffer.hpp>
+#include <Vortex/Platform/Vulkan/VulkanBuffer.hpp>
 #include <tracy/Tracy.hpp>
 
 using namespace Vortex;
@@ -11,6 +12,8 @@ std::shared_ptr<VertexBuffer> Vortex::VertexBufferCreate(float* vertices, uint32
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLVertexBuffer>(vertices, size);
+    case RendererAPI::API::Vulkan:
+        return std::make_shared<Vulkan::VulkanVertexBuffer>(vertices, size);
     default:
         VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
@@ -22,6 +25,8 @@ std::shared_ptr<VertexBuffer> Vortex::VertexBufferCreate(uint32_t size) {
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLVertexBuffer>(size);
+    case RendererAPI::API::Vulkan:
+        return std::make_shared<Vulkan::VulkanVertexBuffer>(size);
     default:
         VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
@@ -33,6 +38,8 @@ std::shared_ptr<IndexBuffer> Vortex::IndexBufferCreate(uint32_t* indices, uint32
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLIndexBuffer>(indices, size);
+    case RendererAPI::API::Vulkan:
+        return std::make_shared<Vulkan::VulkanIndexBuffer>(indices, size);
     default:
         VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }

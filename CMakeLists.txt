@@ -49,6 +49,8 @@ else()
     set(TRACY_ON_DEMAND OFF)
 endif()
 
+find_package(Vulkan)
+
 add_subdirectory(extern/glfw)
 add_subdirectory(extern/glm)
 add_subdirectory(extern/tracy)
