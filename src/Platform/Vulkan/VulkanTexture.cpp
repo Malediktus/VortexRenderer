@@ -11,12 +11,12 @@ VulkanTexture2D::VulkanTexture2D(const std::string& path) : m_Path(path) {
     // spdlog::trace("Created Vulkan texture2D from file (file: {}, ID: {})", path, m_RendererID);
 }
 
-VulkanTexture2D::VulkanTexture2D(const int width, const int height) : m_Path("") {
+VulkanTexture2D::VulkanTexture2D(const int width, const int height, Texture2D::Texture2DUsageType usageType) : m_Path("") {
     ZoneScoped;
     // spdlog::trace("Created Vulkan texture2D from file (ID: {})", m_RendererID);
 }
 
-VulkanTexture2D::VulkanTexture2D(const int width, const int height, const void* data) : m_Path("") {
+VulkanTexture2D::VulkanTexture2D(const int width, const int height, const void* data, Texture2D::Texture2DUsageType usageType) : m_Path("") {
     ZoneScoped;
     // spdlog::trace("Created Vulkan texture2D from file (ID: {})", m_RendererID);
 }

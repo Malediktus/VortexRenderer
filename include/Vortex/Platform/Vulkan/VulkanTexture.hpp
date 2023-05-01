@@ -6,8 +6,8 @@ namespace Vortex::Vulkan {
 class VulkanTexture2D : public Texture2D {
 public:
     VulkanTexture2D(const std::string& path);
-    VulkanTexture2D(const int width, const int height);
-    VulkanTexture2D(const int width, const int height, const void* data);
+    VulkanTexture2D(const int width, const int height, Texture2D::Texture2DUsageType usageType);
+    VulkanTexture2D(const int width, const int height, const void* data, Texture2D::Texture2DUsageType usageType);
     virtual ~VulkanTexture2D();
 
     virtual uint32_t GetWidth() const override {

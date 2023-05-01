@@ -14,7 +14,13 @@ public:
         ZoneScoped;
         SetupGlfw();
 
-        Vortex::Renderer::Init(m_Window, "../../apps/assets/Shaders/Light.glsl", 1280, 720);
+        m_Context = Vortex::ContextCreate(m_Window);
+        m_Context->Init();
+
+        Vortex::Renderer::SetContext(m_Context);
+        Vortex::RenderCommand::Init();
+
+        m_Renderer = std::make_shared<Vortex::Renderer>("../../apps/assets/Shaders/Light.glsl", 1280, 720);
         m_Camera = std::make_shared<Vortex::Camera>(90.0f, 1280, 720);
         m_MonkeyMesh = std::make_shared<Vortex::Mesh>("../../apps/assets/Objects/Monkey/monkey.obj");
 
@@ -42,9 +48,9 @@ public:
         scene->Append(meshObject);
         scene->Append(lightObject);
 
-        Vortex::Renderer::BeginFrame();
-        Vortex::Renderer::Submit(scene);
-        Vortex::Renderer::EndFrame();
+        m_Renderer->BeginFrame();
+        m_Renderer->Submit(scene);
+        m_Renderer->EndFrame();
 
         {
             ZoneScopedN("SwapBuffer");
@@ -96,7 +102,7 @@ public:
     }
 
     ~VortexDemo() {
-        Vortex::Renderer::Shutdown();
+        m_Context->Destroy();
         glfwDestroyWindow(m_Window);
         glfwTerminate();
     }
@@ -114,8 +120,10 @@ private:
     float m_Delta = 0.0f;
     uint32_t m_FPS = 0.0f;
 
+    std::shared_ptr<Vortex::Renderer> m_Renderer;
     std::shared_ptr<Vortex::Camera> m_Camera;
     std::shared_ptr<Vortex::Mesh> m_MonkeyMesh;
+    std::shared_ptr<Vortex::Context> m_Context;
 };
 
 int main() {

@@ -6,7 +6,7 @@
 
 using namespace Vortex;
 
-RendererAPI::API RendererAPI::s_API = RendererAPI::API::Vulkan;
+RendererAPI::API RendererAPI::s_API = RendererAPI::API::OpenGL;
 
 std::shared_ptr<RendererAPI> Vortex::RendererAPICreate() {
     ZoneScoped;

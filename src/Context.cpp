@@ -5,11 +5,21 @@
 #include <Vortex/Platform/OpenGL/OpenGLContext.hpp>
 #include <Vortex/Platform/Vulkan/VulkanContext.hpp>
 #include <tracy/Tracy.hpp>
+#include <spdlog/spdlog.h>
 
 using namespace Vortex;
 
 std::shared_ptr<Context> Vortex::ContextCreate(void* windowHandle) {
     ZoneScoped;
+
+    // TODO: Find better way to init logger
+#ifdef VT_DEBUG
+    spdlog::set_level(spdlog::level::level_enum::debug);
+#else
+    spdlog::set_level(spdlog::level::level_enum::warn);
+#endif
+    spdlog::set_pattern("[%T] %^[%l%$] %v%$");
+
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLContext>(windowHandle);

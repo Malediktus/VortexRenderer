@@ -27,23 +27,26 @@ namespace Vortex {
  */
 class Renderer {
 public:
-    static VT_API void Init(void* glfwWindow, const std::string& shaderPath, const int width, const int height);
-    static VT_API void Shutdown();
+    VT_API Renderer(const std::string& shaderPath, const int width, const int height);
+    VT_API ~Renderer() = default;
 
-    static VT_API void OnResize(const int width, const int height);
+    VT_API void OnResize(const int width, const int height);
 
-    static VT_API void BeginFrame();
-    static VT_API void EndFrame();
+    VT_API void BeginFrame();
+    VT_API void EndFrame();
 
-    static VT_API void Submit(const std::shared_ptr<VertexArray>& vertexArray);
-    static VT_API void Submit(const std::shared_ptr<Scene>& scene);
+    VT_API void Submit(const std::shared_ptr<VertexArray>& vertexArray);
+    VT_API void Submit(const std::shared_ptr<Scene>& scene);
 
     inline static VT_API RendererAPI::API GetAPI() {
         return RendererAPI::GetAPI();
     }
 
+    static VT_API void SetContext(std::shared_ptr<Context> context);
+    static VT_API std::shared_ptr<Context> GetContext();
+
 private:
-    static std::shared_ptr<Shader> m_Shader;
-    static std::shared_ptr<Context> m_Context;
+    std::shared_ptr<Shader> m_Shader;
+    static std::shared_ptr<Context> s_Context;
 };
 } // namespace Vortex
