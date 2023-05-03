@@ -109,6 +109,9 @@ void VulkanContext::Init() {
     if (validationLayers.size() <= 0)
         enableValidationLayers = false;
 
+    auto windowExtensions = m_Window->GetVulkanInstanceExtensions();
+    extensions.insert(extensions.end(), windowExtensions.begin(), windowExtensions.end());
+
     if (enableValidationLayers)
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     if (useMoltenVk)
