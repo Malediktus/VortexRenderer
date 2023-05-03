@@ -7,11 +7,14 @@ using namespace Vortex::Vulkan;
 
 VulkanVertexBuffer::VulkanVertexBuffer(uint32_t size) {
     ZoneScoped;
+    (void) size;
     // spdlog::trace("Created Vulkan vertex buffer of type dynamic (ID: {})", m_RendererID);
 }
 
 VulkanVertexBuffer::VulkanVertexBuffer(float* vertices, uint32_t size) {
     ZoneScoped;
+    (void) size;
+    (void) vertices;
     // spdlog::trace("Created Vulkan vertex buffer of type static (ID: {})", m_RendererID);
 }
 
@@ -37,6 +40,8 @@ void VulkanVertexBuffer::SetData(const void* data, uint32_t size) {
 
 VulkanIndexBuffer::VulkanIndexBuffer(uint32_t* indices, uint32_t count) {
     ZoneScoped;
+    (void) indices;
+    (void) count;
     // spdlog::trace("Created Vulkan index buffer of type static (ID: {})", m_RendererID);
 }
 

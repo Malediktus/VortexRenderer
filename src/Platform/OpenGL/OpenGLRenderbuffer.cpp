@@ -6,15 +6,24 @@
 
 using namespace Vortex::OpenGL;
 
-OpenGLRenderbuffer::OpenGLRenderbuffer(uint32_t width, uint32_t height, Renderbuffer::RenderbufferType type) {
+OpenGLRenderbuffer::OpenGLRenderbuffer(uint32_t width, uint32_t height, Renderbuffer::RenderbufferUsageType usageType) {
     ZoneScoped;
     glGenRenderbuffers(1, &m_RendererID);
     glBindRenderbuffer(GL_RENDERBUFFER, m_RendererID);
     GLuint format;
-    switch (type) {
-    case Renderbuffer::RenderbufferType::DEPTH24_STENCIL8: {
+    switch (usageType) {
+    case Renderbuffer::RenderbufferUsageType::Color:
+        format = GL_RGBA8;
+        break;
+    case Renderbuffer::RenderbufferUsageType::Depth:
+        format = GL_DEPTH_COMPONENT32F;
+        break;
+    case Renderbuffer::RenderbufferUsageType::Stencil:
+        format = GL_STENCIL_INDEX8;
+        break;
+    case Renderbuffer::RenderbufferUsageType::DepthStencil:
         format = GL_DEPTH24_STENCIL8;
-    } break;
+        break;
     }
     glRenderbufferStorage(GL_RENDERBUFFER, format, width, height);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);

@@ -8,11 +8,52 @@
 #include <cstdlib>
 #include <iostream>
 
+class Window : public Vortex::Window {
+public:
+    Window() {
+        if (!glfwInit()) {
+            std::cout << "Failed to init GLFW!" << std::endl;
+            exit(1);
+        }
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+        m_GLFWWindow = glfwCreateWindow(1280, 720, "Vortex Renderer Demo", nullptr, nullptr);
+        if (!m_GLFWWindow) {
+            std::cout << "Failed to create window!" << std::endl;
+            exit(1);
+        }
+    }
+
+    ~Window() {
+        glfwDestroyWindow(m_GLFWWindow);
+        glfwTerminate();
+    }
+
+    void* GetSurface() override {
+        return nullptr;
+    }
+
+    void SetupOpenglContext() override {
+        glfwMakeContextCurrent(m_GLFWWindow);
+    }
+
+    GLFWwindow* GetGLFWWindow() {
+        return m_GLFWWindow;
+    }
+
+private:
+    GLFWwindow* m_GLFWWindow;
+};
+
 class VortexDemo {
 public:
     VortexDemo() {
         ZoneScoped;
-        SetupGlfw();
+
+        m_Window = std::make_shared<Window>();
 
         m_Context = Vortex::ContextCreate(m_Window);
         m_Context->Init();
@@ -54,7 +95,7 @@ public:
 
         {
             ZoneScopedN("SwapBuffer");
-            glfwSwapBuffers(m_Window);
+            glfwSwapBuffers(m_Window->GetGLFWWindow());
         }
         {
             ZoneScopedN("PollEvents");
@@ -73,53 +114,27 @@ public:
             ZoneScopedN("UpdateTitle");
             std::string title = "Vortex Renderer Demo FPS: ";
             title.append(std::to_string(m_FPS));
-            glfwSetWindowTitle(m_Window, title.c_str());
+            glfwSetWindowTitle(m_Window->GetGLFWWindow(), title.c_str());
             m_FrameCount = 0;
         }
     }
 
     bool ShouldClose() {
-        return glfwWindowShouldClose(m_Window);
-    }
-
-    void SetupGlfw() {
-        ZoneScoped;
-        glfwSetErrorCallback(GlfwErrorCallback);
-        if (!glfwInit()) {
-            std::cout << "Failed to init GLFW!" << std::endl;
-            exit(1);
-        }
-
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-        m_Window = glfwCreateWindow(1280, 720, "Vortex Renderer Demo", nullptr, nullptr);
-        if (!m_Window) {
-            std::cout << "Failed to create window!" << std::endl;
-            exit(1);
-        }
+        return glfwWindowShouldClose(m_Window->GetGLFWWindow());
     }
 
     ~VortexDemo() {
         m_Context->Destroy();
-        glfwDestroyWindow(m_Window);
-        glfwTerminate();
     }
 
 private:
-    static void GlfwErrorCallback(int error, const char* description) {
-        std::cout << "GLFW Error (" << error << "): " << description << std::endl;
-        exit(1);
-    }
-
-    GLFWwindow* m_Window;
     uint64_t m_PerfCounterFrequency;
     uint64_t m_LastCounter;
     uint32_t m_FrameCount = 0;
     float m_Delta = 0.0f;
     uint32_t m_FPS = 0.0f;
 
+    std::shared_ptr<Window> m_Window;
     std::shared_ptr<Vortex::Renderer> m_Renderer;
     std::shared_ptr<Vortex::Camera> m_Camera;
     std::shared_ptr<Vortex::Mesh> m_MonkeyMesh;

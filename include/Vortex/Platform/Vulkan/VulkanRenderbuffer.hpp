@@ -3,7 +3,7 @@
 namespace Vortex::Vulkan {
 class VulkanRenderbuffer : public Renderbuffer {
 public:
-    VulkanRenderbuffer(uint32_t width, uint32_t height, Renderbuffer::RenderbufferType type);
+    VulkanRenderbuffer(uint32_t width, uint32_t height, Renderbuffer::RenderbufferUsageType usageType);
     virtual ~VulkanRenderbuffer();
 
     virtual void Bind() const override;

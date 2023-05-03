@@ -1,6 +1,7 @@
 set(HEADER_LIST
     "${PROJECT_SOURCE_DIR}/include/Vortex/Vortex.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Core.hpp"
+    "${PROJECT_SOURCE_DIR}/include/Vortex/Window.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Platform.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Context.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/RenderCommand.hpp"

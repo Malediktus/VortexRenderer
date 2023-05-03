@@ -9,8 +9,7 @@
 namespace Vortex::Vulkan {
 class VulkanContext : public Context {
 public:
-    VulkanContext(void* windowHandle) : m_WindowHandle(windowHandle) {
-        (void) m_WindowHandle;
+    VulkanContext(const std::shared_ptr<Vortex::Window>& window) : m_Window(window) {
     }
     virtual ~VulkanContext() = default;
 
@@ -21,8 +20,12 @@ public:
         return m_Instance;
     }
 
+    virtual std::shared_ptr<Vortex::Window> GetWindow() override {
+        return m_Window;
+    }
+
 private:
-    void* m_WindowHandle;
+    std::shared_ptr<Vortex::Window> m_Window;
     VkInstance m_Instance;
     VkDebugUtilsMessengerEXT m_DebugMessenger;
 };

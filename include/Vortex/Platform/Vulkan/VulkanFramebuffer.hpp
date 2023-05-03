@@ -3,15 +3,20 @@
 namespace Vortex::Vulkan {
 class VulkanFramebuffer : public Framebuffer {
 public:
-    VulkanFramebuffer();
+    VulkanFramebuffer(const std::shared_ptr<Window>& window);
     virtual ~VulkanFramebuffer();
 
     virtual void Bind() const override;
     virtual void Unbind() const override;
 
-    virtual void AttachColorBuffer(const std::shared_ptr<Texture2D>& texture) override;
-    virtual void AttachDepthBuffer(const std::shared_ptr<Texture2D>& texture) override;
-    virtual void AttachStencilBuffer(const std::shared_ptr<Texture2D>& texture) override;
-    virtual void AttachDepthStencilBuffer(const std::shared_ptr<Renderbuffer>& renderbuffer) override;
+    virtual void AttachColorTexture(const std::shared_ptr<Texture2D>& texture) override;
+    virtual void AttachDepthTexture(const std::shared_ptr<Texture2D>& texture) override;
+    virtual void AttachStencilTexture(const std::shared_ptr<Texture2D>& texture) override;
+    virtual void AttachDepthStencilTexture(const std::shared_ptr<Texture2D>& texture) override;
+
+    virtual void AttachColorRenderbuffer(const std::shared_ptr<Renderbuffer>& renderbuffer) override;
+    virtual void AttachDepthRenderbuffer(const std::shared_ptr<Renderbuffer>& renderbuffer) override;
+    virtual void AttachStencilRenderbuffer(const std::shared_ptr<Renderbuffer>& renderbuffer) override;
+    virtual void AttachDepthStencilRenderbuffer(const std::shared_ptr<Renderbuffer>& renderbuffer) override;
 };
 } // namespace Vortex::Vulkan

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core.hpp"
+#include "Window.hpp"
 
 #include <memory>
 
@@ -19,6 +20,8 @@ public:
 
     virtual VT_API void Init() = 0;
     virtual VT_API void Destroy() = 0;
+
+    virtual VT_API std::shared_ptr<Vortex::Window> GetWindow() = 0;
 };
 
 /**
@@ -31,5 +34,5 @@ public:
  * @date 2023-03-31
  * @copyright Copyright (c) 2023
  */
-VT_API std::shared_ptr<Context> ContextCreate(void* windowHandle);
+VT_API std::shared_ptr<Context> ContextCreate(const std::shared_ptr<Vortex::Window>& window);
 } // namespace Vortex

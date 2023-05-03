@@ -8,7 +8,7 @@ using namespace Vortex::OpenGL;
 
 void OpenGLContext::Init() {
     ZoneScoped;
-    glfwMakeContextCurrent((GLFWwindow*) m_WindowHandle);
+    m_Window->SetupOpenglContext();
     VT_ASSERT(gladLoadGLLoader((GLADloadproc) glfwGetProcAddress), "Failed to initialize OpenGL Context");
 
     spdlog::info("Created OpenGL context");

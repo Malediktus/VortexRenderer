@@ -5,7 +5,7 @@
 
 using namespace Vortex::Vulkan;
 
-VulkanFramebuffer::VulkanFramebuffer() {
+VulkanFramebuffer::VulkanFramebuffer(const std::shared_ptr<Window>& window) {
     ZoneScoped;
     // spdlog::trace("Created Vulkan framebuffer (ID: {})", m_RendererID);
 }
@@ -25,22 +25,34 @@ void VulkanFramebuffer::Unbind() const {
     // spdlog::info("Unbound Vulkan framebuffer (ID: {})", m_RendererID);
 }
 
-void VulkanFramebuffer::AttachColorBuffer(const std::shared_ptr<Texture2D>& texture) {
+void VulkanFramebuffer::AttachColorTexture(const std::shared_ptr<Texture2D>& texture) {
     ZoneScoped;
-    // spdlog::trace("Attached texture of type color buffer to Vulkan framebuffer (ID: {}, TextureID: {})", m_RendererID, *(GLuint*) texture->GetNative());
 }
 
-void VulkanFramebuffer::AttachDepthBuffer(const std::shared_ptr<Texture2D>& texture) {
+void VulkanFramebuffer::AttachDepthTexture(const std::shared_ptr<Texture2D>& texture) {
     ZoneScoped;
-    // spdlog::trace("Attached texture of type depth buffer to Vulkan framebuffer (ID: {}, TextureID: {})", m_RendererID, *(GLuint*) texture->GetNative());
 }
 
-void VulkanFramebuffer::AttachStencilBuffer(const std::shared_ptr<Texture2D>& texture) {
+void VulkanFramebuffer::AttachStencilTexture(const std::shared_ptr<Texture2D>& texture) {
     ZoneScoped;
-    // spdlog::trace("Attached texture of type stencil buffer to Vulkan framebuffer (ID: {}, TextureID: {})", m_RendererID, *(GLuint*) texture->GetNative());
 }
 
-void VulkanFramebuffer::AttachDepthStencilBuffer(const std::shared_ptr<Renderbuffer>& renderbuffer) {
+void VulkanFramebuffer::AttachDepthStencilTexture(const std::shared_ptr<Texture2D>& texture) {
     ZoneScoped;
-    // spdlog::trace("Attached renderbuffer of type depth-stencil buffer to Vulkan framebuffer (ID: {}, RenderbufferID: {})", m_RendererID, *(GLuint*) renderbuffer->GetNative());
+}
+
+void VulkanFramebuffer::AttachColorRenderbuffer(const std::shared_ptr<Renderbuffer>& renderbuffer) {
+    ZoneScoped;
+}
+
+void VulkanFramebuffer::AttachDepthRenderbuffer(const std::shared_ptr<Renderbuffer>& renderbuffer) {
+    ZoneScoped;
+}
+
+void VulkanFramebuffer::AttachStencilRenderbuffer(const std::shared_ptr<Renderbuffer>& renderbuffer) {
+    ZoneScoped;
+}
+
+void VulkanFramebuffer::AttachDepthStencilRenderbuffer(const std::shared_ptr<Renderbuffer>& renderbuffer) {
+    ZoneScoped;
 }

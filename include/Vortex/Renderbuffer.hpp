@@ -7,7 +7,7 @@
 namespace Vortex {
 class Renderbuffer {
 public:
-    enum RenderbufferType { DEPTH24_STENCIL8 = 0 };
+    enum class RenderbufferUsageType { Color = 0, Depth = 1, Stencil = 2, DepthStencil = 3 };
 
     virtual ~Renderbuffer() = default;
 
@@ -17,5 +17,5 @@ public:
     virtual void* GetNative() const = 0;
 };
 
-VT_API std::shared_ptr<Renderbuffer> RenderbufferCreate(uint32_t width, uint32_t height, Renderbuffer::RenderbufferType type);
+VT_API std::shared_ptr<Renderbuffer> RenderbufferCreate(uint32_t width, uint32_t height, Renderbuffer::RenderbufferUsageType usageType);
 } // namespace Vortex

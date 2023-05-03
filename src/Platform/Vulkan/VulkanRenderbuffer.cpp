@@ -5,7 +5,10 @@
 
 using namespace Vortex::Vulkan;
 
-VulkanRenderbuffer::VulkanRenderbuffer(uint32_t width, uint32_t height, Renderbuffer::RenderbufferType type) {
+VulkanRenderbuffer::VulkanRenderbuffer(uint32_t width, uint32_t height, Renderbuffer::RenderbufferUsageType usageType) {
+    (void) width;
+    (void) height;
+    (void) usageType;
     ZoneScoped;
     // spdlog::trace("Created Vulkan renderbuffer (ID: {})", m_RendererID);
 }
