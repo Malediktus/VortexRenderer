@@ -1,3 +1,4 @@
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <Vortex/Vortex.hpp>
 #include <Vortex/Scene/Model.hpp>
@@ -16,9 +17,15 @@ public:
             exit(1);
         }
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        auto api = ChooseRenderingAPI(glfwVulkanSupported());
+
+        if (api == Vortex::RendererAPI::API::OpenGL) {
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        } else if (api == Vortex::RendererAPI::API::Vulkan) {
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        }
 
         m_GLFWWindow = glfwCreateWindow(1280, 720, "Vortex Renderer Demo", nullptr, nullptr);
         if (!m_GLFWWindow) {
@@ -32,8 +39,26 @@ public:
         glfwTerminate();
     }
 
-    void* GetSurface() override {
-        return nullptr;
+    const std::vector<const char*> GetVulkanInstanceExtensions() override {
+        std::vector<const char*> result;
+        uint32_t count;
+        const char** extensions = glfwGetRequiredInstanceExtensions(&count);
+
+        for (uint32_t i = 0; i < count; i++) {
+            result.push_back(extensions[i]);
+        }
+
+        return result;
+    }
+
+    void* GetSurface(void* instance) override {
+        VkSurfaceKHR surface;
+        VkResult err = glfwCreateWindowSurface((VkInstance) instance, m_GLFWWindow, NULL, &surface);
+        if (err) {
+            std::cout << "Failed to create window surface!" << std::endl;
+            exit(1);
+        }
+        return (void*) surface;
     }
 
     void SetupOpenglContext() override {

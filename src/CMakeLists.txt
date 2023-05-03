@@ -31,6 +31,7 @@ set(SOURCE_LIST
     Framebuffer.cpp
     Renderbuffer.cpp
     Asserts.cpp
+    Window.cpp
     Scene/Mesh.cpp
     Scene/Model.cpp)
 

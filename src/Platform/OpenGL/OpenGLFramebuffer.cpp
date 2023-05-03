@@ -7,7 +7,7 @@
 using namespace Vortex;
 using namespace Vortex::OpenGL;
 
-OpenGLFramebuffer::OpenGLFramebuffer(const std::shared_ptr<Window>& window) {
+OpenGLFramebuffer::OpenGLFramebuffer(const std::shared_ptr<Window>&) {
     ZoneScoped;
     glGenFramebuffers(1, &m_RendererID);
     glCheckError();

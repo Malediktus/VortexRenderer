@@ -11,4 +11,4 @@ else()
     target_compile_options(VortexDemo PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
-target_link_libraries(VortexDemo PRIVATE Vortex::Vortex glfw)
+target_link_libraries(VortexDemo PRIVATE Vortex::Vortex glfw Vulkan::Vulkan)

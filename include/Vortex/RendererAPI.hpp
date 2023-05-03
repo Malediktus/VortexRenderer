@@ -60,6 +60,10 @@ public:
         return s_API;
     }
 
+    inline static VT_API void SetAPI(RendererAPI::API api) {
+        s_API = api;
+    }
+
 private:
     static API s_API;
 };
