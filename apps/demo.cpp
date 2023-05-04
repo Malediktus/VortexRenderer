@@ -17,7 +17,7 @@ public:
             exit(1);
         }
 
-        auto api = ChooseRenderingAPI(glfwVulkanSupported());
+        auto api = ChooseRenderingAPI(false);
 
         if (api == Vortex::RendererAPI::API::OpenGL) {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -86,7 +86,7 @@ public:
         Vortex::Renderer::SetContext(m_Context);
         Vortex::RenderCommand::Init();
 
-        m_Renderer = std::make_shared<Vortex::Renderer>("../../apps/assets/Shaders/Light.glsl", 1280, 720);
+        m_Renderer = std::make_shared<Vortex::Renderer>("../../apps/assets/Shaders/Light.glsl", 1280, 720, false);
         m_Camera = std::make_shared<Vortex::Camera>(90.0f, 1280, 720);
         m_MonkeyMesh = std::make_shared<Vortex::Mesh>("../../apps/assets/Objects/Monkey/monkey.obj");
 
