@@ -4,6 +4,7 @@
 #include <spdlog/spdlog.h>
 #include <tracy/Tracy.hpp>
 #include <vector>
+#include <map>
 
 using namespace Vortex::Vulkan;
 
@@ -39,6 +40,31 @@ bool useMoltenVk = true;
 bool useMoltenVk = false;
 #endif
 
+static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                                                          VkDebugUtilsMessageTypeFlagsEXT,
+                                                          const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                                                          void*) {
+    switch (messageSeverity) {
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+        spdlog::debug("Vulkan validation layer: {}", pCallbackData->pMessage);
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+        spdlog::info("Vulkan validation layer: {}", pCallbackData->pMessage);
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+        spdlog::warn("Vulkan validation layer: {}", pCallbackData->pMessage);
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+        spdlog::error("Vulkan validation layer: {}", pCallbackData->pMessage);
+        break;
+    default:
+        break;
+    }
+
+    return VK_FALSE;
+}
+
+namespace Utils {
 const std::unordered_map<const char*, bool> CheckValidationLayerSupport(const std::vector<const char*> layers) {
     std::unordered_map<const char*, bool> result;
 
@@ -67,38 +93,107 @@ const std::unordered_map<const char*, bool> CheckValidationLayerSupport(const st
     return result;
 }
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                          VkDebugUtilsMessageTypeFlagsEXT,
-                                                          const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                                          void*) {
-    switch (messageSeverity) {
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-        spdlog::debug("Vulkan validation layer: {}", pCallbackData->pMessage);
+int ScorePhysicalDevice(VkPhysicalDevice device, ProjectRequirements requirements) {
+    VkPhysicalDeviceProperties deviceProperties;
+    vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+    VkPhysicalDeviceFeatures deviceFeatures;
+    vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+    int score = 0;
+
+    switch (deviceProperties.deviceType) {
+    case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+        if (requirements.IntegratedGPU == -1 || requirements.NoGPU == -1)
+            return -1;
+        score += requirements.DiscreteGPU;
         break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-        spdlog::info("Vulkan validation layer: {}", pCallbackData->pMessage);
+    case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+        if (requirements.DiscreteGPU == -1 || requirements.NoGPU == -1)
+            return -1;
+        score += requirements.IntegratedGPU;
         break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-        spdlog::warn("Vulkan validation layer: {}", pCallbackData->pMessage);
+    case VK_PHYSICAL_DEVICE_TYPE_CPU:
+        if (requirements.DiscreteGPU == -1 || requirements.IntegratedGPU == -1)
+            return -1;
+        score += requirements.NoGPU;
         break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-        spdlog::error("Vulkan validation layer: {}", pCallbackData->pMessage);
+    case VK_PHYSICAL_DEVICE_TYPE_OTHER:
+        return -1;
         break;
     default:
         break;
     }
 
-    return VK_FALSE;
+    if (requirements.GeometryShader == -1 && !deviceFeatures.geometryShader)
+        return -1;
+
+    if (requirements.TeslationShader == -1 && !deviceFeatures.tessellationShader)
+        return -1;
+
+    if (requirements.SamplerAnisotropy == -1 && !deviceFeatures.samplerAnisotropy)
+        return -1;
+
+    if (deviceFeatures.geometryShader)
+        score += requirements.GeometryShader;
+
+    if (deviceFeatures.tessellationShader)
+        score += requirements.TeslationShader;
+
+    if (deviceFeatures.samplerAnisotropy)
+        score += requirements.SamplerAnisotropy;
+
+
+    VkPhysicalDeviceMemoryProperties memoryProperties;
+    vkGetPhysicalDeviceMemoryProperties(device, &memoryProperties);
+    uint32_t heapCount = memoryProperties.memoryHeapCount;
+    VkDeviceSize heapSizesMegs = 0;
+    for (uint32_t i = 0; i < heapCount; ++i) {
+        VkMemoryHeap heap = memoryProperties.memoryHeaps[i];
+        if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
+            heapSizesMegs += heap.size / 1024 / 1024;
+        }
+    }
+
+    if (heapSizesMegs < requirements.MinHeapMegabyte)
+        return -1;
+
+    score += requirements.HeapMegabyte * heapSizesMegs;
+
+    return score;
 }
+
+VkPhysicalDevice ChoosePhysicalDevice(VkInstance instance, ProjectRequirements requirements) {
+    uint32_t deviceCount = 0;
+    vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+    if (deviceCount == 0)
+        return VK_NULL_HANDLE; // No device
+
+    std::vector<VkPhysicalDevice> devices(deviceCount);
+    vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+
+    std::multimap<int, VkPhysicalDevice> deviceScores;
+
+    for (const auto& device : devices)
+        deviceScores.insert(std::make_pair(ScorePhysicalDevice(device, requirements), device));
+
+    if (deviceScores.rbegin()->first < 0)
+        return VK_NULL_HANDLE; // No suitable device
+
+    return deviceScores.rbegin()->second;
+}
+} // namespace Utils
 } // namespace Vortex::Vulkan
 
 void VulkanContext::Init() {
     ZoneScoped;
 
+    m_PhysicalDevice = VK_NULL_HANDLE;
+
     std::vector<const char*> extensions = {};
     std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
 
-    auto validationLayerSupport = CheckValidationLayerSupport(validationLayers);
+    auto validationLayerSupport = Utils::CheckValidationLayerSupport(validationLayers);
     for (auto [layerName, available] : validationLayerSupport) {
         if (!available) {
             spdlog::warn("Vulkan Validation Layer '{}' is not available but requested", layerName);
@@ -162,6 +257,9 @@ void VulkanContext::Init() {
 
         VT_ASSERT(CreateDebugUtilsMessengerEXT(m_Instance, &debugMessengerCreateInfo, nullptr, &m_DebugMessenger) == VK_SUCCESS, "Failed to create Vulkan debug messenger");
     }
+
+    m_PhysicalDevice = Utils::ChoosePhysicalDevice(m_Instance, m_Requirements);
+    VT_ASSERT(m_PhysicalDevice != VK_NULL_HANDLE, "No suitable physical device found");
 
     spdlog::info("Created Vulkan context");
     spdlog::info("Using Vulkan version 1.3");

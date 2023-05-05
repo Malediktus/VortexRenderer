@@ -6,6 +6,18 @@
 #include <memory>
 
 namespace Vortex {
+// Set to -1 if required, if not set to score to add for property
+struct ProjectRequirements {
+    int DiscreteGPU;
+    int IntegratedGPU;
+    int NoGPU;
+    int GeometryShader;
+    int TeslationShader;
+    int SamplerAnisotropy;
+    uint32_t MinHeapMegabyte;
+    uint32_t HeapMegabyte;
+};
+
 /**
  * @brief The Context class is responsible for providing a rendering contex and buffer swapping.
  *
@@ -34,5 +46,5 @@ public:
  * @date 2023-03-31
  * @copyright Copyright (c) 2023
  */
-VT_API std::shared_ptr<Context> ContextCreate(const std::shared_ptr<Vortex::Window>& window);
+VT_API std::shared_ptr<Context> ContextCreate(const std::shared_ptr<Vortex::Window>& window, ProjectRequirements requirements);
 } // namespace Vortex

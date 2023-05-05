@@ -7,7 +7,7 @@
 namespace Vortex::OpenGL {
 class OpenGLContext : public Context {
 public:
-    OpenGLContext(const std::shared_ptr<Vortex::Window>& window) : m_Window(window) {
+    OpenGLContext(const std::shared_ptr<Vortex::Window>& window, ProjectRequirements) : m_Window(window) {
     }
     virtual ~OpenGLContext() = default;
 

@@ -17,7 +17,7 @@ public:
             exit(1);
         }
 
-        auto api = ChooseRenderingAPI(false);
+        auto api = ChooseRenderingAPI(glfwVulkanSupported());
 
         if (api == Vortex::RendererAPI::API::OpenGL) {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -80,7 +80,17 @@ public:
 
         m_Window = std::make_shared<Window>();
 
-        m_Context = Vortex::ContextCreate(m_Window);
+        Vortex::ProjectRequirements requirements;
+        requirements.DiscreteGPU = 30000;
+        requirements.IntegratedGPU = 5000;
+        requirements.NoGPU = 0;
+        requirements.MinHeapMegabyte = 256;
+        requirements.HeapMegabyte = 1;
+        requirements.GeometryShader = 0;
+        requirements.TeslationShader = 0;
+        requirements.SamplerAnisotropy = 0;
+
+        m_Context = Vortex::ContextCreate(m_Window, requirements);
         m_Context->Init();
 
         Vortex::Renderer::SetContext(m_Context);

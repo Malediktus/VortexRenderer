@@ -9,7 +9,7 @@
 
 using namespace Vortex;
 
-std::shared_ptr<Context> Vortex::ContextCreate(const std::shared_ptr<Vortex::Window>& window) {
+std::shared_ptr<Context> Vortex::ContextCreate(const std::shared_ptr<Vortex::Window>& window, ProjectRequirements requirements) {
     ZoneScoped;
 
     // TODO: Find better way to init logger
@@ -22,9 +22,9 @@ std::shared_ptr<Context> Vortex::ContextCreate(const std::shared_ptr<Vortex::Win
 
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
-        return std::make_shared<OpenGL::OpenGLContext>(window);
+        return std::make_shared<OpenGL::OpenGLContext>(window, requirements);
     case RendererAPI::API::Vulkan:
-        return std::make_shared<Vulkan::VulkanContext>(window);
+        return std::make_shared<Vulkan::VulkanContext>(window, requirements);
     default:
         VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
