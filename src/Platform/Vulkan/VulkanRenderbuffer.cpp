@@ -29,4 +29,5 @@ void VulkanRenderbuffer::Unbind() const {
 }
 
 void* VulkanRenderbuffer::GetNative() const {
+    return nullptr;
 }

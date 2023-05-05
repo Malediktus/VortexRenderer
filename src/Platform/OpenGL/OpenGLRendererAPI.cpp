@@ -24,6 +24,9 @@ static GLenum StencilActionToGLenum(RendererAPI::StencilTestAction action) {
         return GL_DECR_WRAP;
     case RendererAPI::StencilTestAction::INVERT:
         return GL_INVERT;
+    default:
+        VT_ASSERT(false, "Invalid action");
+        return 0;
     }
 }
 
@@ -57,6 +60,9 @@ static GLenum BlendingFuncToGLenum(RendererAPI::BlendingFunc action) {
         return GL_CONSTANT_ALPHA;
     case RendererAPI::BlendingFunc::ONE_MINUS_CONSTANT_ALPHA:
         return GL_ONE_MINUS_CONSTANT_ALPHA;
+    default:
+        VT_ASSERT(false, "Invalid action");
+        return 0;
     }
 }
 
@@ -76,6 +82,9 @@ static GLenum PrimitiveToGLenum(VertexArray::Primitive primitive) {
         return GL_TRIANGLE_STRIP;
     case VertexArray::Primitive::TriangleFan:
         return GL_TRIANGLE_FAN;
+    default:
+        VT_ASSERT(false, "Invalid primitive");
+        return 0;
     }
 }
 } // namespace Vortex::Utils
@@ -230,8 +239,10 @@ void OpenGLRendererAPI::ConfigureCulling(const bool enable, const CullingType ty
     switch (type) {
     case CullingType::BACK:
         glCullFace(GL_BACK);
+        break;
     case CullingType::FRONT:
         glCullFace(GL_FRONT);
+        break;
     case CullingType::FRONT_AND_BACK:
         glCullFace(GL_FRONT_AND_BACK);
         break;

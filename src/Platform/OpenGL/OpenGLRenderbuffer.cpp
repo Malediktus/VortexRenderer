@@ -10,7 +10,8 @@ OpenGLRenderbuffer::OpenGLRenderbuffer(uint32_t width, uint32_t height, Renderbu
     ZoneScoped;
     glGenRenderbuffers(1, &m_RendererID);
     glBindRenderbuffer(GL_RENDERBUFFER, m_RendererID);
-    GLuint format;
+    GLuint format = GL_RGBA8;
+
     switch (usageType) {
     case Renderbuffer::RenderbufferUsageType::Color:
         format = GL_RGBA8;

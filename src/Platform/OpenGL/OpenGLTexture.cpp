@@ -52,8 +52,8 @@ OpenGLTexture2D::OpenGLTexture2D(const int width, const int height, Texture2D::T
     glGenTextures(1, &m_RendererID);
     glBindTexture(GL_TEXTURE_2D, m_RendererID);
 
-    GLenum internalFormat;
-    GLenum format;
+    GLenum internalFormat = GL_RGBA8;
+    GLenum format = GL_RGBA;
 
     switch (usageType) {
     case Texture2D::Texture2DUsageType::Color:
@@ -95,8 +95,8 @@ OpenGLTexture2D::OpenGLTexture2D(const int width, const int height, const void* 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    GLenum internalFormat;
-    GLenum format;
+    GLenum internalFormat = GL_RGBA8;
+    GLenum format = GL_RGBA;
 
     switch (usageType) {
     case Texture2D::Texture2DUsageType::Color:

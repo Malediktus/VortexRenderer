@@ -158,7 +158,7 @@ int ScorePhysicalDevice(VkPhysicalDevice device, ProjectRequirements requirement
     if (heapSizesMegs < requirements.MinHeapMegabyte)
         return -1;
 
-    score += requirements.HeapMegabyte * heapSizesMegs;
+    score += (uint32_t)requirements.HeapMegabyte * heapSizesMegs;
 
     return score;
 }

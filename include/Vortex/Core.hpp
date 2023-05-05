@@ -39,5 +39,9 @@
 #endif
 
 namespace Vortex {
-__attribute__((noreturn)) void ReportAssertionFailure(const char* filename, uint64_t line, bool check, const std::string& msg);
+#ifdef _MSC_VER
+    void ReportAssertionFailure(const char* filename, uint64_t line, bool check, const std::string& msg);
+#else
+    __attribute__((noreturn)) void ReportAssertionFailure(const char* filename, uint64_t line, bool check, const std::string& msg);
+#endif
 }

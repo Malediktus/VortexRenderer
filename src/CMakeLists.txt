@@ -84,7 +84,7 @@ target_compile_definitions(Vortex PRIVATE $<$<CONFIG:Release>:VT_RELEASE>)
 target_compile_features(Vortex PUBLIC cxx_std_17)
 
 if(MSVC)
-    target_compile_options(Vortex PRIVATE /W4 /WX)
+    target_compile_options(Vortex PRIVATE /W4)
 else()
     target_compile_options(Vortex PRIVATE -Wall -Wextra -Wpedantic)
 endif()

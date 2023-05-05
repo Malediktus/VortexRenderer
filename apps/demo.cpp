@@ -97,7 +97,7 @@ public:
         Vortex::RenderCommand::Init();
 
         m_Renderer = std::make_shared<Vortex::Renderer>("../../apps/assets/Shaders/Light.glsl", 1280, 720, false);
-        m_Camera = std::make_shared<Vortex::Camera>(90.0f, 1280, 720);
+        m_Camera = std::make_shared<Vortex::Camera>(90.0f, 1280.0f, 720.0f);
         m_MonkeyMesh = std::make_shared<Vortex::Mesh>("../../apps/assets/Objects/Monkey/monkey.obj");
 
         // glfwSwapInterval(0);
@@ -167,7 +167,7 @@ private:
     uint64_t m_LastCounter;
     uint32_t m_FrameCount = 0;
     float m_Delta = 0.0f;
-    uint32_t m_FPS = 0.0f;
+    uint32_t m_FPS = 0;
 
     std::shared_ptr<Window> m_Window;
     std::shared_ptr<Vortex::Renderer> m_Renderer;

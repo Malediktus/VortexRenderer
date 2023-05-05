@@ -37,4 +37,5 @@ void VulkanTexture2D::Resize(uint32_t width, uint32_t height) {
 }
 
 void* VulkanTexture2D::GetNative() const {
+    return nullptr;
 }
