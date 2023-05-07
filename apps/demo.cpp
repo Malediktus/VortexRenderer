@@ -63,6 +63,7 @@ public:
 
     void SetupOpenglContext() override {
         glfwMakeContextCurrent(m_GLFWWindow);
+        glfwSwapInterval(0);
     }
 
     GLFWwindow* GetGLFWWindow() {
@@ -80,17 +81,11 @@ public:
 
         m_Window = std::make_shared<Window>();
 
-        Vortex::ProjectRequirements requirements;
-        requirements.DiscreteGPU = 30000;
-        requirements.IntegratedGPU = 5000;
-        requirements.NoGPU = 0;
-        requirements.MinHeapMegabyte = 256;
-        requirements.HeapMegabyte = 1;
-        requirements.GeometryShader = 0;
-        requirements.TeslationShader = 0;
-        requirements.SamplerAnisotropy = 0;
+        Vortex::ProjectInformation project;
+        project.ProjectName = "Vortex Demo";
+        project.ProjectVersion = glm::vec3(1, 0, 0);
 
-        m_Context = Vortex::ContextCreate(m_Window, requirements);
+        m_Context = Vortex::ContextCreate(m_Window, project);
         m_Context->Init();
 
         Vortex::Renderer::SetContext(m_Context);
@@ -100,7 +95,6 @@ public:
         m_Camera = std::make_shared<Vortex::Camera>(90.0f, 1280.0f, 720.0f);
         m_MonkeyMesh = std::make_shared<Vortex::Mesh>("../../apps/assets/Objects/Monkey/monkey.obj");
 
-        // glfwSwapInterval(0);
         m_PerfCounterFrequency = glfwGetTimerFrequency();
         m_LastCounter = glfwGetTimerValue();
     }

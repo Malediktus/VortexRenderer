@@ -9,7 +9,7 @@
 namespace Vortex::Vulkan {
 class VulkanContext : public Context {
 public:
-    VulkanContext(const std::shared_ptr<Vortex::Window>& window, ProjectRequirements requirements) : m_Window(window), m_Requirements(requirements) {
+    VulkanContext(const std::shared_ptr<Vortex::Window>& window, ProjectInformation projectInfo) : m_Window(window), m_ProjectInfo(projectInfo) {
     }
     virtual ~VulkanContext() = default;
 
@@ -26,7 +26,7 @@ public:
 
 private:
     std::shared_ptr<Vortex::Window> m_Window;
-    ProjectRequirements m_Requirements;
+    ProjectInformation m_ProjectInfo;
     VkInstance m_Instance;
     VkDebugUtilsMessengerEXT m_DebugMessenger;
     VkPhysicalDevice m_PhysicalDevice;

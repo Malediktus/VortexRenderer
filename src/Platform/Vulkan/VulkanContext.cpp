@@ -5,6 +5,7 @@
 #include <tracy/Tracy.hpp>
 #include <vector>
 #include <map>
+#include <optional>
 
 using namespace Vortex::Vulkan;
 
@@ -93,7 +94,25 @@ const std::unordered_map<const char*, bool> CheckValidationLayerSupport(const st
     return result;
 }
 
-int ScorePhysicalDevice(VkPhysicalDevice device, ProjectRequirements requirements) {
+int ScorePhysicalDevice(VkPhysicalDevice device) {
+    uint32_t queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+    std::optional<uint32_t> graphicsQueueFamily;
+
+    int i = 0;
+    for (const auto& queueFamily : queueFamilies) {
+        if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+            graphicsQueueFamily = i;
+        i++;
+    }
+
+    if (!graphicsQueueFamily.has_value())
+        return -1;
+
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
 
@@ -104,19 +123,13 @@ int ScorePhysicalDevice(VkPhysicalDevice device, ProjectRequirements requirement
 
     switch (deviceProperties.deviceType) {
     case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
-        if (requirements.IntegratedGPU == -1 || requirements.NoGPU == -1)
-            return -1;
-        score += requirements.DiscreteGPU;
+        score += 100000;
         break;
     case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
-        if (requirements.DiscreteGPU == -1 || requirements.NoGPU == -1)
-            return -1;
-        score += requirements.IntegratedGPU;
+        score += 10000;
         break;
     case VK_PHYSICAL_DEVICE_TYPE_CPU:
-        if (requirements.DiscreteGPU == -1 || requirements.IntegratedGPU == -1)
-            return -1;
-        score += requirements.NoGPU;
+        return -1;
         break;
     case VK_PHYSICAL_DEVICE_TYPE_OTHER:
         return -1;
@@ -125,45 +138,30 @@ int ScorePhysicalDevice(VkPhysicalDevice device, ProjectRequirements requirement
         break;
     }
 
-    if (requirements.GeometryShader == -1 && !deviceFeatures.geometryShader)
-        return -1;
+    // if (deviceFeatures.geometryShader)
+    //     score += 1000;
 
-    if (requirements.TeslationShader == -1 && !deviceFeatures.tessellationShader)
-        return -1;
+    // if (deviceFeatures.tessellationShader)
+    //     score += 1000;
 
-    if (requirements.SamplerAnisotropy == -1 && !deviceFeatures.samplerAnisotropy)
-        return -1;
-
-    if (deviceFeatures.geometryShader)
-        score += requirements.GeometryShader;
-
-    if (deviceFeatures.tessellationShader)
-        score += requirements.TeslationShader;
-
-    if (deviceFeatures.samplerAnisotropy)
-        score += requirements.SamplerAnisotropy;
+    // if (deviceFeatures.samplerAnisotropy)
+    //     score += 1000;
 
 
     VkPhysicalDeviceMemoryProperties memoryProperties;
     vkGetPhysicalDeviceMemoryProperties(device, &memoryProperties);
     uint32_t heapCount = memoryProperties.memoryHeapCount;
-    VkDeviceSize heapSizesMegs = 0;
     for (uint32_t i = 0; i < heapCount; ++i) {
         VkMemoryHeap heap = memoryProperties.memoryHeaps[i];
         if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
-            heapSizesMegs += heap.size / 1024 / 1024;
+            score += (heap.size / 1024 / 1024 / 1024) * 1000;
         }
     }
-
-    if (heapSizesMegs < requirements.MinHeapMegabyte)
-        return -1;
-
-    score += (uint32_t)requirements.HeapMegabyte * heapSizesMegs;
 
     return score;
 }
 
-VkPhysicalDevice ChoosePhysicalDevice(VkInstance instance, ProjectRequirements requirements) {
+VkPhysicalDevice ChoosePhysicalDevice(VkInstance instance) {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
     if (deviceCount == 0)
@@ -175,7 +173,7 @@ VkPhysicalDevice ChoosePhysicalDevice(VkInstance instance, ProjectRequirements r
     std::multimap<int, VkPhysicalDevice> deviceScores;
 
     for (const auto& device : devices)
-        deviceScores.insert(std::make_pair(ScorePhysicalDevice(device, requirements), device));
+        deviceScores.insert(std::make_pair(ScorePhysicalDevice(device), device));
 
     if (deviceScores.rbegin()->first < 0)
         return VK_NULL_HANDLE; // No suitable device
@@ -215,9 +213,9 @@ void VulkanContext::Init() {
     VkApplicationInfo appInfo {};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.apiVersion = VK_API_VERSION_1_3;
-    appInfo.pApplicationName = "Vortex Renderer";
-    appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.pEngineName = "No Engine";
+    appInfo.pApplicationName = m_ProjectInfo.ProjectName.c_str();
+    appInfo.applicationVersion = VK_MAKE_VERSION(m_ProjectInfo.ProjectVersion.x, m_ProjectInfo.ProjectVersion.y, m_ProjectInfo.ProjectVersion.z);
+    appInfo.pEngineName = "Vortex Renderer";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 
     VkInstanceCreateInfo instanceCreateInfo {};
@@ -258,8 +256,25 @@ void VulkanContext::Init() {
         VT_ASSERT(CreateDebugUtilsMessengerEXT(m_Instance, &debugMessengerCreateInfo, nullptr, &m_DebugMessenger) == VK_SUCCESS, "Failed to create Vulkan debug messenger");
     }
 
-    m_PhysicalDevice = Utils::ChoosePhysicalDevice(m_Instance, m_Requirements);
+    m_PhysicalDevice = Utils::ChoosePhysicalDevice(m_Instance);
     VT_ASSERT(m_PhysicalDevice != VK_NULL_HANDLE, "No suitable physical device found");
+
+    uint32_t queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queueFamilyCount, nullptr);
+
+    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queueFamilyCount, queueFamilies.data());
+
+    std::optional<uint32_t> graphicsQueueFamily;
+
+    int i = 0;
+    for (const auto& queueFamily : queueFamilies) {
+        if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+            graphicsQueueFamily = i;
+        i++;
+    }
+
+    VT_ASSERT_CHECK(graphicsQueueFamily.has_value(), "No Graphics Queue Family found!");
 
     spdlog::info("Created Vulkan context");
     spdlog::info("Using Vulkan version 1.3");
