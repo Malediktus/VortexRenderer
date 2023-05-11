@@ -26,6 +26,9 @@ OpenGLRenderbuffer::OpenGLRenderbuffer(uint32_t width, uint32_t height, Renderbu
         format = GL_DEPTH24_STENCIL8;
         break;
     }
+
+    m_Format = format;
+
     glRenderbufferStorage(GL_RENDERBUFFER, format, width, height);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glCheckError();
@@ -51,6 +54,14 @@ void OpenGLRenderbuffer::Unbind() const {
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glCheckError();
     spdlog::trace("Unbound OpenGL renderbuffer (ID: {})", m_RendererID);
+}
+
+void OpenGLRenderbuffer::Resize(uint32_t width, uint32_t height) {
+    ZoneScoped;
+    glBindRenderbuffer(GL_RENDERBUFFER, m_RendererID);
+    glRenderbufferStorage(GL_RENDERBUFFER, m_Format, width, height);
+    glCheckError();
+    spdlog::trace("Resized OpenGL renderbuffer (ID: {})", m_RendererID);
 }
 
 void* OpenGLRenderbuffer::GetNative() const {

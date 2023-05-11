@@ -49,6 +49,8 @@ std::shared_ptr<Context> Renderer::GetContext() {
 
 void Renderer::OnResize(const int width, const int height) {
     ZoneScoped;
+    m_ColorTexture->Resize(width, height);
+    m_DepthStencilRenderbuffer->Resize(width, height);
     m_Framebuffer->Bind();
     Vortex::RenderCommand::SetViewport(width, height);
     m_Framebuffer->Unbind();
@@ -72,8 +74,8 @@ void Renderer::EndFrame() {
 
 void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray) {
     ZoneScoped;
-    vertexArray->Bind();
     m_Framebuffer->Bind();
+    vertexArray->Bind();
     RenderCommand::DrawIndexed(vertexArray);
     m_Framebuffer->Unbind();
     spdlog::trace("Submited vertex array to renderer");

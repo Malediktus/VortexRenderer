@@ -5,6 +5,9 @@
 
 #include <glm/ext/matrix_transform.hpp>
 #include <tracy/Tracy.hpp>
+#include <imgui.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
 
 #include <cstdlib>
 #include <iostream>
@@ -17,7 +20,11 @@ public:
             exit(1);
         }
 
+#if 0
         auto api = ChooseRenderingAPI(glfwVulkanSupported());
+#else
+        auto api = ChooseRenderingAPI(false);
+#endif
 
         if (api == Vortex::RendererAPI::API::OpenGL) {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -91,22 +98,18 @@ public:
         Vortex::Renderer::SetContext(m_Context);
         Vortex::RenderCommand::Init();
 
-        m_Renderer = std::make_shared<Vortex::Renderer>("../../apps/assets/Shaders/Light.glsl", 1280, 720, false);
+        m_Renderer = std::make_shared<Vortex::Renderer>("../../apps/assets/Shaders/Light.glsl", 1280, 720, true);
+        m_ViewportWidth = 1080;
+        m_ViewportHeight = 720;
         m_Camera = std::make_shared<Vortex::Camera>(90.0f, 1280.0f, 720.0f);
-        m_MonkeyMesh = std::make_shared<Vortex::Mesh>("../../apps/assets/Objects/Monkey/monkey.obj");
 
-        m_PerfCounterFrequency = glfwGetTimerFrequency();
-        m_LastCounter = glfwGetTimerValue();
-    }
-
-    void Update() {
-        ZoneScoped;
-        auto scene = std::make_shared<Vortex::Scene>(m_Camera);
+        auto mesh = std::make_shared<Vortex::Mesh>("../../apps/assets/Objects/Monkey/monkey.obj");
+        m_Scene = std::make_shared<Vortex::Scene>(m_Camera);
 
         glm::mat4 meshTransform(1.0f);
         meshTransform = glm::translate(meshTransform, glm::vec3(0.0f, 0.0f, -4.0f));
         std::shared_ptr<Vortex::Object> meshObject = std::make_shared<Vortex::Object>(meshTransform);
-        meshObject->Attach(m_MonkeyMesh);
+        meshObject->Attach(mesh);
 
         glm::mat4 lightTransform(1.0f);
         lightTransform = glm::translate(lightTransform, glm::vec3(1.0f, 0.5f, -3.0f));
@@ -115,11 +118,131 @@ public:
         std::shared_ptr<Vortex::Object> lightObject = std::make_shared<Vortex::Object>(lightTransform);
         lightObject->Attach(light);
 
-        scene->Append(meshObject);
-        scene->Append(lightObject);
+        m_Scene->Append(meshObject);
+        m_Scene->Append(lightObject);
+
+        m_PerfCounterFrequency = glfwGetTimerFrequency();
+        m_LastCounter = glfwGetTimerValue();
+
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO();
+        (void) io;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+        ImGui::StyleColorsDark();
+        ImGuiStyle& style = ImGui::GetStyle();
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            style.WindowRounding = 0.0f;
+            style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+        }
+
+        ImGui_ImplGlfw_InitForOpenGL(m_Window->GetGLFWWindow(), true);
+        ImGui_ImplOpenGL3_Init("#version 150");
+    }
+
+    void Update() {
+        ZoneScoped;
+
+        Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::COLOR);
+        Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::DEPTH);
+
+        uint32_t newViewportWidth, newViewportHeight;
+
+        {
+            ZoneScopedN("ImGuiCollectAndrender");
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+
+            static bool dockspaceOpen = true;
+            static bool opt_fullscreen_persistant = true;
+            bool opt_fullscreen = opt_fullscreen_persistant;
+            static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+            ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+            if (opt_fullscreen) {
+                ImGuiViewport* viewport = ImGui::GetMainViewport();
+                ImGui::SetNextWindowPos(viewport->Pos);
+                ImGui::SetNextWindowSize(viewport->Size);
+                ImGui::SetNextWindowViewport(viewport->ID);
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+                window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+                window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+            }
+
+            if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+                window_flags |= ImGuiWindowFlags_NoBackground;
+
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+            ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
+            ImGui::PopStyleVar();
+
+            if (opt_fullscreen)
+                ImGui::PopStyleVar(2);
+
+            // DockSpace
+            ImGuiIO& io = ImGui::GetIO();
+            if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
+                ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+                ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+            }
+
+            if (ImGui::BeginMenuBar()) {
+                if (ImGui::BeginMenu("File")) {
+                    if (ImGui::MenuItem("Exit"))
+                        glfwSetWindowShouldClose(m_Window->GetGLFWWindow(), true);
+                    ImGui::EndMenu();
+                }
+
+                ImGui::EndMenuBar();
+            }
+
+            ImGui::Begin("Render Stats");
+            ImGui::Checkbox("Slow FPS", &m_ShowSlowFPS);
+            if (m_ShowSlowFPS)
+                ImGui::Text("FPS: %i", m_SlowFPS);
+            else
+                ImGui::Text("FPS: %i", m_FPS);
+            ImGui::End();
+
+            ImGui::Begin("Viewport");
+            newViewportWidth = ImGui::GetContentRegionAvail().x;
+            newViewportHeight = ImGui::GetContentRegionAvail().y;
+            auto texture = m_Renderer->GetTexture();
+            ImGui::Image(*(ImTextureID*) texture->GetNative(), ImVec2(texture->GetWidth(), texture->GetHeight()), ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::End();
+
+            ImGui::End();
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+            if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+                GLFWwindow* backup_current_context = glfwGetCurrentContext();
+                ImGui::UpdatePlatformWindows();
+                ImGui::RenderPlatformWindowsDefault();
+                glfwMakeContextCurrent(backup_current_context);
+            }
+        }
+
+        if (newViewportWidth < 0)
+            newViewportWidth = 0;
+        if (newViewportHeight < 0)
+            newViewportHeight = 0;
+
+        if (newViewportWidth != m_ViewportWidth || newViewportHeight != m_ViewportHeight) {
+            m_ViewportWidth = newViewportWidth;
+            m_ViewportHeight = newViewportHeight;
+            m_Renderer->OnResize(newViewportWidth, newViewportHeight);
+            m_Camera->Resize(90.0f, newViewportWidth, newViewportHeight);
+        }
 
         m_Renderer->BeginFrame();
-        m_Renderer->Submit(scene);
+        m_Renderer->Submit(m_Scene);
         m_Renderer->EndFrame();
 
         {
@@ -140,10 +263,7 @@ public:
             m_FrameCount++;
         }
         if (m_FrameCount >= 1000) {
-            ZoneScopedN("UpdateTitle");
-            std::string title = "Vortex Renderer Demo FPS: ";
-            title.append(std::to_string(m_FPS));
-            glfwSetWindowTitle(m_Window->GetGLFWWindow(), title.c_str());
+            m_SlowFPS = m_FPS;
             m_FrameCount = 0;
         }
     }
@@ -153,6 +273,9 @@ public:
     }
 
     ~VortexDemo() {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
         m_Context->Destroy();
     }
 
@@ -162,11 +285,15 @@ private:
     uint32_t m_FrameCount = 0;
     float m_Delta = 0.0f;
     uint32_t m_FPS = 0;
+    uint32_t m_SlowFPS = 0;
+    bool m_ShowSlowFPS = true;
+
+    uint32_t m_ViewportWidth, m_ViewportHeight;
 
     std::shared_ptr<Window> m_Window;
     std::shared_ptr<Vortex::Renderer> m_Renderer;
     std::shared_ptr<Vortex::Camera> m_Camera;
-    std::shared_ptr<Vortex::Mesh> m_MonkeyMesh;
+    std::shared_ptr<Vortex::Scene> m_Scene;
     std::shared_ptr<Vortex::Context> m_Context;
 };
 

@@ -94,6 +94,19 @@ const std::unordered_map<const char*, bool> CheckValidationLayerSupport(const st
     return result;
 }
 
+inline static std::optional<uint32_t> GetQueueFamily(VkQueueFlags flag, std::vector<VkQueueFamilyProperties> queueFamilies) {
+    std::optional<uint32_t> result;
+
+    int i = 0;
+    for (const auto& queueFamily : queueFamilies) {
+        if (queueFamily.queueFlags & flag)
+            result = i;
+        i++;
+    }
+
+    return result;
+}
+
 int ScorePhysicalDevice(VkPhysicalDevice device) {
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
@@ -101,16 +114,7 @@ int ScorePhysicalDevice(VkPhysicalDevice device) {
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-    std::optional<uint32_t> graphicsQueueFamily;
-
-    int i = 0;
-    for (const auto& queueFamily : queueFamilies) {
-        if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-            graphicsQueueFamily = i;
-        i++;
-    }
-
-    if (!graphicsQueueFamily.has_value())
+    if (!GetQueueFamily(VK_QUEUE_GRAPHICS_BIT, queueFamilies).has_value())
         return -1;
 
     VkPhysicalDeviceProperties deviceProperties;
@@ -183,12 +187,14 @@ VkPhysicalDevice ChoosePhysicalDevice(VkInstance instance) {
 } // namespace Utils
 } // namespace Vortex::Vulkan
 
+// TODO: Check instance and device extension support
 void VulkanContext::Init() {
     ZoneScoped;
 
     m_PhysicalDevice = VK_NULL_HANDLE;
 
-    std::vector<const char*> extensions = {};
+    std::vector<const char*> instanceExtensions;
+    std::vector<const char*> deviceExtensions;
     std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
 
     auto validationLayerSupport = Utils::CheckValidationLayerSupport(validationLayers);
@@ -202,13 +208,15 @@ void VulkanContext::Init() {
     if (validationLayers.size() <= 0)
         enableValidationLayers = false;
 
-    auto windowExtensions = m_Window->GetVulkanInstanceExtensions();
-    extensions.insert(extensions.end(), windowExtensions.begin(), windowExtensions.end());
+    auto windowInstanceExtensions = m_Window->GetVulkanInstanceExtensions();
+    instanceExtensions.insert(instanceExtensions.end(), windowInstanceExtensions.begin(), windowInstanceExtensions.end());
 
     if (enableValidationLayers)
-        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-    if (useMoltenVk)
-        extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+        instanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    if (useMoltenVk) {
+        instanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+        deviceExtensions.push_back("VK_KHR_portability_subset");
+    }
 
     VkApplicationInfo appInfo {};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -221,8 +229,8 @@ void VulkanContext::Init() {
     VkInstanceCreateInfo instanceCreateInfo {};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceCreateInfo.pApplicationInfo = &appInfo;
-    instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-    instanceCreateInfo.ppEnabledExtensionNames = extensions.data();
+    instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(instanceExtensions.size());
+    instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
     if (enableValidationLayers) {
         instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         instanceCreateInfo.ppEnabledLayerNames = validationLayers.data();
@@ -265,24 +273,51 @@ void VulkanContext::Init() {
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queueFamilyCount, queueFamilies.data());
 
-    std::optional<uint32_t> graphicsQueueFamily;
-
-    int i = 0;
-    for (const auto& queueFamily : queueFamilies) {
-        if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-            graphicsQueueFamily = i;
-        i++;
-    }
+    auto graphicsQueueFamily = Utils::GetQueueFamily(VK_QUEUE_GRAPHICS_BIT, queueFamilies);
 
     VT_ASSERT_CHECK(graphicsQueueFamily.has_value(), "No Graphics Queue Family found!");
+
+    VkDeviceQueueCreateInfo deviceQueueCreateInfo {};
+    deviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    deviceQueueCreateInfo.queueFamilyIndex = graphicsQueueFamily.value();
+    deviceQueueCreateInfo.queueCount = 1;
+    float queuePriority = 1.0f;
+    deviceQueueCreateInfo.pQueuePriorities = &queuePriority;
+
+    VkPhysicalDeviceFeatures deviceFeatures {};
+
+    VkDeviceCreateInfo deviceCreateInfo {};
+    deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    deviceCreateInfo.pQueueCreateInfos = &deviceQueueCreateInfo;
+    deviceCreateInfo.queueCreateInfoCount = 1;
+    deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
+    deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+    deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
+
+    if (enableValidationLayers) {
+        deviceCreateInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        deviceCreateInfo.ppEnabledLayerNames = validationLayers.data();
+    } else {
+        deviceCreateInfo.enabledLayerCount = 0;
+    }
+
+    VT_ASSERT(vkCreateDevice(m_PhysicalDevice, &deviceCreateInfo, nullptr, &m_Device) == VK_SUCCESS, "Failed to create Logical Device");
+
+    vkGetDeviceQueue(m_Device, graphicsQueueFamily.value(), 0, &m_GraphicsQueue);
+
+    m_WindowSurface = (VkSurfaceKHR) m_Window->GetSurface((void*) m_Instance);
+    VT_ASSERT(m_WindowSurface, "Failed to create Vulkan Window Surface!");
 
     spdlog::info("Created Vulkan context");
     spdlog::info("Using Vulkan version 1.3");
 }
 
 void VulkanContext::Destroy() {
+    vkDestroyDevice(m_Device, nullptr);
+
     if (enableValidationLayers)
         DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
 
+    vkDestroySurfaceKHR(m_Instance, m_WindowSurface, nullptr);
     vkDestroyInstance(m_Instance, nullptr);
 }

@@ -27,8 +27,12 @@ public:
 private:
     std::shared_ptr<Vortex::Window> m_Window;
     ProjectInformation m_ProjectInfo;
+
     VkInstance m_Instance;
     VkDebugUtilsMessengerEXT m_DebugMessenger;
     VkPhysicalDevice m_PhysicalDevice;
+    VkDevice m_Device;
+    VkQueue m_GraphicsQueue;
+    VkSurfaceKHR m_WindowSurface;
 };
 } // namespace Vortex::Vulkan
