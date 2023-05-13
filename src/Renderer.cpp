@@ -11,6 +11,7 @@ std::shared_ptr<Context> Renderer::s_Context;
 Renderer::Renderer(const std::string& shaderPath, const int width, const int height, bool renderToTexture) {
     ZoneScoped;
 
+    m_RenderToTexture = renderToTexture;
     m_Shader = ShaderCreate(shaderPath);
     m_Framebuffer = FramebufferCreate(s_Context->GetWindow());
 
@@ -49,8 +50,10 @@ std::shared_ptr<Context> Renderer::GetContext() {
 
 void Renderer::OnResize(const int width, const int height) {
     ZoneScoped;
-    m_ColorTexture->Resize(width, height);
-    m_DepthStencilRenderbuffer->Resize(width, height);
+    if (m_RenderToTexture) {
+        m_ColorTexture->Resize(width, height);
+        m_DepthStencilRenderbuffer->Resize(width, height);
+    }
     m_Framebuffer->Bind();
     Vortex::RenderCommand::SetViewport(width, height);
     m_Framebuffer->Unbind();
@@ -72,7 +75,7 @@ void Renderer::EndFrame() {
     FrameMark;
 }
 
-void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray) {
+void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray, std::shared_ptr<Camera> camera) {
     ZoneScoped;
     m_Framebuffer->Bind();
     vertexArray->Bind();
@@ -81,7 +84,7 @@ void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray) {
     spdlog::trace("Submited vertex array to renderer");
 }
 
-void Renderer::Submit(const std::shared_ptr<Scene>& scene) {
+void Renderer::Submit(const std::shared_ptr<Scene>& scene, std::shared_ptr<Camera> camera) {
     ZoneScoped;
     m_Framebuffer->Bind();
     std::vector<std::shared_ptr<SceneLight>> sceneLights;
@@ -100,8 +103,6 @@ void Renderer::Submit(const std::shared_ptr<Scene>& scene) {
             meshes[mesh] = transform;
         }
     }
-
-    auto camera = scene->GetCamera();
 
     for (auto& [mesh, transform] : meshes) {
         const std::shared_ptr<Shader>& shader = m_Shader;

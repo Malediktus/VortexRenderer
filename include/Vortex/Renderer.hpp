@@ -36,8 +36,8 @@ public:
     VT_API void BeginFrame();
     VT_API void EndFrame();
 
-    VT_API void Submit(const std::shared_ptr<VertexArray>& vertexArray);
-    VT_API void Submit(const std::shared_ptr<Scene>& scene);
+    VT_API void Submit(const std::shared_ptr<VertexArray>& vertexArray, std::shared_ptr<Camera> camera);
+    VT_API void Submit(const std::shared_ptr<Scene>& scene, std::shared_ptr<Camera> camera);
 
     VT_API std::shared_ptr<Texture2D> GetTexture() {
         return m_ColorTexture;
@@ -51,6 +51,7 @@ public:
     static VT_API std::shared_ptr<Context> GetContext();
 
 private:
+    bool m_RenderToTexture;
     std::shared_ptr<Shader> m_Shader;
     std::shared_ptr<Framebuffer> m_Framebuffer;
     std::shared_ptr<Texture2D> m_ColorTexture;

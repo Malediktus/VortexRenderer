@@ -98,13 +98,18 @@ public:
         Vortex::Renderer::SetContext(m_Context);
         Vortex::RenderCommand::Init();
 
-        m_Renderer = std::make_shared<Vortex::Renderer>("../../apps/assets/Shaders/Light.glsl", 1280, 720, true);
-        m_ViewportWidth = 1080;
-        m_ViewportHeight = 720;
-        m_Camera = std::make_shared<Vortex::Camera>(90.0f, 1280.0f, 720.0f);
+        m_PrimaryRenderer = std::make_shared<Vortex::Renderer>("../../apps/assets/Shaders/Light.glsl", 1280, 720, true);
+        m_SecondaryRenderer = std::make_shared<Vortex::Renderer>("../../apps/assets/Shaders/Light.glsl", 1280, 720, true);
+        m_PrimaryViewportWidth = 1080;
+        m_PrimaryViewportHeight = 720;
+        m_SecondaryViewportWidth = 1080;
+        m_SecondaryViewportHeight = 720;
+        m_PrimaryCamera = std::make_shared<Vortex::Camera>(90.0f, 1280.0f, 720.0f);
+        m_SecondaryCamera = std::make_shared<Vortex::Camera>(90.0f, 1280.0f, 720.0f);
+        m_SecondaryCamera->Translate(glm::vec3(1.0f, 0.0f, -0.5f));
 
         auto mesh = std::make_shared<Vortex::Mesh>("../../apps/assets/Objects/Monkey/monkey.obj");
-        m_Scene = std::make_shared<Vortex::Scene>(m_Camera);
+        m_Scene = std::make_shared<Vortex::Scene>();
 
         glm::mat4 meshTransform(1.0f);
         meshTransform = glm::translate(meshTransform, glm::vec3(0.0f, 0.0f, -4.0f));
@@ -149,8 +154,6 @@ public:
 
         Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::COLOR);
         Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::DEPTH);
-
-        uint32_t newViewportWidth, newViewportHeight;
 
         {
             ZoneScopedN("ImGuiCollectAndrender");
@@ -210,11 +213,22 @@ public:
                 ImGui::Text("FPS: %i", m_FPS);
             ImGui::End();
 
-            ImGui::Begin("Viewport");
-            newViewportWidth = ImGui::GetContentRegionAvail().x;
-            newViewportHeight = ImGui::GetContentRegionAvail().y;
-            auto texture = m_Renderer->GetTexture();
-            ImGui::Image(*(ImTextureID*) texture->GetNative(), ImVec2(texture->GetWidth(), texture->GetHeight()), ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::Begin("PrimaryViewport");
+            {
+                m_PrimaryViewportWidth = ImGui::GetContentRegionAvail().x;
+                m_PrimaryViewportHeight = ImGui::GetContentRegionAvail().y;
+                auto texture = m_PrimaryRenderer->GetTexture();
+                ImGui::Image(*(ImTextureID*) texture->GetNative(), ImVec2(texture->GetWidth(), texture->GetHeight()), ImVec2(0, 1), ImVec2(1, 0));
+            }
+            ImGui::End();
+
+            ImGui::Begin("SecondaryViewport");
+            {
+                m_SecondaryViewportWidth = ImGui::GetContentRegionAvail().x;
+                m_SecondaryViewportHeight = ImGui::GetContentRegionAvail().y;
+                auto texture = m_SecondaryRenderer->GetTexture();
+                ImGui::Image(*(ImTextureID*) texture->GetNative(), ImVec2(texture->GetWidth(), texture->GetHeight()), ImVec2(0, 1), ImVec2(1, 0));
+            }
             ImGui::End();
 
             ImGui::End();
@@ -229,21 +243,28 @@ public:
             }
         }
 
-        if (newViewportWidth < 0)
-            newViewportWidth = 0;
-        if (newViewportHeight < 0)
-            newViewportHeight = 0;
+        if (m_PrimaryViewportWidth < 0)
+            m_PrimaryViewportWidth = 0;
+        if (m_PrimaryViewportHeight < 0)
+            m_PrimaryViewportHeight = 0;
+        if (m_SecondaryViewportWidth < 0)
+            m_SecondaryViewportWidth = 0;
+        if (m_SecondaryViewportHeight < 0)
+            m_SecondaryViewportHeight = 0;
 
-        if (newViewportWidth != m_ViewportWidth || newViewportHeight != m_ViewportHeight) {
-            m_ViewportWidth = newViewportWidth;
-            m_ViewportHeight = newViewportHeight;
-            m_Renderer->OnResize(newViewportWidth, newViewportHeight);
-            m_Camera->Resize(90.0f, newViewportWidth, newViewportHeight);
-        }
+        m_PrimaryRenderer->OnResize(m_PrimaryViewportWidth, m_PrimaryViewportHeight);
+        m_PrimaryCamera->Resize(90.0f, m_PrimaryViewportWidth, m_PrimaryViewportHeight);
 
-        m_Renderer->BeginFrame();
-        m_Renderer->Submit(m_Scene);
-        m_Renderer->EndFrame();
+        m_PrimaryRenderer->BeginFrame();
+        m_PrimaryRenderer->Submit(m_Scene, m_PrimaryCamera);
+        m_PrimaryRenderer->EndFrame();
+
+        m_SecondaryRenderer->OnResize(m_SecondaryViewportWidth, m_SecondaryViewportHeight);
+        m_SecondaryCamera->Resize(90.0f, m_SecondaryViewportWidth, m_SecondaryViewportHeight);
+
+        m_SecondaryRenderer->BeginFrame();
+        m_SecondaryRenderer->Submit(m_Scene, m_SecondaryCamera);
+        m_SecondaryRenderer->EndFrame();
 
         {
             ZoneScopedN("SwapBuffer");
@@ -288,11 +309,14 @@ private:
     uint32_t m_SlowFPS = 0;
     bool m_ShowSlowFPS = true;
 
-    uint32_t m_ViewportWidth, m_ViewportHeight;
+    uint32_t m_PrimaryViewportWidth, m_PrimaryViewportHeight;
+    uint32_t m_SecondaryViewportWidth, m_SecondaryViewportHeight;
 
     std::shared_ptr<Window> m_Window;
-    std::shared_ptr<Vortex::Renderer> m_Renderer;
-    std::shared_ptr<Vortex::Camera> m_Camera;
+    std::shared_ptr<Vortex::Renderer> m_PrimaryRenderer;
+    std::shared_ptr<Vortex::Renderer> m_SecondaryRenderer;
+    std::shared_ptr<Vortex::Camera> m_PrimaryCamera;
+    std::shared_ptr<Vortex::Camera> m_SecondaryCamera;
     std::shared_ptr<Vortex::Scene> m_Scene;
     std::shared_ptr<Vortex::Context> m_Context;
 };
