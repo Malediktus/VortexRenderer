@@ -259,6 +259,13 @@ void OpenGLRendererAPI::ConfigureWireframeView(const bool enable) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
+void OpenGLRendererAPI::ConfigureAntiAliasing(const bool enable) {
+    if (enable)
+        glEnable(GL_MULTISAMPLE);
+    else
+        glDisable(GL_MULTISAMPLE);
+}
+
 void OpenGLRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount) {
     ZoneScoped;
     uint32_t count = indexCount == 0 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;

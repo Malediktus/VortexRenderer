@@ -55,6 +55,10 @@ public:
         s_RendererAPI->ConfigureWireframeView(enable);
     }
 
+    inline static VT_API void ConfigureAntiAliasing(const bool enable) {
+        s_RendererAPI->ConfigureAntiAliasing(enable);
+    }
+
     inline static VT_API void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t count = 0) {
         s_RendererAPI->DrawIndexed(vertexArray, count);
     }

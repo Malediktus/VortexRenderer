@@ -27,6 +27,7 @@ public:
 #endif
 
         if (api == Vortex::RendererAPI::API::OpenGL) {
+            glfwWindowHint(GLFW_SAMPLES, 4);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -97,6 +98,7 @@ public:
 
         Vortex::Renderer::SetContext(m_Context);
         Vortex::RenderCommand::Init();
+        Vortex::RenderCommand::ConfigureAntiAliasing(true);
 
         m_PrimaryRenderer = std::make_shared<Vortex::Renderer>("../../apps/assets/Shaders/Light.glsl", 1280, 720, true);
         m_SecondaryRenderer = std::make_shared<Vortex::Renderer>("../../apps/assets/Shaders/Light.glsl", 1280, 720, true);
@@ -106,7 +108,6 @@ public:
         m_SecondaryViewportHeight = 720;
         m_PrimaryCamera = std::make_shared<Vortex::Camera>(90.0f, 1280.0f, 720.0f);
         m_SecondaryCamera = std::make_shared<Vortex::Camera>(90.0f, 1280.0f, 720.0f);
-        m_SecondaryCamera->Translate(glm::vec3(1.0f, 0.0f, -0.5f));
 
         auto mesh = std::make_shared<Vortex::Mesh>("../../apps/assets/Objects/Monkey/monkey.obj");
         m_Scene = std::make_shared<Vortex::Scene>();

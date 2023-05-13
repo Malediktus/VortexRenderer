@@ -65,6 +65,10 @@ void VulkanRendererAPI::ConfigureWireframeView(const bool enable) {
     (void) enable;
 }
 
+void VulkanRendererAPI::ConfigureAntiAliasing(const bool enable) {
+    (void) enable;
+}
+
 void VulkanRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount) {
     ZoneScoped;
     (void) vertexArray;
