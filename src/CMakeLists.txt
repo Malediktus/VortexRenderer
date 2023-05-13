@@ -89,6 +89,10 @@ else()
     target_compile_options(Vortex PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(Vortex PRIVATE VT_BUILD_SHARED)
+endif()
+
 target_link_libraries(Vortex PUBLIC glm TracyClient)
 target_link_libraries(Vortex PRIVATE glfw glad Vulkan::Vulkan stb_image assimp spdlog::spdlog)
 

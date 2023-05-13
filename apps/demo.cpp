@@ -215,19 +215,19 @@ public:
 
             ImGui::Begin("PrimaryViewport");
             {
-                m_PrimaryViewportWidth = ImGui::GetContentRegionAvail().x;
-                m_PrimaryViewportHeight = ImGui::GetContentRegionAvail().y;
+                m_PrimaryViewportWidth = (uint32_t) ImGui::GetContentRegionAvail().x;
+                m_PrimaryViewportHeight = (uint32_t) ImGui::GetContentRegionAvail().y;
                 auto texture = m_PrimaryRenderer->GetTexture();
-                ImGui::Image(*(ImTextureID*) texture->GetNative(), ImVec2(texture->GetWidth(), texture->GetHeight()), ImVec2(0, 1), ImVec2(1, 0));
+                ImGui::Image(*(ImTextureID*) texture->GetNative(), ImVec2((float) texture->GetWidth(), (float) texture->GetHeight()), ImVec2(0, 1), ImVec2(1, 0));
             }
             ImGui::End();
 
             ImGui::Begin("SecondaryViewport");
             {
-                m_SecondaryViewportWidth = ImGui::GetContentRegionAvail().x;
-                m_SecondaryViewportHeight = ImGui::GetContentRegionAvail().y;
+                m_SecondaryViewportWidth = (uint32_t) ImGui::GetContentRegionAvail().x;
+                m_SecondaryViewportHeight = (uint32_t) ImGui::GetContentRegionAvail().y;
                 auto texture = m_SecondaryRenderer->GetTexture();
-                ImGui::Image(*(ImTextureID*) texture->GetNative(), ImVec2(texture->GetWidth(), texture->GetHeight()), ImVec2(0, 1), ImVec2(1, 0));
+                ImGui::Image(*(ImTextureID*) texture->GetNative(), ImVec2((float) texture->GetWidth(), (float) texture->GetHeight()), ImVec2(0, 1), ImVec2(1, 0));
             }
             ImGui::End();
 
@@ -253,14 +253,14 @@ public:
             m_SecondaryViewportHeight = 0;
 
         m_PrimaryRenderer->OnResize(m_PrimaryViewportWidth, m_PrimaryViewportHeight);
-        m_PrimaryCamera->Resize(90.0f, m_PrimaryViewportWidth, m_PrimaryViewportHeight);
+        m_PrimaryCamera->Resize(90.0f, (float) m_PrimaryViewportWidth, (float) m_PrimaryViewportHeight);
 
         m_PrimaryRenderer->BeginFrame();
         m_PrimaryRenderer->Submit(m_Scene, m_PrimaryCamera);
         m_PrimaryRenderer->EndFrame();
 
         m_SecondaryRenderer->OnResize(m_SecondaryViewportWidth, m_SecondaryViewportHeight);
-        m_SecondaryCamera->Resize(90.0f, m_SecondaryViewportWidth, m_SecondaryViewportHeight);
+        m_SecondaryCamera->Resize(90.0f, (float) m_SecondaryViewportWidth, (float) m_SecondaryViewportHeight);
 
         m_SecondaryRenderer->BeginFrame();
         m_SecondaryRenderer->Submit(m_Scene, m_SecondaryCamera);

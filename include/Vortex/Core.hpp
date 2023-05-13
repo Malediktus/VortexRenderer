@@ -2,7 +2,8 @@
 
 #include <string>
 
-#ifdef VT_EXPORT_API
+#ifdef VT_BUILD_SHARED
+    #ifdef VT_EXPORT_API
     // Exports
     #ifdef _MSC_VER
         #define VT_API __declspec(dllexport)
@@ -16,6 +17,9 @@
     #else
         #define VT_API
     #endif
+#endif
+#else
+    #define VT_API
 #endif
 
 #ifdef VT_DEBUG
