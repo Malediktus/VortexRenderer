@@ -13,6 +13,9 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : m_Path(path) {
     stbi_set_flip_vertically_on_load(1);
     auto* pixels = stbi_load(path.c_str(), &width, &height, &channels, 0);
     VT_ASSERT(pixels, "Failed to open texture file");
+
+    // TODO: Check for srgb
+
     m_Width = width;
     m_Height = height;
     GLenum format;

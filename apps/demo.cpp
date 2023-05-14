@@ -96,37 +96,6 @@ public:
         m_Context = Vortex::ContextCreate(m_Window, project);
         m_Context->Init();
 
-        Vortex::Renderer::SetContext(m_Context);
-        Vortex::RenderCommand::Init();
-        Vortex::RenderCommand::ConfigureAntiAliasing(true);
-
-        m_PrimaryRenderer = std::make_shared<Vortex::Renderer>("../../apps/assets/Shaders/Light.glsl", 1280, 720, true);
-        m_SecondaryRenderer = std::make_shared<Vortex::Renderer>("../../apps/assets/Shaders/Light.glsl", 1280, 720, true);
-        m_PrimaryViewportWidth = 1080;
-        m_PrimaryViewportHeight = 720;
-        m_SecondaryViewportWidth = 1080;
-        m_SecondaryViewportHeight = 720;
-        m_PrimaryCamera = std::make_shared<Vortex::Camera>(90.0f, 1280.0f, 720.0f);
-        m_SecondaryCamera = std::make_shared<Vortex::Camera>(90.0f, 1280.0f, 720.0f);
-
-        auto mesh = std::make_shared<Vortex::Mesh>("../../apps/assets/Objects/Monkey/monkey.obj");
-        m_Scene = std::make_shared<Vortex::Scene>();
-
-        glm::mat4 meshTransform(1.0f);
-        meshTransform = glm::translate(meshTransform, glm::vec3(0.0f, 0.0f, -4.0f));
-        std::shared_ptr<Vortex::Object> meshObject = std::make_shared<Vortex::Object>(meshTransform);
-        meshObject->Attach(mesh);
-
-        glm::mat4 lightTransform(1.0f);
-        lightTransform = glm::translate(lightTransform, glm::vec3(1.0f, 0.5f, -3.0f));
-
-        std::shared_ptr<Vortex::PointLight> light = std::make_shared<Vortex::PointLight>(1.0f, 1.0f, 1.0f, glm::vec3(1.0f), glm::vec3(1.0f), glm::vec3(1.0f));
-        std::shared_ptr<Vortex::Object> lightObject = std::make_shared<Vortex::Object>(lightTransform);
-        lightObject->Attach(light);
-
-        m_Scene->Append(meshObject);
-        m_Scene->Append(lightObject);
-
         m_PerfCounterFrequency = glfwGetTimerFrequency();
         m_LastCounter = glfwGetTimerValue();
 
@@ -148,13 +117,56 @@ public:
 
         ImGui_ImplGlfw_InitForOpenGL(m_Window->GetGLFWWindow(), true);
         ImGui_ImplOpenGL3_Init("#version 150");
+
+        Vortex::Renderer::SetContext(m_Context);
+        Vortex::RenderCommand::Init();
+        Vortex::RenderCommand::ConfigureAntiAliasing(true);
+
+        m_PrimaryRenderer = std::make_shared<Vortex::Renderer>("../../apps/assets/Shaders/Light.glsl", 1280, 720, false);
+        m_PrimaryViewportWidth = 1280;
+        m_PrimaryViewportHeight = 720;
+        m_PrimaryCamera = std::make_shared<Vortex::Camera>(90.0f, 1280.0f, 720.0f);
+        m_PrimaryCamera->Translate(glm::vec3(0.0f, 9.0f, 20.0f));
+
+        glm::vec3 lightPositions[] = {glm::vec3(-3.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(3.0f, 0.0f, 0.0f)};
+        glm::vec3 lightColors[] = {glm::vec3(0.25), glm::vec3(0.50), glm::vec3(0.75), glm::vec3(1.00)};
+
+        auto mesh = std::make_shared<Vortex::Mesh>("../../apps/assets/Objects/Cube/Cube.obj");
+        m_Scene = std::make_shared<Vortex::Scene>();
+
+        std::shared_ptr<Vortex::Object> meshObject = std::make_shared<Vortex::Object>(glm::scale(glm::mat4(1.0f), glm::vec3(50.0f, 0.05f, 50.0f)));
+        meshObject->Attach(mesh);
+        m_Scene->Append(meshObject);
+
+        auto cube1 = std::make_shared<Vortex::Mesh>("../../apps/assets/Objects/Cube/Cube.obj");
+        std::shared_ptr<Vortex::Object> cube1Object = std::make_shared<Vortex::Object>(glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 8.0f, 0.0f)));
+        cube1Object->Attach(cube1);
+        m_Scene->Append(cube1Object);
+
+        for (int i = 0; i < 4; i++) {
+            std::shared_ptr<Vortex::PointLight> light = std::make_shared<Vortex::PointLight>(1.0f, 1.0f, 1.0f, lightColors[i], lightColors[i], lightColors[i]);
+            std::shared_ptr<Vortex::Object> lightObject = std::make_shared<Vortex::Object>(glm::translate(glm::mat4(1.0f), lightPositions[i]));
+            lightObject->Attach(light);
+            m_Scene->Append(lightObject);
+        }
     }
 
     void Update() {
         ZoneScoped;
 
-        Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::COLOR);
-        Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::DEPTH);
+        glfwGetWindowSize(m_Window->GetGLFWWindow(), (int*) &m_PrimaryViewportWidth, (int*) &m_PrimaryViewportHeight);
+
+        if (m_PrimaryViewportWidth < 0)
+            m_PrimaryViewportWidth = 0;
+        if (m_PrimaryViewportHeight < 0)
+            m_PrimaryViewportHeight = 0;
+
+        m_PrimaryRenderer->OnResize(m_PrimaryViewportWidth, m_PrimaryViewportHeight);
+        m_PrimaryCamera->Resize(90.0f, (float) m_PrimaryViewportWidth, (float) m_PrimaryViewportHeight);
+
+        m_PrimaryRenderer->BeginFrame();
+        m_PrimaryRenderer->Submit(m_Scene, m_PrimaryCamera);
+        m_PrimaryRenderer->EndFrame();
 
         {
             ZoneScopedN("ImGuiCollectAndrender");
@@ -162,77 +174,10 @@ public:
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
 
-            static bool dockspaceOpen = true;
-            static bool opt_fullscreen_persistant = true;
-            bool opt_fullscreen = opt_fullscreen_persistant;
-            static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-
-            ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-            if (opt_fullscreen) {
-                ImGuiViewport* viewport = ImGui::GetMainViewport();
-                ImGui::SetNextWindowPos(viewport->Pos);
-                ImGui::SetNextWindowSize(viewport->Size);
-                ImGui::SetNextWindowViewport(viewport->ID);
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-                window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-                window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-            }
-
-            if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-                window_flags |= ImGuiWindowFlags_NoBackground;
-
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-            ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
-            ImGui::PopStyleVar();
-
-            if (opt_fullscreen)
-                ImGui::PopStyleVar(2);
-
-            // DockSpace
-            ImGuiIO& io = ImGui::GetIO();
-            if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
-                ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-                ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-            }
-
-            if (ImGui::BeginMenuBar()) {
-                if (ImGui::BeginMenu("File")) {
-                    if (ImGui::MenuItem("Exit"))
-                        glfwSetWindowShouldClose(m_Window->GetGLFWWindow(), true);
-                    ImGui::EndMenu();
-                }
-
-                ImGui::EndMenuBar();
-            }
-
             ImGui::Begin("Render Stats");
-            ImGui::Checkbox("Slow FPS", &m_ShowSlowFPS);
-            if (m_ShowSlowFPS)
-                ImGui::Text("FPS: %i", m_SlowFPS);
-            else
-                ImGui::Text("FPS: %i", m_FPS);
+            ImGui::Text("FPS: %i", m_FPS);
             ImGui::End();
 
-            ImGui::Begin("PrimaryViewport");
-            {
-                m_PrimaryViewportWidth = (uint32_t) ImGui::GetContentRegionAvail().x;
-                m_PrimaryViewportHeight = (uint32_t) ImGui::GetContentRegionAvail().y;
-                auto texture = m_PrimaryRenderer->GetTexture();
-                ImGui::Image(*(ImTextureID*) texture->GetNative(), ImVec2((float) texture->GetWidth(), (float) texture->GetHeight()), ImVec2(0, 1), ImVec2(1, 0));
-            }
-            ImGui::End();
-
-            ImGui::Begin("SecondaryViewport");
-            {
-                m_SecondaryViewportWidth = (uint32_t) ImGui::GetContentRegionAvail().x;
-                m_SecondaryViewportHeight = (uint32_t) ImGui::GetContentRegionAvail().y;
-                auto texture = m_SecondaryRenderer->GetTexture();
-                ImGui::Image(*(ImTextureID*) texture->GetNative(), ImVec2((float) texture->GetWidth(), (float) texture->GetHeight()), ImVec2(0, 1), ImVec2(1, 0));
-            }
-            ImGui::End();
-
-            ImGui::End();
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -243,30 +188,6 @@ public:
                 glfwMakeContextCurrent(backup_current_context);
             }
         }
-
-        if (m_PrimaryViewportWidth < 0)
-            m_PrimaryViewportWidth = 0;
-        if (m_PrimaryViewportHeight < 0)
-            m_PrimaryViewportHeight = 0;
-        if (m_SecondaryViewportWidth < 0)
-            m_SecondaryViewportWidth = 0;
-        if (m_SecondaryViewportHeight < 0)
-            m_SecondaryViewportHeight = 0;
-
-        m_PrimaryRenderer->OnResize(m_PrimaryViewportWidth, m_PrimaryViewportHeight);
-        m_PrimaryCamera->Resize(90.0f, (float) m_PrimaryViewportWidth, (float) m_PrimaryViewportHeight);
-
-        m_PrimaryRenderer->BeginFrame();
-        m_PrimaryRenderer->Submit(m_Scene, m_PrimaryCamera);
-        m_PrimaryRenderer->EndFrame();
-
-        m_SecondaryRenderer->OnResize(m_SecondaryViewportWidth, m_SecondaryViewportHeight);
-        m_SecondaryCamera->Resize(90.0f, (float) m_SecondaryViewportWidth, (float) m_SecondaryViewportHeight);
-
-        m_SecondaryRenderer->BeginFrame();
-        m_SecondaryRenderer->Submit(m_Scene, m_SecondaryCamera);
-        m_SecondaryRenderer->EndFrame();
-
         {
             ZoneScopedN("SwapBuffer");
             glfwSwapBuffers(m_Window->GetGLFWWindow());
@@ -282,11 +203,6 @@ public:
             m_Delta = ((float) counterElapsed) / (float) m_PerfCounterFrequency;
             m_FPS = (uint32_t) ((float) m_PerfCounterFrequency / (float) counterElapsed);
             m_LastCounter = endCounter;
-            m_FrameCount++;
-        }
-        if (m_FrameCount >= 1000) {
-            m_SlowFPS = m_FPS;
-            m_FrameCount = 0;
         }
     }
 
@@ -304,20 +220,13 @@ public:
 private:
     uint64_t m_PerfCounterFrequency;
     uint64_t m_LastCounter;
-    uint32_t m_FrameCount = 0;
     float m_Delta = 0.0f;
     uint32_t m_FPS = 0;
-    uint32_t m_SlowFPS = 0;
-    bool m_ShowSlowFPS = true;
 
     uint32_t m_PrimaryViewportWidth, m_PrimaryViewportHeight;
-    uint32_t m_SecondaryViewportWidth, m_SecondaryViewportHeight;
-
     std::shared_ptr<Window> m_Window;
     std::shared_ptr<Vortex::Renderer> m_PrimaryRenderer;
-    std::shared_ptr<Vortex::Renderer> m_SecondaryRenderer;
     std::shared_ptr<Vortex::Camera> m_PrimaryCamera;
-    std::shared_ptr<Vortex::Camera> m_SecondaryCamera;
     std::shared_ptr<Vortex::Scene> m_Scene;
     std::shared_ptr<Vortex::Context> m_Context;
 };
