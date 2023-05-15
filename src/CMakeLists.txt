@@ -68,6 +68,10 @@ endif()
 
 target_link_libraries(Vortex PRIVATE glfw glad stb_image assimp spdlog::spdlog)
 target_link_libraries(Vortex PUBLIC glm TracyClient)
+<<<<<<< Updated upstream
+=======
+target_link_libraries(Vortex PRIVATE glfw glad stb_image assimp spdlog::spdlog)
+>>>>>>> Stashed changes
 
 source_group(
     TREE "${PROJECT_SOURCE_DIR}/include/Vortex"

@@ -11,4 +11,8 @@ else()
     target_compile_options(VortexDemo PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
+<<<<<<< Updated upstream
+=======
+target_include_directories(VortexDemo PRIVATE extern/imgui)
+>>>>>>> Stashed changes
 target_link_libraries(VortexDemo PRIVATE Vortex::Vortex glfw)
