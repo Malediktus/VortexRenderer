@@ -6,22 +6,23 @@
 
 using namespace Vortex;
 
-std::shared_ptr<Shader> Renderer::m_Shader;
-std::shared_ptr<Context> Renderer::m_Context;
+std::shared_ptr<Context> Renderer::s_Context;
 
-void Renderer::Init(void* glfwWindow, const std::string& shaderPath, const int width, const int height) {
+Renderer::Renderer(const std::string& shaderPath, const int width, const int height, bool renderToTexture) {
     ZoneScoped;
-#ifdef VT_DEBUG
-    spdlog::set_level(spdlog::level::level_enum::info);
-#else
-    spdlog::set_level(spdlog::level::level_enum::warn);
-#endif
-    spdlog::set_pattern("[%T] %^[%l%$] %v%$");
 
-    m_Context = ContextCreate(glfwWindow);
-    m_Context->Init();
-    RenderCommand::Init();
+    m_RenderToTexture = renderToTexture;
     m_Shader = ShaderCreate(shaderPath);
+    m_Framebuffer = FramebufferCreate(s_Context->GetWindow());
+
+    if (renderToTexture) {
+        m_ColorTexture = Texture2DCreate(width, height, Texture2D::Texture2DUsageType::Color);
+        m_DepthStencilRenderbuffer = RenderbufferCreate(width, height, Renderbuffer::RenderbufferUsageType::DepthStencil);
+        m_Framebuffer->AttachColorTexture(m_ColorTexture);
+        m_Framebuffer->AttachDepthStencilRenderbuffer(m_DepthStencilRenderbuffer);
+    }
+
+    m_Framebuffer->Bind();
 
     // Settings
     Vortex::RenderCommand::SetClearColor({0.0f, 0.0f, 0.0f, 1.0f});
@@ -34,19 +35,37 @@ void Renderer::Init(void* glfwWindow, const std::string& shaderPath, const int w
     Vortex::RenderCommand::ConfigureCulling(false, Vortex::RendererAPI::CullingType::BACK);
     Vortex::RenderCommand::SetViewport(width, height);
 
+    m_Framebuffer->Unbind();
+
     spdlog::info("Initialized renderer");
+}
+
+void Renderer::SetContext(std::shared_ptr<Context> context) {
+    s_Context = context;
+}
+
+std::shared_ptr<Context> Renderer::GetContext() {
+    return s_Context;
 }
 
 void Renderer::OnResize(const int width, const int height) {
     ZoneScoped;
+    if (m_RenderToTexture) {
+        m_ColorTexture->Resize(width, height);
+        m_DepthStencilRenderbuffer->Resize(width, height);
+    }
+    m_Framebuffer->Bind();
     Vortex::RenderCommand::SetViewport(width, height);
+    m_Framebuffer->Unbind();
     spdlog::trace("Resized renderer (width: {}, height: {})", width, height);
 }
 
 void Renderer::BeginFrame() {
     ZoneScoped;
+    m_Framebuffer->Bind();
     Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::COLOR);
     Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::DEPTH);
+    m_Framebuffer->Unbind();
     spdlog::trace("Began renderer frame");
 }
 
@@ -56,15 +75,18 @@ void Renderer::EndFrame() {
     FrameMark;
 }
 
-void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray) {
+void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray, std::shared_ptr<Camera>) {
     ZoneScoped;
+    m_Framebuffer->Bind();
     vertexArray->Bind();
     RenderCommand::DrawIndexed(vertexArray);
+    m_Framebuffer->Unbind();
     spdlog::trace("Submited vertex array to renderer");
 }
 
-void Renderer::Submit(const std::shared_ptr<Scene>& scene) {
+void Renderer::Submit(const std::shared_ptr<Scene>& scene, std::shared_ptr<Camera> camera) {
     ZoneScoped;
+    m_Framebuffer->Bind();
     std::vector<std::shared_ptr<SceneLight>> sceneLights;
     std::vector<glm::mat4> sceneLightTransforms;
     std::unordered_map<std::shared_ptr<Mesh>, glm::mat4> meshes;
@@ -81,8 +103,6 @@ void Renderer::Submit(const std::shared_ptr<Scene>& scene) {
             meshes[mesh] = transform;
         }
     }
-
-    auto camera = scene->GetCamera();
 
     for (auto& [mesh, transform] : meshes) {
         const std::shared_ptr<Shader>& shader = m_Shader;
@@ -146,5 +166,6 @@ void Renderer::Submit(const std::shared_ptr<Scene>& scene) {
         }
     }
 
+    m_Framebuffer->Unbind();
     spdlog::trace("Submitted scene to renderer (NumLights: {}, NumMeshes: {})", sceneLights.size(), meshes.size());
 }

@@ -6,11 +6,11 @@
 
 using namespace Vortex;
 
-std::shared_ptr<Renderbuffer> Vortex::RenderbufferCreate(uint32_t width, uint32_t height, Renderbuffer::RenderbufferType type) {
+std::shared_ptr<Renderbuffer> Vortex::RenderbufferCreate(uint32_t width, uint32_t height, Renderbuffer::RenderbufferUsageType usageType) {
     ZoneScoped;
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
-        return std::make_shared<OpenGL::OpenGLRenderbuffer>(width, height, type);
+        return std::make_shared<OpenGL::OpenGLRenderbuffer>(width, height, usageType);
     default:
         VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }

@@ -112,7 +112,7 @@ void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shader
     GLuint program = glCreateProgram();
     spdlog::trace("Created OpenGL shader program (ID: {})", program);
     VT_ASSERT_CHECK(shaderSources.size() <= 3, "More than 3 shader types in file, but only 3 are supported (vertex, pixel, geometry)");
-    std::array<GLenum, 2> glShaderIDs;
+    std::array<GLenum, 3> glShaderIDs;
     int glShaderIDIndex = 0;
     for (auto& kv : shaderSources) {
         GLenum type = kv.first;

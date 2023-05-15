@@ -75,7 +75,8 @@ struct BufferElement {
     uint64_t Offset;
     bool Normalized;
 
-    BufferElement() {
+    BufferElement()
+        : Type(ShaderDataType::Float), Size(Utils::ShaderDataTypeSize(ShaderDataType::Float)), Offset(0), Normalized(false) {
     }
 
     BufferElement(ShaderDataType type, const std::string& name, bool normalized = false)

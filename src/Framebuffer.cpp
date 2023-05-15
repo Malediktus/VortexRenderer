@@ -5,11 +5,11 @@
 
 using namespace Vortex;
 
-std::shared_ptr<Framebuffer> Vortex::FramebufferCreate() {
+std::shared_ptr<Framebuffer> Vortex::FramebufferCreate(const std::shared_ptr<Window>& window) {
     ZoneScoped;
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
-        return std::make_shared<OpenGL::OpenGLFramebuffer>();
+        return std::make_shared<OpenGL::OpenGLFramebuffer>(window);
     default:
         VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }

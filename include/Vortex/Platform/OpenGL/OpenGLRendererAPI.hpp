@@ -19,6 +19,7 @@ public:
                                    const BlendingFunc blendingFuncG, const BlendingFunc blendingFuncB, const BlendingFunc blendingFuncA) override;
     virtual void ConfigureCulling(const bool enable, const CullingType type) override;
     virtual void ConfigureWireframeView(const bool enable) override;
+    virtual void ConfigureAntiAliasing(const bool enable) override;
 
     virtual void SetViewport(const int width, const int height) override;
 
