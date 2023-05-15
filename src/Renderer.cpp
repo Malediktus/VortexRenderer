@@ -56,11 +56,7 @@ void Renderer::EndFrame() {
     FrameMark;
 }
 
-<<<<<<< Updated upstream
 void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray) {
-=======
-void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray, std::shared_ptr<Camera>) {
->>>>>>> Stashed changes
     ZoneScoped;
     vertexArray->Bind();
     RenderCommand::DrawIndexed(vertexArray);

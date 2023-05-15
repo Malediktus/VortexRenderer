@@ -11,11 +11,7 @@ std::shared_ptr<Context> Vortex::ContextCreate(void* windowHandle) {
     ZoneScoped;
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
-<<<<<<< Updated upstream
         return std::make_shared<OpenGL::OpenGLContext>(windowHandle);
-=======
-        return std::make_shared<OpenGL::OpenGLContext>(window, projectInfo);
->>>>>>> Stashed changes
     default:
         VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }

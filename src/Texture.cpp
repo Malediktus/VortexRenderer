@@ -21,11 +21,7 @@ std::shared_ptr<Texture2D> Vortex::Texture2DCreate(const int width, const int he
     ZoneScoped;
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
-<<<<<<< Updated upstream
         return std::make_shared<OpenGL::OpenGLTexture2D>(width, height);
-=======
-        return std::make_shared<OpenGL::OpenGLTexture2D>(width, height, usageType);
->>>>>>> Stashed changes
     default:
         VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
@@ -36,11 +32,7 @@ std::shared_ptr<Texture2D> Vortex::Texture2DCreate(const int width, const int he
     ZoneScoped;
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
-<<<<<<< Updated upstream
         return std::make_shared<OpenGL::OpenGLTexture2D>(width, height, data);
-=======
-        return std::make_shared<OpenGL::OpenGLTexture2D>(width, height, data, usageType);
->>>>>>> Stashed changes
     default:
         VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }

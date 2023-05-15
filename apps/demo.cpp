@@ -8,53 +8,6 @@
 #include <cstdlib>
 #include <iostream>
 
-<<<<<<< Updated upstream
-=======
-class Window : public Vortex::Window {
-public:
-    Window() {
-        if (!glfwInit()) {
-            std::cout << "Failed to init GLFW!" << std::endl;
-            exit(1);
-        }
-
-        auto api = ChooseRenderingAPI();
-
-        if (api == Vortex::RendererAPI::API::OpenGL) {
-            glfwWindowHint(GLFW_SAMPLES, 4);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        } else {
-            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        }
-
-        m_GLFWWindow = glfwCreateWindow(1280, 720, "Vortex Renderer Demo", nullptr, nullptr);
-        if (!m_GLFWWindow) {
-            std::cout << "Failed to create window!" << std::endl;
-            exit(1);
-        }
-    }
-
-    ~Window() {
-        glfwDestroyWindow(m_GLFWWindow);
-        glfwTerminate();
-    }
-
-    void SetupOpenglContext() override {
-        glfwMakeContextCurrent(m_GLFWWindow);
-        glfwSwapInterval(0);
-    }
-
-    GLFWwindow* GetGLFWWindow() {
-        return m_GLFWWindow;
-    }
-
-private:
-    GLFWwindow* m_GLFWWindow;
-};
-
->>>>>>> Stashed changes
 class VortexDemo {
 public:
     VortexDemo() {
