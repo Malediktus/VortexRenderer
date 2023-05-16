@@ -1,6 +1,8 @@
 set(HEADER_LIST
     "${PROJECT_SOURCE_DIR}/include/Vortex/Vortex.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Core.hpp"
+    "${PROJECT_SOURCE_DIR}/include/Vortex/Window.hpp"
+    "${PROJECT_SOURCE_DIR}/include/Vortex/Platform.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Context.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/RenderCommand.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Renderer.hpp"
@@ -29,6 +31,7 @@ set(SOURCE_LIST
     Framebuffer.cpp
     Renderbuffer.cpp
     Asserts.cpp
+    Window.cpp
     Scene/Mesh.cpp
     Scene/Model.cpp)
 
@@ -61,13 +64,17 @@ target_compile_definitions(Vortex PRIVATE $<$<CONFIG:Release>:VT_RELEASE>)
 target_compile_features(Vortex PUBLIC cxx_std_17)
 
 if(MSVC)
-    target_compile_options(Vortex PRIVATE /W4 /WX)
+    target_compile_options(Vortex PRIVATE /W4)
 else()
     target_compile_options(Vortex PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
-target_link_libraries(Vortex PRIVATE glfw glad stb_image assimp spdlog::spdlog)
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(Vortex PRIVATE VT_BUILD_SHARED)
+endif()
+
 target_link_libraries(Vortex PUBLIC glm TracyClient)
+target_link_libraries(Vortex PRIVATE glfw glad stb_image assimp spdlog::spdlog)
 
 source_group(
     TREE "${PROJECT_SOURCE_DIR}/include/Vortex"
@@ -88,5 +95,15 @@ source_group(
     TREE "${PROJECT_SOURCE_DIR}/src/Platform/OpenGL"
     PREFIX "Source Files/OpenGL"
     FILES ${OPENGL_SOURCES})
+
+source_group(
+    TREE "${PROJECT_SOURCE_DIR}/include/Vortex/Platform/Vulkan"
+    PREFIX "Header Files/Vulkan"
+    FILES ${VULKAN_HEADERS})
+
+source_group(
+    TREE "${PROJECT_SOURCE_DIR}/src/Platform/Vulkan"
+    PREFIX "Source Files/Vulkan"
+    FILES ${VULKAN_SOURCES})
 
 add_library(Vortex::Vortex ALIAS Vortex)

@@ -35,6 +35,8 @@ public:
  */
 class Texture2D : public Texture {
 public:
+    enum class Texture2DUsageType { Color = 0, Depth = 1, Stencil = 2, DepthStencil = 3 };
+
     virtual ~Texture2D() = default;
 
     virtual uint32_t GetWidth() const override {
@@ -70,7 +72,7 @@ public:
  * @copyright Copyright (c) 2023
  */
 VT_API std::shared_ptr<Texture2D> Texture2DCreate(const std::string& path);
-VT_API std::shared_ptr<Texture2D> Texture2DCreate(const int width, const int height);
+VT_API std::shared_ptr<Texture2D> Texture2DCreate(const int width, const int height, Texture2D::Texture2DUsageType usageType = Texture2D::Texture2DUsageType::Color);
 /**
  * @brief This function is the only way that should be used for creating a Texture2D from pixel data.
  *
@@ -83,5 +85,6 @@ VT_API std::shared_ptr<Texture2D> Texture2DCreate(const int width, const int hei
  * @date 2023-03-31
  * @copyright Copyright (c) 2023
  */
-VT_API std::shared_ptr<Texture2D> Texture2DCreate(const int width, const int height, const void* data);
+VT_API std::shared_ptr<Texture2D> Texture2DCreate(const int width, const int height, const void* data,
+                                                  Texture2D::Texture2DUsageType usageType = Texture2D::Texture2DUsageType::Color);
 } // namespace Vortex

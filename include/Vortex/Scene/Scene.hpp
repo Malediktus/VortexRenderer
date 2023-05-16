@@ -134,7 +134,7 @@ private:
 
 class Scene {
 public:
-    Scene(std::shared_ptr<Camera> camera) : m_Camera(camera) {
+    Scene() {
     }
     ~Scene() = default;
 
@@ -147,12 +147,7 @@ public:
         return m_Objects;
     }
 
-    const std::shared_ptr<Camera>& GetCamera() {
-        return m_Camera;
-    }
-
 private:
     std::vector<std::shared_ptr<Object>> m_Objects;
-    std::shared_ptr<Camera> m_Camera;
 };
 } // namespace Vortex

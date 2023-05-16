@@ -4,10 +4,12 @@
 #include <spdlog/spdlog.h>
 #include <tracy/Tracy.hpp>
 
+using namespace Vortex;
 using namespace Vortex::OpenGL;
 
-OpenGLFramebuffer::OpenGLFramebuffer() {
+OpenGLFramebuffer::OpenGLFramebuffer(const std::shared_ptr<Window>&) {
     ZoneScoped;
+    hasAttachments = false;
     glGenFramebuffers(1, &m_RendererID);
     glCheckError();
     spdlog::trace("Created OpenGL framebuffer (ID: {})", m_RendererID);
@@ -22,42 +24,97 @@ OpenGLFramebuffer::~OpenGLFramebuffer() {
 
 void OpenGLFramebuffer::Bind() const {
     ZoneScoped;
+    if (!hasAttachments)
+        return;
+
     glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
     glCheckError();
-    spdlog::info("Bound OpenGL framebuffer (ID: {})", m_RendererID);
+    spdlog::trace("Bound OpenGL framebuffer (ID: {})", m_RendererID);
 }
 
 void OpenGLFramebuffer::Unbind() const {
     ZoneScoped;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glCheckError();
-    spdlog::info("Unbound OpenGL framebuffer (ID: {})", m_RendererID);
+    spdlog::trace("Unbound OpenGL framebuffer (ID: {})", m_RendererID);
 }
 
-void OpenGLFramebuffer::AttachColorBuffer(const std::shared_ptr<Texture2D>& texture) {
+void OpenGLFramebuffer::AttachColorTexture(const std::shared_ptr<Texture2D>& texture) {
     ZoneScoped;
+    hasAttachments = true;
+    Bind();
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, *(GLuint*) texture->GetNative(), 0);
+    Unbind();
     glCheckError();
     spdlog::trace("Attached texture of type color buffer to OpenGL framebuffer (ID: {}, TextureID: {})", m_RendererID, *(GLuint*) texture->GetNative());
 }
 
-void OpenGLFramebuffer::AttachDepthBuffer(const std::shared_ptr<Texture2D>& texture) {
+void OpenGLFramebuffer::AttachDepthTexture(const std::shared_ptr<Texture2D>& texture) {
     ZoneScoped;
+    hasAttachments = true;
+    Bind();
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, *(GLuint*) texture->GetNative(), 0);
+    Unbind();
     glCheckError();
     spdlog::trace("Attached texture of type depth buffer to OpenGL framebuffer (ID: {}, TextureID: {})", m_RendererID, *(GLuint*) texture->GetNative());
 }
 
-void OpenGLFramebuffer::AttachStencilBuffer(const std::shared_ptr<Texture2D>& texture) {
+void OpenGLFramebuffer::AttachStencilTexture(const std::shared_ptr<Texture2D>& texture) {
     ZoneScoped;
+    hasAttachments = true;
+    Bind();
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, *(GLuint*) texture->GetNative(), 0);
+    Unbind();
     glCheckError();
     spdlog::trace("Attached texture of type stencil buffer to OpenGL framebuffer (ID: {}, TextureID: {})", m_RendererID, *(GLuint*) texture->GetNative());
 }
 
-void OpenGLFramebuffer::AttachDepthStencilBuffer(const std::shared_ptr<Renderbuffer>& renderbuffer) {
+void OpenGLFramebuffer::AttachDepthStencilTexture(const std::shared_ptr<Texture2D>& texture) {
     ZoneScoped;
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, *(GLuint*) renderbuffer->GetNative());
+    hasAttachments = true;
+    Bind();
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, *(GLuint*) texture->GetNative(), 0);
+    Unbind();
     glCheckError();
-    spdlog::trace("Attached renderbuffer of type depth-stencil buffer to OpenGL framebuffer (ID: {}, RenderbufferID: {})", m_RendererID, *(GLuint*) renderbuffer->GetNative());
+    spdlog::trace("Attached texture of type depth_stencil buffer to OpenGL framebuffer (ID: {}, TextureID: {})", m_RendererID, *(GLuint*) texture->GetNative());
+}
+
+void OpenGLFramebuffer::AttachColorRenderbuffer(const std::shared_ptr<Renderbuffer>& renderbuffer) {
+    ZoneScoped;
+    hasAttachments = true;
+    Bind();
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, *(GLuint*) renderbuffer->GetNative());
+    Unbind();
+    glCheckError();
+    spdlog::trace("Attached renderbuffer of type color buffer to OpenGL framebuffer (ID: {}, RenderbufferID: {})", m_RendererID, *(GLuint*) renderbuffer->GetNative());
+}
+
+void OpenGLFramebuffer::AttachDepthRenderbuffer(const std::shared_ptr<Renderbuffer>& renderbuffer) {
+    ZoneScoped;
+    hasAttachments = true;
+    Bind();
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, *(GLuint*) renderbuffer->GetNative());
+    Unbind();
+    glCheckError();
+    spdlog::trace("Attached renderbuffer of type depth buffer to OpenGL framebuffer (ID: {}, RenderbufferID: {})", m_RendererID, *(GLuint*) renderbuffer->GetNative());
+}
+
+void OpenGLFramebuffer::AttachStencilRenderbuffer(const std::shared_ptr<Renderbuffer>& renderbuffer) {
+    ZoneScoped;
+    hasAttachments = true;
+    Bind();
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, *(GLuint*) renderbuffer->GetNative());
+    Unbind();
+    glCheckError();
+    spdlog::trace("Attached renderbuffer of type stencil buffer to OpenGL framebuffer (ID: {}, RenderbufferID: {})", m_RendererID, *(GLuint*) renderbuffer->GetNative());
+}
+
+void OpenGLFramebuffer::AttachDepthStencilRenderbuffer(const std::shared_ptr<Renderbuffer>& renderbuffer) {
+    ZoneScoped;
+    hasAttachments = true;
+    Bind();
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, *(GLuint*) renderbuffer->GetNative());
+    Unbind();
+    glCheckError();
+    spdlog::trace("Attached renderbuffer of type depth_stencil buffer to OpenGL framebuffer (ID: {}, RenderbufferID: {})", m_RendererID, *(GLuint*) renderbuffer->GetNative());
 }

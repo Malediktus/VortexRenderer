@@ -117,14 +117,15 @@ void main() {
     for (int i = 0; i < u_NumSpotLights; i++)
         result += CalcSpotLight(u_SpotLights[i], norm, f_out_FragPos, viewDir);
 
-    FragColor = result;
+    float gamma = 2.2;
+    FragColor.rgb = pow(result.rgb, vec3(1.0/gamma));
 }
 
 vec4 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
     vec3 lightDir = normalize(light.position - fragPos);
     float diff = max(dot(normal, lightDir), 0.0);
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 1.0);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), 16.0);
     float distance = length(light.position - fragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
     vec4 ambient = vec4(light.ambient, 1.0);
@@ -140,8 +141,8 @@ vec4 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 vec4 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir) {
     vec3 lightDir = normalize(-light.direction);
     float diff = max(dot(normal, lightDir), 0.0);
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 1.0);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), 16.0);
     vec4 ambient = vec4(light.ambient, 1.0);
     vec4 diffuse = vec4(light.diffuse * diff, 1.0);
     vec4 specular = vec4(light.specular * spec, 1.0);
@@ -152,8 +153,8 @@ vec4 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir) {
 vec4 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
     vec3 lightDir = normalize(light.position - fragPos);
     float diff = max(dot(normal, lightDir), 0.0);
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 1.0);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), 16.0);
     float distance = length(light.position - fragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
     float theta = dot(lightDir, normalize(-light.direction));
