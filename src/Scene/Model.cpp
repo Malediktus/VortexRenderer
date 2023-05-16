@@ -3,13 +3,15 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <tracy/Tracy.hpp>
 
 #include <iostream>
 #include <cstdlib>
 
 using namespace Vortex;
 
-Scene::Model::Model(const std::string& filepath) {
+Model::Model(const std::string& filepath) {
+    ZoneScoped;
     Assimp::Importer import;
     const aiScene* scene = import.ReadFile(filepath, aiProcess_Triangulate | aiProcess_FlipUVs);
 
@@ -22,7 +24,8 @@ Scene::Model::Model(const std::string& filepath) {
     ProcessNode(scene->mRootNode, scene);
 }
 
-void Scene::Model::ProcessNode(void* processNode, const void* processScene) {
+void Model::ProcessNode(void* processNode, const void* processScene) {
+    ZoneScoped;
     aiNode* node = (aiNode*) processNode;
     const aiScene* scene = (const aiScene*) processScene;
 
@@ -35,16 +38,17 @@ void Scene::Model::ProcessNode(void* processNode, const void* processScene) {
     }
 }
 
-Scene::Mesh Scene::Model::ProcessMesh(void* processMesh, const void* processScene) {
+ModelMesh Model::ProcessMesh(void* processMesh, const void* processScene) {
+    ZoneScoped;
     aiMesh* mesh = (aiMesh*) processMesh;
     const aiScene* scene = (const aiScene*) processScene;
 
-    std::vector<Vertex> vertices;
+    std::vector<MeshVertex> vertices;
     std::vector<uint32_t> indices;
-    std::vector<Texture> textures;
+    std::vector<MeshTexture> textures;
 
     for (uint32_t i = 0; i < mesh->mNumVertices; i++) {
-        Vertex vertex;
+        MeshVertex vertex;
         glm::vec3 vector;
         vector.x = mesh->mVertices[i].x;
         vector.y = mesh->mVertices[i].y;
@@ -73,19 +77,20 @@ Scene::Mesh Scene::Model::ProcessMesh(void* processMesh, const void* processScen
 
     if (mesh->mMaterialIndex >= 0) {
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-        std::vector<Scene::Texture> diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+        std::vector<MeshTexture> diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-        std::vector<Scene::Texture> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+        std::vector<MeshTexture> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
     }
 
-    return Mesh(vertices, indices, textures);
+    return ModelMesh(vertices, indices, textures);
 }
 
-std::vector<Scene::Texture> Scene::Model::LoadMaterialTextures(aiMaterial* mat, int textureType, const std::string& typeName) {
+std::vector<MeshTexture> Model::LoadMaterialTextures(aiMaterial* mat, int textureType, const std::string& typeName) {
+    ZoneScoped;
     aiTextureType type = (aiTextureType) textureType;
 
-    std::vector<Scene::Texture> textures;
+    std::vector<MeshTexture> textures;
     for (uint32_t i = 0; i < mat->GetTextureCount(type); i++) {
         aiString str;
         mat->GetTexture(type, i, &str);
@@ -101,7 +106,7 @@ std::vector<Scene::Texture> Scene::Model::LoadMaterialTextures(aiMaterial* mat, 
             }
         }
         if (!skip) {
-            Texture texture;
+            MeshTexture texture;
             texture.Texture = Texture2DCreate(filepath);
             texture.Type = typeName;
             texture.Filepath = str.C_Str();

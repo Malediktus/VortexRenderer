@@ -18,9 +18,15 @@ public:
     virtual void ConfigureBlending(const bool enable, const BlendingFunc blendingFunc1, const BlendingFunc blendingFunc2, const BlendingFunc blendingFuncR,
                                    const BlendingFunc blendingFuncG, const BlendingFunc blendingFuncB, const BlendingFunc blendingFuncA) override;
     virtual void ConfigureCulling(const bool enable, const CullingType type) override;
+    virtual void ConfigureWireframeView(const bool enable) override;
+    virtual void ConfigureAntiAliasing(const bool enable) override;
 
     virtual void SetViewport(const int width, const int height) override;
 
     virtual void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount) override;
 };
+
+void CheckOpenGLError(const char* file, int line);
 } // namespace Vortex::OpenGL
+
+#define glCheckError() Vortex::OpenGL::CheckOpenGLError(__FILE__, __LINE__)

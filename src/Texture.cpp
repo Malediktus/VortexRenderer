@@ -2,35 +2,39 @@
 #include <Vortex/Platform/OpenGL/OpenGLTexture.hpp>
 #include <Vortex/Texture.hpp>
 #include <Vortex/Renderer.hpp>
+#include <tracy/Tracy.hpp>
 
 using namespace Vortex;
 
 std::shared_ptr<Texture2D> Vortex::Texture2DCreate(const std::string& path) {
+    ZoneScoped;
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
         return std::make_shared<OpenGL::OpenGLTexture2D>(path);
     default:
-        assert(false);
+        VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
-    assert(false);
+    return nullptr;
 }
 
-std::shared_ptr<Texture2D> Vortex::Texture2DCreate(const int width, const int height) {
+std::shared_ptr<Texture2D> Vortex::Texture2DCreate(const int width, const int height, Texture2D::Texture2DUsageType usageType) {
+    ZoneScoped;
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
-        return std::make_shared<OpenGL::OpenGLTexture2D>(width, height);
+        return std::make_shared<OpenGL::OpenGLTexture2D>(width, height, usageType);
     default:
-        assert(false);
+        VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
-    assert(false);
+    return nullptr;
 }
 
-std::shared_ptr<Texture2D> Vortex::Texture2DCreate(const int width, const int height, const void* data) {
+std::shared_ptr<Texture2D> Vortex::Texture2DCreate(const int width, const int height, const void* data, Texture2D::Texture2DUsageType usageType) {
+    ZoneScoped;
     switch (Renderer::GetAPI()) {
     case RendererAPI::API::OpenGL:
-        return std::make_shared<OpenGL::OpenGLTexture2D>(width, height, data);
+        return std::make_shared<OpenGL::OpenGLTexture2D>(width, height, data, usageType);
     default:
-        assert(false);
+        VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
     }
-    assert(false);
+    return nullptr;
 }

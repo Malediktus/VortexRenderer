@@ -4,6 +4,7 @@
 #include "Camera.hpp"
 #include "Context.hpp"
 #include "Core.hpp"
+#include "Platform.hpp"
 #include "RenderCommand.hpp"
 #include "Renderer.hpp"
 #include "RendererAPI.hpp"
@@ -12,3 +13,4 @@
 #include "VertexArray.hpp"
 #include "Framebuffer.hpp"
 #include "Renderbuffer.hpp"
+#include "Scene/Scene.hpp"

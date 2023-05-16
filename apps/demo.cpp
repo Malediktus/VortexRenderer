@@ -3,107 +3,75 @@
 #include <Vortex/Scene/Model.hpp>
 
 #include <glm/ext/matrix_transform.hpp>
-
-#include <cstdlib>
-#include <iostream>
-
+#include <tracy/Tracy.hpp>
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 
-class FPSCamera : public Vortex::Camera {
+#include <cstdlib>
+#include <iostream>
+
+class Window : public Vortex::Window {
 public:
-    FPSCamera(float fov, float width, float height) : Camera(fov, width, height) {
-        m_Up = glm::vec3(0.0f, 1.0f, 0.0f);
-        m_Yaw = -90.0f;
-        m_Pitch = 0.0f;
-        OnMouseMoved(0.0f, 0.0f);
-        UpdateMatrices();
-    }
-
-    void OnMouseMoved(float xRel, float yRel) {
-        m_Yaw += xRel * m_MouseSensitivity;
-        m_Pitch -= yRel * m_MouseSensitivity;
-        if (m_Pitch > 89.0f)
-            m_Pitch = 89.0f;
-        if (m_Pitch < -89.0f)
-            m_Pitch = -89.0f;
-
-        glm::vec3 front;
-        front.x = cos(glm::radians(m_Pitch)) * cos(glm::radians(m_Yaw));
-        front.y = sin(glm::radians(m_Pitch));
-        front.z = cos(glm::radians(m_Pitch)) * sin(glm::radians(m_Yaw));
-        m_LookAt = glm::normalize(front);
-        UpdateMatrices();
-    }
-
-    void MoveUp(float amount) {
-        Translate(m_Up * amount);
-    }
-
-    void MoveFront(float amount) {
-        Translate(glm::normalize(glm::vec3(1.0f, 0.0f, 1.0f) * m_LookAt) * amount);
-        UpdateMatrices();
-    }
-
-    void MoveSideways(float amount) {
-        Translate(glm::normalize(glm::cross(m_LookAt, m_Up)) * amount);
-        UpdateMatrices();
-    }
-
-    const glm::vec3& GetPosition() {
-        return m_Position;
-    }
-
-    const glm::vec3& GetFront() {
-        return m_LookAt;
-    }
-
-protected:
-    void UpdateMatrices() override {
-        m_View = glm::lookAt(m_Position, m_Position + m_LookAt, m_Up);
-        m_ViewProj = m_Projection * m_View;
-    }
-
-    float m_Yaw;
-    float m_Pitch;
-    glm::vec3 m_LookAt;
-    const float m_MouseSensitivity = 0.1f;
-    glm::vec3 m_Up;
-};
-
-glm::vec3 pointLightPositions[] = {glm::vec3(0.1f, 0.2f, 2.0f), glm::vec3(2.3f, -3.3f, -4.0f), glm::vec3(-4.0f, 2.0f, -12.0f), glm::vec3(0.0f, 0.0f, -3.0f)};
-
-class VortexDemo {
-public:
-    VortexDemo() {
-        glfwSetErrorCallback(GlfwErrorCallback);
+    Window() {
         if (!glfwInit()) {
             std::cout << "Failed to init GLFW!" << std::endl;
             exit(1);
         }
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        auto api = ChooseRenderingAPI();
 
-        m_Window = glfwCreateWindow(1280, 900, "Vortex Renderer Demo", nullptr, nullptr);
-        if (!m_Window) {
-            std::cout << "Failed to create window!" << std::endl;
+        if (api == Vortex::RendererAPI::API::OpenGL) {
+            glfwWindowHint(GLFW_SAMPLES, 4);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        } else {
+            std::cout << "Invalid renderer api!" << std::endl;
             exit(1);
         }
 
-        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        glfwSetCursorPosCallback(m_Window, OnMouseMove);
-        glfwGetCursorPos(m_Window, &m_LastMouseX, &m_LastMouseY);
+        m_GLFWWindow = glfwCreateWindow(1280, 720, "Vortex Renderer Demo", nullptr, nullptr);
+        if (!m_GLFWWindow) {
+            std::cout << "Failed to create window!" << std::endl;
+            exit(1);
+        }
+    }
 
-        int width, height;
-        glfwGetFramebufferSize(m_Window, &width, &height);
-        m_Camera = std::make_shared<FPSCamera>(90.0f, (float) width, (float) height);
-        m_Camera->MoveFront(-5.0f);
+    ~Window() {
+        glfwDestroyWindow(m_GLFWWindow);
+        glfwTerminate();
+    }
 
-        m_Context = Vortex::ContextCreate(m_Window);
+    void SetupOpenglContext() override {
+        glfwMakeContextCurrent(m_GLFWWindow);
+        glfwSwapInterval(0);
+    }
+
+    GLFWwindow* GetGLFWWindow() {
+        return m_GLFWWindow;
+    }
+
+private:
+    GLFWwindow* m_GLFWWindow;
+};
+
+class VortexDemo {
+public:
+    VortexDemo() {
+        ZoneScoped;
+
+        m_Window = std::make_shared<Window>();
+
+        Vortex::ProjectInformation project;
+        project.ProjectName = "Vortex Demo";
+        project.ProjectVersion = glm::vec3(1, 0, 0);
+
+        m_Context = Vortex::ContextCreate(m_Window, project);
         m_Context->Init();
+
+        m_PerfCounterFrequency = glfwGetTimerFrequency();
+        m_LastCounter = glfwGetTimerValue();
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -111,196 +79,131 @@ public:
         (void) io;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-        ImGui::StyleColorsClassic();
-        ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+        ImGui::StyleColorsDark();
+        ImGuiStyle& style = ImGui::GetStyle();
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            style.WindowRounding = 0.0f;
+            style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+        }
+
+        ImGui_ImplGlfw_InitForOpenGL(m_Window->GetGLFWWindow(), true);
         ImGui_ImplOpenGL3_Init("#version 150");
 
-        m_ShaderLibrary = std::make_shared<Vortex::ShaderLibrary>();
-        m_ShaderLibrary->Load("assets/Shaders/Phong.glsl");
+        Vortex::Renderer::SetContext(m_Context);
+        Vortex::RenderCommand::Init();
+        Vortex::RenderCommand::ConfigureAntiAliasing(true);
 
-        m_Model = std::make_shared<Vortex::Scene::Model>("assets/Objects/Monkey/monkey.obj");
+        m_PrimaryRenderer = std::make_shared<Vortex::Renderer>("../../apps/assets/Shaders/Light.glsl", 1280, 720, false);
+        m_PrimaryViewportWidth = 1280;
+        m_PrimaryViewportHeight = 720;
+        m_PrimaryCamera = std::make_shared<Vortex::Camera>(90.0f, 1280.0f, 720.0f);
+        m_PrimaryCamera->Translate(glm::vec3(0.0f, 9.0f, 20.0f));
 
-        auto renderbuffer = Vortex::RenderbufferCreate(1280, 720, Vortex::Renderbuffer::RenderbufferType::DEPTH24_STENCIL8);
+        glm::vec3 lightPositions[] = {glm::vec3(-3.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(3.0f, 0.0f, 0.0f)};
+        glm::vec3 lightColors[] = {glm::vec3(0.25), glm::vec3(0.50), glm::vec3(0.75), glm::vec3(1.00)};
 
-        m_Texture = Vortex::Texture2DCreate(1280, 720);
-        m_Framebuffer = Vortex::FramebufferCreate();
-        m_Framebuffer->Bind();
-        m_Framebuffer->AttachColorBuffer(m_Texture);
-        m_Framebuffer->AttachDepthStencilBuffer(renderbuffer);
-        m_Framebuffer->Unbind();
+        auto mesh = std::make_shared<Vortex::Mesh>("../../apps/assets/Objects/Cube/Cube.obj");
+        m_Scene = std::make_shared<Vortex::Scene>();
 
-        Vortex::Renderer::Init();
-        Vortex::RenderCommand::SetViewport(1280, 720);
-        Vortex::RenderCommand::SetClearColor({0.0f, 0.0f, 0.0f, 1.0f});
-        Vortex::RenderCommand::ConfigureStencilTesting(false, 0x11, 0x11, Vortex::RendererAPI::StencilTestFunc::ALWAYS, 0x11, Vortex::RendererAPI::StencilTestAction::KEEP,
-                                                       Vortex::RendererAPI::StencilTestAction::KEEP, Vortex::RendererAPI::StencilTestAction::KEEP);
-        Vortex::RenderCommand::ConfigureBlending(true, Vortex::RendererAPI::BlendingFunc::SRC_ALPHA, Vortex::RendererAPI::BlendingFunc::ONE_MINUS_SRC_ALPHA,
-                                                 Vortex::RendererAPI::BlendingFunc::ONE, Vortex::RendererAPI::BlendingFunc::ZERO, Vortex::RendererAPI::BlendingFunc::ONE,
-                                                 Vortex::RendererAPI::BlendingFunc::ZERO);
-    }
+        std::shared_ptr<Vortex::Object> meshObject = std::make_shared<Vortex::Object>(glm::scale(glm::mat4(1.0f), glm::vec3(50.0f, 0.05f, 50.0f)));
+        meshObject->Attach(mesh);
+        m_Scene->Append(meshObject);
 
-    bool ShouldClose() {
-        return glfwWindowShouldClose(m_Window);
+        auto cube1 = std::make_shared<Vortex::Mesh>("../../apps/assets/Objects/Cube/Cube.obj");
+        std::shared_ptr<Vortex::Object> cube1Object = std::make_shared<Vortex::Object>(glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 8.0f, 0.0f)));
+        cube1Object->Attach(cube1);
+        m_Scene->Append(cube1Object);
+
+        for (int i = 0; i < 4; i++) {
+            std::shared_ptr<Vortex::PointLight> light = std::make_shared<Vortex::PointLight>(1.0f, 1.0f, 1.0f, lightColors[i], lightColors[i], lightColors[i]);
+            std::shared_ptr<Vortex::Object> lightObject = std::make_shared<Vortex::Object>(glm::translate(glm::mat4(1.0f), lightPositions[i]));
+            lightObject->Attach(light);
+            m_Scene->Append(lightObject);
+        }
     }
 
     void Update() {
-        m_Framebuffer->Bind();
-        Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::COLOR);
-        Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::DEPTH);
-        Vortex::Renderer::BeginScene();
+        ZoneScoped;
+
+        glfwGetWindowSize(m_Window->GetGLFWWindow(), (int*) &m_PrimaryViewportWidth, (int*) &m_PrimaryViewportHeight);
+
+        if (m_PrimaryViewportWidth < 0)
+            m_PrimaryViewportWidth = 0;
+        if (m_PrimaryViewportHeight < 0)
+            m_PrimaryViewportHeight = 0;
+
+        m_PrimaryRenderer->OnResize(m_PrimaryViewportWidth, m_PrimaryViewportHeight);
+        m_PrimaryCamera->Resize(90.0f, (float) m_PrimaryViewportWidth, (float) m_PrimaryViewportHeight);
+
+        m_PrimaryRenderer->BeginFrame();
+        m_PrimaryRenderer->Submit(m_Scene, m_PrimaryCamera);
+        m_PrimaryRenderer->EndFrame();
+
         {
-            auto phongShader = m_ShaderLibrary->Get("Phong");
+            ZoneScopedN("ImGuiCollectAndrender");
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
 
-            phongShader->Bind();
-            phongShader->SetMatrix4("u_ViewProj", m_Camera->GetViewProj());
-            phongShader->SetFloat3("u_ViewPos", m_Camera->GetPosition());
-            phongShader->SetFloat("u_Material.shininess", 32.0f);
+            ImGui::Begin("Render Stats");
+            ImGui::Text("FPS: %i", m_FPS);
+            ImGui::End();
 
-            phongShader->SetInt("u_NumPointLights", 4);
-            phongShader->SetInt("u_NumSpotLights", 0);
-            phongShader->SetInt("u_NumDirectionalLights", 0);
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-            // point light 1
-            phongShader->SetFloat3("u_PointLights[0].position", pointLightPositions[0]);
-            phongShader->SetFloat3("u_PointLights[0].ambient", {0.05f, 0.05f, 0.05f});
-            phongShader->SetFloat3("u_PointLights[0].diffuse", {0.8f, 0.8f, 0.8f});
-            phongShader->SetFloat3("u_PointLights[0].specular", {1.0f, 1.0f, 1.0f});
-            phongShader->SetFloat("u_PointLights[0].constant", 1.0f);
-            phongShader->SetFloat("u_PointLights[0].linear", 0.09f);
-            phongShader->SetFloat("u_PointLights[0].quadratic", 0.032f);
-            // point light 2
-            phongShader->SetFloat3("u_PointLights[1].position", pointLightPositions[1]);
-            phongShader->SetFloat3("u_PointLights[1].ambient", {0.05f, 0.05f, 0.05f});
-            phongShader->SetFloat3("u_PointLights[1].diffuse", {0.8f, 0.8f, 0.8f});
-            phongShader->SetFloat3("u_PointLights[1].specular", {1.0f, 1.0f, 1.0f});
-            phongShader->SetFloat("u_PointLights[1].constant", 1.0f);
-            phongShader->SetFloat("u_PointLights[1].linear", 0.09f);
-            phongShader->SetFloat("u_PointLights[1].quadratic", 0.032f);
-            // point light 3
-            phongShader->SetFloat3("u_PointLights[2].position", pointLightPositions[2]);
-            phongShader->SetFloat3("u_PointLights[2].ambient", {0.05f, 0.05f, 0.05f});
-            phongShader->SetFloat3("u_PointLights[2].diffuse", {0.8f, 0.8f, 0.8f});
-            phongShader->SetFloat3("u_PointLights[2].specular", {1.0f, 1.0f, 1.0f});
-            phongShader->SetFloat("u_PointLights[2].constant", 1.0f);
-            phongShader->SetFloat("u_PointLights[2].linear", 0.09f);
-            phongShader->SetFloat("u_PointLights[2].quadratic", 0.032f);
-            // point light 4
-            phongShader->SetFloat3("u_PointLights[3].position", pointLightPositions[3]);
-            phongShader->SetFloat3("u_PointLights[3].ambient", {0.05f, 0.05f, 0.05f});
-            phongShader->SetFloat3("u_PointLights[3].diffuse", {0.8f, 0.8f, 0.8f});
-            phongShader->SetFloat3("u_PointLights[3].specular", {1.0f, 1.0f, 1.0f});
-            phongShader->SetFloat("u_PointLights[3].constant", 1.0f);
-            phongShader->SetFloat("u_PointLights[3].linear", 0.09f);
-            phongShader->SetFloat("u_PointLights[3].quadratic", 0.032f);
-
-            phongShader->SetMatrix4("u_ViewProj", m_Camera->GetViewProj());
-
-            glm::mat4 model = glm::mat4(1.0f);
-            phongShader->SetMatrix4("u_Model", model);
-
-            for (auto mesh : m_Model->GetMeshes()) {
-                mesh.BindTextures(phongShader);
-                Vortex::Renderer::Submit(mesh.GetVertexArray());
+            if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+                GLFWwindow* backup_current_context = glfwGetCurrentContext();
+                ImGui::UpdatePlatformWindows();
+                ImGui::RenderPlatformWindowsDefault();
+                glfwMakeContextCurrent(backup_current_context);
             }
         }
-        Vortex::Renderer::EndScene();
-        m_Framebuffer->Unbind();
+        {
+            ZoneScopedN("SwapBuffer");
+            glfwSwapBuffers(m_Window->GetGLFWWindow());
+        }
+        {
+            ZoneScopedN("PollEvents");
+            glfwPollEvents();
+        }
+        {
+            ZoneScopedN("CalculateFPS");
+            uint64_t endCounter = glfwGetTimerValue();
+            uint64_t counterElapsed = endCounter - m_LastCounter;
+            m_Delta = ((float) counterElapsed) / (float) m_PerfCounterFrequency;
+            m_FPS = (uint32_t) ((float) m_PerfCounterFrequency / (float) counterElapsed);
+            m_LastCounter = endCounter;
+        }
+    }
 
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        ImGui::Begin("Settings");
-        ImGui::Text("Depth testing");
-        ImGui::Checkbox("EnableDepthTest", &m_EnableDepthTest);
-        ImGui::Checkbox("DepthTestMask", &m_EnableDepthMask);
-        ImGui::InputInt("DepthTestFunc", &m_DepthTestFunc);
-
-        ImGui::Text("Culling");
-        ImGui::Checkbox("EnableCulling", &m_EnableCulling);
-        ImGui::InputInt("CullingType", &m_CullingType);
-        ImGui::End();
-
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("Viewport");
-        ImGui::Image(*(ImTextureID*) m_Texture->GetNative(), ImVec2(1280, 720), ImVec2(0, 1), ImVec2(1, 0));
-        ImGui::End();
-        ImGui::PopStyleVar();
-
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        Vortex::RenderCommand::ConfigureDepthTesting(m_EnableDepthTest, m_EnableDepthMask, (Vortex::RendererAPI::DepthTestFunc) m_DepthTestFunc);
-        Vortex::RenderCommand::ConfigureCulling(m_EnableCulling, (Vortex::RendererAPI::CullingType) m_CullingType);
-
-        if (glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_REPEAT)
-            m_Camera->MoveFront(0.02f);
-        if (glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_REPEAT)
-            m_Camera->MoveFront(-0.02f);
-        if (glfwGetKey(m_Window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_A) == GLFW_REPEAT)
-            m_Camera->MoveSideways(-0.02f);
-        if (glfwGetKey(m_Window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_D) == GLFW_REPEAT)
-            m_Camera->MoveSideways(0.02f);
-        if (glfwGetKey(m_Window, GLFW_KEY_SPACE) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_SPACE) == GLFW_REPEAT)
-            m_Camera->MoveUp(0.02f);
-        if (glfwGetKey(m_Window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(m_Window, GLFW_KEY_LEFT_SHIFT) == GLFW_REPEAT)
-            m_Camera->MoveUp(-0.02f);
-        if (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        if (glfwGetKey(m_Window, GLFW_KEY_ENTER) == GLFW_PRESS)
-            glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        if (glfwGetKey(m_Window, GLFW_KEY_Q) == GLFW_PRESS)
-            glfwSetWindowShouldClose(m_Window, true);
-
-        m_Context->SwapBuffers();
-        Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::COLOR);
-        Vortex::RenderCommand::Clear(Vortex::RendererAPI::ClearBuffer::DEPTH);
-        glfwPollEvents();
+    bool ShouldClose() {
+        return glfwWindowShouldClose(m_Window->GetGLFWWindow());
     }
 
     ~VortexDemo() {
-        glfwDestroyWindow(m_Window);
-        glfwTerminate();
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+        m_Context->Destroy();
     }
 
 private:
-    static void GlfwErrorCallback(int error, const char* description) {
-        std::cout << "GLFW Error (" << error << "): " << description << std::endl;
-        exit(1);
-    }
+    uint64_t m_PerfCounterFrequency;
+    uint64_t m_LastCounter;
+    float m_Delta = 0.0f;
+    uint32_t m_FPS = 0;
 
-    static void OnMouseMove(GLFWwindow* window, double mouseX, double mouseY) {
-        double deltaX = mouseX - m_LastMouseX;
-        double deltaY = mouseY - m_LastMouseY;
-        m_LastMouseX = mouseX;
-        m_LastMouseY = mouseY;
-        if (glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
-            m_Camera->OnMouseMoved(deltaX, deltaY);
-    }
-
-    static double m_LastMouseX;
-    static double m_LastMouseY;
-    GLFWwindow* m_Window;
-    Vortex::BufferLayout m_BufferLayout;
-
-    static std::shared_ptr<FPSCamera> m_Camera;
+    uint32_t m_PrimaryViewportWidth, m_PrimaryViewportHeight;
+    std::shared_ptr<Window> m_Window;
+    std::shared_ptr<Vortex::Renderer> m_PrimaryRenderer;
+    std::shared_ptr<Vortex::Camera> m_PrimaryCamera;
+    std::shared_ptr<Vortex::Scene> m_Scene;
     std::shared_ptr<Vortex::Context> m_Context;
-    std::shared_ptr<Vortex::ShaderLibrary> m_ShaderLibrary;
-
-    std::shared_ptr<Vortex::Scene::Model> m_Model;
-    std::shared_ptr<Vortex::Framebuffer> m_Framebuffer;
-    std::shared_ptr<Vortex::Texture2D> m_Texture;
-
-    bool m_EnableDepthTest = true;
-    bool m_EnableDepthMask = true;
-    int m_DepthTestFunc = 2;
-    bool m_EnableCulling = false;
-    int m_CullingType = 0;
 };
-
-double VortexDemo::m_LastMouseX = 0;
-double VortexDemo::m_LastMouseY = 0;
-std::shared_ptr<FPSCamera> VortexDemo::m_Camera;
 
 int main() {
     VortexDemo demo;

@@ -6,8 +6,8 @@ namespace Vortex::OpenGL {
 class OpenGLTexture2D : public Texture2D {
 public:
     OpenGLTexture2D(const std::string& path);
-    OpenGLTexture2D(const int width, const int height);
-    OpenGLTexture2D(const int width, const int height, const void* data);
+    OpenGLTexture2D(const int width, const int height, Texture2D::Texture2DUsageType usageType);
+    OpenGLTexture2D(const int width, const int height, const void* data, Texture2D::Texture2DUsageType usageType);
     virtual ~OpenGLTexture2D();
 
     virtual uint32_t GetWidth() const override {
@@ -18,6 +18,7 @@ public:
     }
 
     virtual void Bind(uint32_t slot = 0) const override;
+    virtual void Resize(uint32_t width, uint32_t height) override;
     virtual void* GetNative() const override;
 
 private:

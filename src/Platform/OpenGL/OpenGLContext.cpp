@@ -1,16 +1,19 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <Vortex/Platform/OpenGL/OpenGLContext.hpp>
-#include <cassert>
+#include <spdlog/spdlog.h>
+#include <tracy/Tracy.hpp>
 
 using namespace Vortex::OpenGL;
 
-void OpenGLContext::Init() const {
-    glfwMakeContextCurrent((GLFWwindow*) m_WindowHandle);
-    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
-        assert(false);
-}
+void OpenGLContext::Init() {
+    ZoneScoped;
+    m_Window->SetupOpenglContext();
+    VT_ASSERT(gladLoadGLLoader((GLADloadproc) glfwGetProcAddress), "Failed to initialize OpenGL Context");
 
-void OpenGLContext::SwapBuffers() const {
-    glfwSwapBuffers((GLFWwindow*) m_WindowHandle);
+    spdlog::info("Created OpenGL context");
+    int majorVersion, minorVersion;
+    glGetIntegerv(GL_MAJOR_VERSION, &majorVersion);
+    glGetIntegerv(GL_MINOR_VERSION, &minorVersion);
+    spdlog::info("Using OpenGL version {}.{}", majorVersion, minorVersion);
 }

@@ -1,10 +1,16 @@
 #pragma once
 
 #include "Core.hpp"
+#include "Window.hpp"
 
 #include <memory>
 
 namespace Vortex {
+struct ProjectInformation {
+    std::string ProjectName;
+    glm::vec3 ProjectVersion;
+};
+
 /**
  * @brief The Context class is responsible for providing a rendering contex and buffer swapping.
  *
@@ -17,8 +23,10 @@ class Context {
 public:
     VT_API ~Context() = default;
 
-    virtual VT_API void Init() const = 0;
-    virtual VT_API void SwapBuffers() const = 0;
+    virtual VT_API void Init() = 0;
+    virtual VT_API void Destroy() = 0;
+
+    virtual VT_API std::shared_ptr<Vortex::Window> GetWindow() = 0;
 };
 
 /**
@@ -31,5 +39,5 @@ public:
  * @date 2023-03-31
  * @copyright Copyright (c) 2023
  */
-VT_API std::shared_ptr<Context> ContextCreate(void* windowHandle);
+VT_API std::shared_ptr<Context> ContextCreate(const std::shared_ptr<Vortex::Window>& window, ProjectInformation projectInfo);
 } // namespace Vortex
