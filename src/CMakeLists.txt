@@ -69,8 +69,8 @@ if(BUILD_SHARED_LIBS)
     target_compile_definitions(Vortex PRIVATE VT_BUILD_SHARED)
 endif()
 
-target_link_libraries(Vortex PUBLIC glm)
-target_link_libraries(Vortex PRIVATE glad spdlog::spdlog TracyClient)
+target_link_libraries(Vortex PUBLIC glm TracyClient)
+target_link_libraries(Vortex PRIVATE glad spdlog::spdlog)
 
 source_group(
     TREE "${PROJECT_SOURCE_DIR}/include/Vortex"
