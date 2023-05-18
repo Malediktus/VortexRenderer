@@ -61,17 +61,6 @@ public:
     }
 };
 
-/**
- * @brief This function is the only way that should be used for creating a Texture2D from a file.
- *
- * @param path
- * @return std::shared_ptr<Texture2D>
- * @version 0.1
- * @author Nico Grundei (malediktusrgb@gmail.com)
- * @date 2023-03-31
- * @copyright Copyright (c) 2023
- */
-VT_API std::shared_ptr<Texture2D> Texture2DCreate(const std::string& path);
 VT_API std::shared_ptr<Texture2D> Texture2DCreate(const int width, const int height, Texture2D::Texture2DUsageType usageType = Texture2D::Texture2DUsageType::Color);
 /**
  * @brief This function is the only way that should be used for creating a Texture2D from pixel data.

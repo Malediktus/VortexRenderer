@@ -8,7 +8,7 @@ class Window {
 public:
     virtual ~Window() = default;
 
-    virtual void SetupOpenglContext() = 0;
+    virtual void SetupOpenglContext(int majorVersion, int minorVersion) = 0;
 
     static VT_API RendererAPI::API ChooseRenderingAPI();
 };

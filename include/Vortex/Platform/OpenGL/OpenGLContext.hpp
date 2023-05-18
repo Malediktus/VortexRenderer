@@ -2,8 +2,6 @@
 
 #include "../../Context.hpp"
 
-#include <GLFW/glfw3.h>
-
 namespace Vortex::OpenGL {
 class OpenGLContext : public Context {
 public:

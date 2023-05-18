@@ -1,4 +1,3 @@
-#include <GLFW/glfw3.h>
 #include <Vortex/Context.hpp>
 #include <Vortex/Core.hpp>
 #include <Vortex/Renderer.hpp>

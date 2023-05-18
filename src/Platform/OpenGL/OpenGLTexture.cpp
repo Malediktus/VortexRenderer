@@ -1,54 +1,12 @@
 #include <Vortex/Platform/OpenGL/OpenGLTexture.hpp>
 #include <Vortex/Platform/OpenGL/OpenGLRendererAPI.hpp>
-#include <stb_image/stb_image.h>
 #include <glad/glad.h>
 #include <spdlog/spdlog.h>
 #include <tracy/Tracy.hpp>
 
 using namespace Vortex::OpenGL;
 
-OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : m_Path(path) {
-    ZoneScoped;
-    int width, height, channels;
-    stbi_set_flip_vertically_on_load(1);
-    auto* pixels = stbi_load(path.c_str(), &width, &height, &channels, 0);
-    VT_ASSERT(pixels, "Failed to open texture file");
-
-    // TODO: Check for srgb
-
-    m_Width = width;
-    m_Height = height;
-    GLenum format;
-    GLenum internalFormat;
-    if (channels == 1) {
-        format = GL_RED;
-        internalFormat = GL_RED_INTEGER;
-    } else if (channels == 3) {
-        format = GL_RGB;
-        internalFormat = GL_RGB8;
-    } else if (channels == 4) {
-        format = GL_RGBA;
-        internalFormat = GL_RGBA8;
-    } else {
-        format = GL_RGBA;
-        internalFormat = GL_RGBA8;
-        VT_ASSERT(false, "Invalid or unsupported pixel format");
-    }
-
-    glGenTextures(1, &m_RendererID);
-    glBindTexture(GL_TEXTURE_2D, m_RendererID);
-    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, pixels);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    stbi_image_free(pixels);
-
-    glCheckError();
-    spdlog::trace("Created OpenGL texture2D from file (file: {}, ID: {})", path, m_RendererID);
-}
-
-OpenGLTexture2D::OpenGLTexture2D(const int width, const int height, Texture2D::Texture2DUsageType usageType) : m_Path("") {
+OpenGLTexture2D::OpenGLTexture2D(const int width, const int height, Texture2D::Texture2DUsageType usageType) {
     ZoneScoped;
     m_Width = width;
     m_Height = height;
@@ -87,7 +45,7 @@ OpenGLTexture2D::OpenGLTexture2D(const int width, const int height, Texture2D::T
     spdlog::trace("Created OpenGL texture2D from file (ID: {})", m_RendererID);
 }
 
-OpenGLTexture2D::OpenGLTexture2D(const int width, const int height, const void* data, Texture2D::Texture2DUsageType usageType) : m_Path("") {
+OpenGLTexture2D::OpenGLTexture2D(const int width, const int height, const void* data, Texture2D::Texture2DUsageType usageType) {
     ZoneScoped;
     m_Width = width;
     m_Height = height;

@@ -1,5 +1,4 @@
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <Vortex/Platform/OpenGL/OpenGLContext.hpp>
 #include <spdlog/spdlog.h>
 #include <tracy/Tracy.hpp>
@@ -8,8 +7,7 @@ using namespace Vortex::OpenGL;
 
 void OpenGLContext::Init() {
     ZoneScoped;
-    m_Window->SetupOpenglContext();
-    VT_ASSERT(gladLoadGLLoader((GLADloadproc) glfwGetProcAddress), "Failed to initialize OpenGL Context");
+    m_Window->SetupOpenglContext(3, 3);
 
     spdlog::info("Created OpenGL context");
     int majorVersion, minorVersion;

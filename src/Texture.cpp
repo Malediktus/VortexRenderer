@@ -6,17 +6,6 @@
 
 using namespace Vortex;
 
-std::shared_ptr<Texture2D> Vortex::Texture2DCreate(const std::string& path) {
-    ZoneScoped;
-    switch (Renderer::GetAPI()) {
-    case RendererAPI::API::OpenGL:
-        return std::make_shared<OpenGL::OpenGLTexture2D>(path);
-    default:
-        VT_ASSERT_CHECK(false, "Invalid renderer API value returned from Renderer::GetRendererAPI()");
-    }
-    return nullptr;
-}
-
 std::shared_ptr<Texture2D> Vortex::Texture2DCreate(const int width, const int height, Texture2D::Texture2DUsageType usageType) {
     ZoneScoped;
     switch (Renderer::GetAPI()) {

@@ -14,9 +14,7 @@ set(HEADER_LIST
     "${PROJECT_SOURCE_DIR}/include/Vortex/VertexArray.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Framebuffer.hpp"
     "${PROJECT_SOURCE_DIR}/include/Vortex/Renderbuffer.hpp"
-    "${PROJECT_SOURCE_DIR}/include/Vortex/Scene/Scene.hpp"
-    "${PROJECT_SOURCE_DIR}/include/Vortex/Scene/Mesh.hpp"
-    "${PROJECT_SOURCE_DIR}/include/Vortex/Scene/Model.hpp")
+    "${PROJECT_SOURCE_DIR}/include/Vortex/Scene.hpp")
 
 set(SOURCE_LIST
     Context.cpp
@@ -31,9 +29,7 @@ set(SOURCE_LIST
     Framebuffer.cpp
     Renderbuffer.cpp
     Asserts.cpp
-    Window.cpp
-    Scene/Mesh.cpp
-    Scene/Model.cpp)
+    Window.cpp)
 
 set(OPENGL_HEADERS
     "${PROJECT_SOURCE_DIR}/include/Vortex/Platform/OpenGL/OpenGLShader.hpp"
@@ -73,8 +69,8 @@ if(BUILD_SHARED_LIBS)
     target_compile_definitions(Vortex PRIVATE VT_BUILD_SHARED)
 endif()
 
-target_link_libraries(Vortex PUBLIC glm TracyClient)
-target_link_libraries(Vortex PRIVATE glfw glad stb_image assimp spdlog::spdlog)
+target_link_libraries(Vortex PUBLIC glm)
+target_link_libraries(Vortex PRIVATE glad spdlog::spdlog TracyClient)
 
 source_group(
     TREE "${PROJECT_SOURCE_DIR}/include/Vortex"

@@ -8,7 +8,7 @@
 #include "Texture.hpp"
 #include "Context.hpp"
 #include "Framebuffer.hpp"
-#include "Scene/Scene.hpp"
+#include "Scene.hpp"
 
 #include <glm/glm.hpp>
 

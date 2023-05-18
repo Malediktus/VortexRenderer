@@ -6,10 +6,9 @@
 #include <glm/glm.hpp>
 #include <tracy/Tracy.hpp>
 
-#include "../Camera.hpp"
-#include "../VertexArray.hpp"
-#include "../Shader.hpp"
-#include "Model.hpp"
+#include "Camera.hpp"
+#include "VertexArray.hpp"
+#include "Shader.hpp"
 
 namespace Vortex {
 struct SceneLight {
@@ -67,13 +66,6 @@ public:
     Mesh(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Shader>& shader = nullptr) : m_Shader(shader) {
         ZoneScoped;
         m_VertexArrays.push_back(vertexArray);
-    }
-    Mesh(const std::string& filepath, const std::shared_ptr<Shader>& shader = nullptr) : m_Shader(shader) {
-        ZoneScoped;
-        Model model(filepath);
-        auto meshes = model.GetMeshes();
-        for (auto mesh : meshes)
-            m_VertexArrays.push_back(mesh.GetVertexArray());
     }
     ~Mesh() = default;
 
