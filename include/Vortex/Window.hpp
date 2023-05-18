@@ -9,6 +9,7 @@ public:
     virtual ~Window() = default;
 
     virtual void SetupOpenglContext(int majorVersion, int minorVersion) = 0;
+    virtual void* GetWindowOpenGLProcAddress() = 0;
 
     static VT_API RendererAPI::API ChooseRenderingAPI();
 };
