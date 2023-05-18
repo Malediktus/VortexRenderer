@@ -96,7 +96,7 @@ public:
         Vortex::RenderCommand::Init();
         Vortex::RenderCommand::ConfigureAntiAliasing(true);
 
-        m_PrimaryRenderer = std::make_shared<Vortex::Renderer>("../../apps/assets/Shaders/Light.glsl", 1280, 720, false);
+        m_PrimaryRenderer = std::make_shared<Vortex::Renderer>(Vortex::ShaderCreate("../../apps/assets/Shaders/PBR.glsl"), 1280, 720, false);
         m_PrimaryViewportWidth = 1280;
         m_PrimaryViewportHeight = 720;
         m_PrimaryCamera = std::make_shared<Vortex::Camera>(90.0f, 1280.0f, 720.0f);

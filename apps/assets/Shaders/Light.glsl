@@ -118,7 +118,7 @@ void main() {
         result += CalcSpotLight(u_SpotLights[i], norm, f_out_FragPos, viewDir);
 
     float gamma = 2.2;
-    FragColor.rgb = pow(result.rgb, vec3(1.0/gamma));
+    FragColor.rgb = pow(result.rgb, vec3(1.0 / gamma));
 }
 
 vec4 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {

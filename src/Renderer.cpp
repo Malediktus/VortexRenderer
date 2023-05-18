@@ -8,11 +8,11 @@ using namespace Vortex;
 
 std::shared_ptr<Context> Renderer::s_Context;
 
-Renderer::Renderer(const std::string& shaderPath, const int width, const int height, bool renderToTexture) {
+Renderer::Renderer(const std::shared_ptr<Shader>& defaultShader, const int width, const int height, bool renderToTexture) {
     ZoneScoped;
 
     m_RenderToTexture = renderToTexture;
-    m_Shader = ShaderCreate(shaderPath);
+    m_Shader = defaultShader;
     m_Framebuffer = FramebufferCreate(s_Context->GetWindow());
 
     if (renderToTexture) {

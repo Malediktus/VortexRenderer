@@ -28,7 +28,7 @@ namespace Vortex {
  */
 class Renderer {
 public:
-    VT_API Renderer(const std::string& shaderPath, const int width, const int height, bool renderToTexture);
+    VT_API Renderer(const std::shared_ptr<Shader>& defaultShader, const int width, const int height, bool renderToTexture);
     VT_API ~Renderer() = default;
 
     VT_API void OnResize(const int width, const int height);
